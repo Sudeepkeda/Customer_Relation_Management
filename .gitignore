@@ -1,0 +1,13 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# SQLite (not needed since we use PostgreSQL, but just in case)
+db.sqlite3
+
+# VSCode settings
+.vscode/
