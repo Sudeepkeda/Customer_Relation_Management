@@ -3,8 +3,11 @@ venv/
 __pycache__/
 *.pyc
 
-# Environment variables
-.env
+# Virtual environment
+venv/
 
 # VSCode settings
 .vscode/
+
+# Env files
+.env
