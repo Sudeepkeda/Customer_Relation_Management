@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">    
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>  
+    <div class="container mt-5">
+        <h1 class="mb-4">Welcome to the Dashboard</h1>
+        <p>This is a simple dashboard page.</p>
+        <button id="logoutBtn" class="btn btn-danger mt-3">Log out</button>
+    </div>
+    
+    <script>
+        document.getElementById("logoutBtn").addEventListener("click", function() {
+        // Redirect to login page on logout
+        window.location.href = "login.html";
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</html>
