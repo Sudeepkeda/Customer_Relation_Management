@@ -5,22 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard</title>
 
+  <!-- Google Fonts + Bootstrap -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>  
-    <div class="container mt-5">
-        <h1 class="mb-4">Welcome to the Dashboard</h1>
-        <p>This is a simple dashboard page.</p>
-        <button id="logoutBtn" class="btn btn-danger mt-3">Log out</button>
+
+<div class="sidebar d-flex flex-column p-3">
+    <!-- Logo -->
+    <div class="logo mb-4 text-center">
+        <img src="images/logo.png" alt="Logo" class="img-fluid" style="max-height:54px;">
     </div>
-    
-    <script>
-        document.getElementById("logoutBtn").addEventListener("click", function() {
-        // Redirect to login page on logout
-        window.location.href = "login.html";
-        });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Navigation -->
+    <ul class="nav flex-column nav-list">
+        <li class="nav-item mb-2">
+            <a class="nav-link active d-flex align-items-center" href="#">
+                <img src="images/dashboard.png" alt="dashboard" class="nav-icon"> 
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex align-items-center" href="#">
+                <img src="images/clients.png" alt="clients" class="nav-icon"> 
+                <span>Clients</span>
+            </a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex align-items-center" href="#">
+                <img src="images/projects.png" alt="projects" class="nav-icon"> 
+                <span>Projects</span>
+            </a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex align-items-center" href="#">
+                <img src="images/quotation.png" alt="Quotation" class="nav-icon"> 
+                <span>Quotation</span>
+            </a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex align-items-center" href="#">
+                <img src="images/enquiry.png" alt="Enquiry" class="nav-icon"> 
+                <span>Enquiry</span>
+            </a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex align-items-center" href="#">
+                <img src="images/expiry.png" alt="Expiry" class="nav-icon"> 
+                <span>Expiry</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- Logout at bottom -->
+        <div class="logout mt-auto">
+            <a href="#" class="nav-link d-flex align-items-center">
+                <img src="images/logout.png" alt="Logout" class="nav-icon"> 
+                <span>Logout</span>
+            </a>
+        </div>
+
+</div>
+
+</body>
 </html>
