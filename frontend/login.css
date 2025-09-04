@@ -1,0 +1,57 @@
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center; 
+  align-items: center;     
+  height: 100vh;           
+  background: #fff;     
+}
+
+/* Card container */
+.card {
+    width: 662px;
+    height: 198px;
+    top: 163px;
+    left: 389px;
+    opacity: 1;
+    background-color: rgb(175, 218, 32);
+
+}
+
+/* Logo styling */
+.logo img {
+  width: 150px;
+  height: 54px;
+  aspect-ratio: 25/9;
+  object-fit: contain;
+}
+
+.login{
+   width: 450px;
+   height: 69px;
+   top: 267px;
+   left: 517px;
+}
+
+.text{
+    text-align: center;
+    font-family: Poppins;
+    font-weight: 700;
+    font-style: Bold;
+    font-size: 45px;
+    line-height: 100%;
+    letter-spacing: 3%;
+
+}
+
+.input-container{
+    align-items: center;
+    width: 636px;
+    height: 316px;
+    top: 411px;
+    left: 400px;
+    opacity: 1;
+    border-radius: 25px;
+
+}
