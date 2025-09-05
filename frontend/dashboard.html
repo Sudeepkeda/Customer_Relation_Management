@@ -24,13 +24,13 @@
       <!-- Navigation -->
       <ul class="nav flex-column nav-list">
           <li class="nav-item mb-2">
-              <a class="nav-link active d-flex align-items-center" href="#">
+              <a class="nav-link  d-flex align-items-center" href="dashboard.html">
                   <img src="images/dashboard.png" alt="dashboard" class="nav-icon"> 
                   <span>Dashboard</span>
               </a>
           </li>
           <li class="nav-item mb-2">
-              <a class="nav-link d-flex align-items-center" href="#">
+              <a class="nav-link d-flex align-items-center" href="Clients.html">
                   <img src="images/clients.png" alt="clients" class="nav-icon"> 
                   <span>Clients</span>
               </a>
@@ -112,6 +112,20 @@
       </div>
   </div>
 </div> 
+<script>
+  const currentPage = window.location.pathname.split("/").pop().toLowerCase(); // lowercase
+  const navLinks = document.querySelectorAll('.nav-list .nav-link');
+
+  navLinks.forEach(link => {
+      const linkPage = link.getAttribute('href').toLowerCase(); // lowercase
+      if(linkPage === currentPage){
+          link.classList.add('active');
+      } else {
+          link.classList.remove('active');
+      }
+  });
+</script>
+
 
 </body>
 </html>
