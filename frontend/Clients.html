@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
 
   <!-- Google Fonts + Bootstrap -->
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="Clients.css">
@@ -74,7 +75,7 @@
   <div class="content-wrapper flex-grow-1">
       <!-- Header -->
       <div class="dashboard-head d-flex justify-content-between align-items-center flex-wrap mb-4 px-3">
-          <h1 class="dashboard m-0 me-4">Dashboard</h1>
+          <h1 class="dashboard m-0 me-4">Clients</h1>
           <div class="d-flex align-items-center">
               <img src="images/Notifications.png" alt="Notification" class="me-3" style="width:28px;">
               <img src="images/logo.png" alt="Profile" class="rounded-circle" style="width:50px; height:50px;">
@@ -83,7 +84,96 @@
 
       <!-- Main Content -->
         <div class="main-content p-3">
-            <h2>List of Clients</h2>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+               <p class="mb-0 sub-main">List of Clients</p>
+               <button class="btn btn-primary">+ Add New Client</button>
+            </div>
+
+        <div class="search-div d-flex align-items-center">
+            <!-- Search Box -->
+            <div class="search d-flex align-items-center me-2">
+                <div class="search-bar">
+                    <input type="text" class="form-control" placeholder="Search clients...">
+                </div>
+                <div class="search-icon ms-2">
+                    <i class="bi bi-search"></i>
+                </div>
+            </div>
+
+            <!-- All Category Button -->
+            <div class="category me-2">
+                <button class="all-category dropdown-toggle active" type="button">
+                    All Category
+                </button>
+            </div>
+
+            <!-- Search Button -->
+            <div class="search-btn me-2">
+                <button class="searchbtn" type="button">Search</button>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="reset-btn">
+                <button class="resetbtn" type="button">Reset</button>
+            </div>
+        </div>
+
+            
+            <div class="data-table">
+            <!-- Table Header -->
+            <div class="table-header">
+                <table cellpadding="8" cellspacing="0">
+                <thead>
+                    <tr>
+                    <th>SL No</th>
+                    <th>Company Name</th>
+                    <th>Industry</th>
+                    <th>Person Name</th>
+                    <th>Contact Number</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                    </tr>
+                </thead>
+                </table>
+            </div>
+
+            <!-- Table Body -->
+            <div class="table-body">
+                <table cellpadding="8" cellspacing="0">
+                <tbody>
+                    <tr>
+                    <td>1</td>
+                    <td>ABC Pvt Ltd</td>
+                    <td>IT Services</td>
+                    <td>John Doe</td>
+                    <td>9876543210</td>
+                    <td>john@example.com</td>
+                    <td>Active</td>
+                    <td>
+                        <button>Edit</button>
+                        <button>Delete</button>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>2</td>
+                    <td>XYZ Ltd</td>
+                    <td>Manufacturing</td>
+                    <td>Jane Smith</td>
+                    <td>9123456789</td>
+                    <td>jane@example.com</td>
+                    <td>Inactive</td>
+                    <td>
+                        <button>Edit</button>
+                        <button>Delete</button>
+                    </td>
+                    </tr>
+                </tbody>
+                </table>
+            </div>
+            </div>
+
+                
         </div>
 
       
