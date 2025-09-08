@@ -201,25 +201,28 @@ body {
   border-style: #141414;
 }
 
+
+.data-table-table {
+  border-collapse: collapse; /* ensures padding works as expected */
+  width: 100%;
+}
+
+.data-table-table th,
+.data-table-table td {
+  padding: 8px 58px 8px 8px; /* top right bottom left */
+  text-align: left;
+}
+
+
 .data-table {
-  margin-top: 20px;
-  margin-left: 22px;
+  margin-top: 42px;
+  margin-left: 42px;
 }
 
 .table-header {
   font-size: 12px;
   font-weight:700;
   
-}
-
-.table-header th {
-  padding-right: 40px;
-  text-align: left;
-}
-
-.table-body td {
-  padding: 10px;
-  background: #FFFFFF;
 }
 
 

@@ -213,13 +213,14 @@ body {
 }
 
 .table-header th {
-  padding-right: 40px;
+  padding-right: 20px;
   text-align: left;
 }
 
 .table-body td {
   padding: 10px;
   background: #FFFFFF;
+  white-space: nowrap;
 }
 
 
