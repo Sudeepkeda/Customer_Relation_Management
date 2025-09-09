@@ -102,19 +102,6 @@ body {
 }
 
 
-.btn-primary{
-  border-radius: 25px;
-  margin-right:28px ;
-  margin-top: 12px;
-  width: 150px;
-  height: 40px;
-  background-color: #008DD2;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;              
-
-}
-
 .search-div{
   margin-top: 35px;
   margin-left: 35px;
