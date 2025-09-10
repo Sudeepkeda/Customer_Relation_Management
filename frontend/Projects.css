@@ -12,17 +12,18 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  transition: left 0.3s ease;
   z-index: 1000;
+  transition: left 0.3s ease;
 }
 
 .content-wrapper {
   margin-left: 265px;
   width: calc(100% - 265px);
+  padding: 1rem;
   transition: margin-left 0.3s ease;
 }
 
-/* Nav links */
+/* Sidebar links */
 .nav-list .nav-link {
   font-weight: 500;
   color: #333 !important;
@@ -46,18 +47,19 @@ body {
   color: #dc3545 !important;
 }
 
+/* Sidebar icons */
 .nav-icon {
   width: 20px;
   height: 20px;
   margin-right: 10px;
 }
 
-/* Dashboard header */
+/* Header */
 .dashboard-head {
   height: 81px;
   background-color: #FFF;
   border-radius: 10px;
-  margin: 12px 10px 0 24px;
+  margin-bottom: 20px;
 }
 
 .dashboard {
@@ -66,30 +68,31 @@ body {
   color: #000;
 }
 
-/* Main Content */
 .main-content {
   border-radius: 20px;
-  background-color: #FFFFFF;
-  margin: 20px 10px 20px 24px;
+  background-color: #FFF;
+  padding: 1rem;
 }
 
 .sub-main {
   font-weight: 600;
-  font-size: 20px;
-  margin-left: 20px;
+  font-size: 24px;
 }
 
-/* Pagination */
+.btn-primary {
+  border-radius: 25px;
+  background-color: #008DD2;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+}
+
 .page-input {
   width: 60px;
-  padding: 6px 8px;
-  border-radius: 5px;
   text-align: center;
-  border: 1px solid #ccc;
-  outline: none;
 }
 
-/* Responsive adjustments */
+/* Responsive Sidebar */
 @media (max-width: 992px) {
   .sidebar {
     left: -265px;
@@ -101,7 +104,15 @@ body {
     margin-left: 0;
     width: 100%;
   }
-  .main-content {
-    margin-left: 0;
+}
+
+/* Small screens */
+@media (max-width: 576px) {
+  .dashboard {
+    font-size: 18px;
+  }
+  .dashboard-head img {
+    width: 32px !important;
+    height: 32px !important;
   }
 }

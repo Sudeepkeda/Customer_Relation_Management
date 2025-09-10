@@ -12,7 +12,7 @@
 </head>
 
 <body>
-<div class="d-flex flex-wrap">  
+<div class="d-flex flex-column flex-lg-row">  
   <!-- Sidebar -->
   <div class="sidebar d-flex flex-column p-3" id="sidebar">
       <div class="logo mb-4 text-center">
@@ -51,7 +51,7 @@
               </a>
           </li>
           <li class="nav-item mb-2">
-              <a class="nav-link d-flex align-items-center" href="expiry.html">
+              <a class="nav-link d-flex align-items-center active" href="expiry.html">
                   <img src="images/expiry.png" alt="Expiry" class="nav-icon"> 
                   <span>Expiry</span>
               </a>
@@ -67,15 +67,23 @@
   </div>
 
   <!-- Content Wrapper -->
-  <div class="content-wrapper flex-grow-1">
+  <div class="content-wrapper flex-grow-1 p-3">
+      <!-- Header -->
       <div class="dashboard-head d-flex justify-content-between align-items-center flex-wrap mb-4 px-3">
-          <h1 class="dashboard m-0 me-4">Expiry</h1>
           <div class="d-flex align-items-center">
+              <!-- Sidebar toggle button (only visible on small screens) -->
+              <button class="btn btn-outline-secondary d-lg-none me-3" id="sidebarToggle">
+                  <i class="bi bi-list"></i>
+              </button>
+              <h1 class="dashboard m-0">Expiry</h1>
+          </div>
+          <div class="d-flex align-items-center mt-2 mt-lg-0">
               <img src="images/Notifications.png" alt="Notification" class="me-3" style="width:28px;">
               <img src="images/logo.png" alt="Profile" class="rounded-circle" style="width:50px; height:50px;">
           </div>
       </div>
 
+      <!-- Main content -->
       <div class="main-content p-3">
           <div class="d-flex justify-content-between align-items-center mb-3">
              <p class="mb-0 sub-main">List of Expiry</p>
@@ -128,13 +136,13 @@
                   <td>abc@gmail.com</td>
                   <td>6966265656</td>
                   <td>abc</td>
-                  <td>60days</td>
+                  <td>60 days</td>
                   <td>yourwebsite.com</td>
                   <td>60 days</td>
                   <td>lorem</td>
                   <td>60 days</td>
                   <td>
-                      <button class="action-btn btn p-0"><img src="images/View.png" alt="View"></button>
+                      <button class="action-btn btn p-0 me-2"><img src="images/View.png" alt="View"></button>
                       <button class="action-btn btn p-0"><img src="images/send.png" alt="Send"></button>
                   </td>
                 </tr>
@@ -143,8 +151,8 @@
           </div>
 
           <!-- Pagination -->
-          <div class="d-flex justify-content-end align-items-center mt-3">
-            <div class="me-2">
+          <div class="d-flex justify-content-end align-items-center mt-3 gap-3">
+            <div>
               <input type="number" class="form-control page-input" min="1" value="1">
             </div>
             <nav>
@@ -162,9 +170,9 @@
 </div>
 
 <script>
+  // Active nav link
   const currentPage = window.location.pathname.split("/").pop().toLowerCase();
   const navLinks = document.querySelectorAll('.nav-list .nav-link');
-
   navLinks.forEach(link => {
       const linkPage = link.getAttribute('href').toLowerCase();
       if(linkPage === currentPage){
@@ -172,6 +180,11 @@
       } else {
           link.classList.remove('active');
       }
+  });
+
+  // Sidebar toggle
+  document.getElementById("sidebarToggle").addEventListener("click", () => {
+    document.getElementById("sidebar").classList.toggle("active");
   });
 </script>
 </body>

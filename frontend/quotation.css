@@ -12,12 +12,14 @@ body {
   top: 0;
   left: 0;
   z-index: 1000;
+  transition: left 0.3s ease;
 }
 
 .content-wrapper {
   margin-left: 265px;
   width: calc(100% - 265px);
   padding: 1rem;
+  transition: margin-left 0.3s ease;
 }
 
 .nav-list .nav-link {
@@ -86,21 +88,18 @@ body {
   height: 22px;
 }
 
-/* Pagination input */
 .page-input {
   width: 60px;
   text-align: center;
 }
 
-/* Table header */
 .table-header th {
   text-align: left;
 }
 
-/* Responsive adjustments */
+/* Responsive Sidebar */
 @media (max-width: 992px) {
   .sidebar {
-    position: absolute;
     left: -265px;
   }
   .sidebar.active {
