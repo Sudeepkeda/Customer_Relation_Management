@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
-  background-color: #f8f9fa;
+  background-color: #F7F7F7;
 }
 
 /* Sidebar */
@@ -51,7 +51,9 @@ body {
 .nav-list .nav-link:hover,
 .nav-list .active {
   background: rgba(0, 141, 210, 0.2);
-  color: #008DD2 !important;
+  color: #000000 !important;
+  font-size: 16px;
+  font-style: bold;
 }
 
 .logout .nav-link {
@@ -73,12 +75,17 @@ body {
 .dashboard-head {
   background-color: #FFFFFF;
   border-radius: 10px;
+  font-size: 28px;
+  align-items: center;
+  margin: 20px 10px 0 24px;
 }
 
 .dashboard {
-  font-size: 24px;
-  font-weight: 500;
-  color: #000000;
+  font-size: 28px;
+  font-weight: 600;
+  color: #000;
+  white-space: nowrap;
+  margin-top: 15px;
 }
 
 /* Toggle button */

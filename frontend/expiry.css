@@ -32,10 +32,11 @@ body {
   display: flex;
   align-items: center;
 }
-.nav-list .nav-link:hover { background: rgba(0,141,210,0.2); color:#008DD2 !important; }
-.nav-list .active { background: rgba(0,141,210,0.4); color:#008DD2 !important; }
-.logout .nav-link:hover { color:#dc3545 !important; }
-.nav-icon { width:20px; height:20px; margin-right:10px; }
+.nav-list .nav-link:hover,
+.nav-list .active {
+  background: rgba(0, 141, 210, 0.2);
+  color: #000 !important;
+}
 
 /* Dashboard heading */
 .dashboard-head {

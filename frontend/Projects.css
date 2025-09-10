@@ -33,14 +33,10 @@ body {
   align-items: center;
 }
 
-.nav-list .nav-link:hover {
-  background: rgba(0, 141, 210, 0.2);
-  color: #008DD2 !important;
-}
-
+.nav-list .nav-link:hover,
 .nav-list .active {
-  background: rgba(0, 141, 210, 0.4);
-  color: #008DD2 !important;
+  background: rgba(0, 141, 210, 0.2);
+  color: #000 !important;
 }
 
 .logout .nav-link:hover {

@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
-  background: #f9f9f9;
+  background: #F7F7F7;
 }
 
 /* Sidebar */
@@ -49,16 +49,11 @@ body {
   align-items: center;
 }
 
-.nav-list .nav-link:hover {
-  background: rgba(0, 141, 210, 0.2);
-  color: #008DD2 !important;
-}
-
+.nav-list .nav-link:hover,
 .nav-list .active {
-  background: rgba(0, 141, 210, 0.4);
-  color: #008DD2 !important;
+  background: rgba(0, 141, 210, 0.2);
+  color: #000 !important;
 }
-
 .logout .nav-link:hover {
   color: #dc3545 !important;
 }
@@ -75,7 +70,7 @@ body {
   height: auto;
   background-color: #FFF;
   border-radius: 10px;
-  margin: 12px 10px 0 24px;
+  margin: 20px 10px 0 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -84,10 +79,11 @@ body {
 }
 
 .dashboard {
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 600;
   color: #000;
   white-space: nowrap;
+  margin-top: 15px;
 }
 
 .toggle-btn {
@@ -106,8 +102,14 @@ body {
 
 .sub-main {
   font-weight: 600;
-  font-size: 20px;
+  font-size: 24px;
   margin-left: 20px;
+}
+
+.custombtn{
+  background-color: #008DD2;
+  font-size:14px ;
+  border-radius: 25px;
 }
 
 /* Pagination */
