@@ -112,16 +112,76 @@ body {
   border-radius: 25px;
 }
 
+
+.custom-category{
+  background-color: #F2F4F5;
+  font-size: 14px;
+  font-weight: 500;
+  color: #191C1F;
+}
+
+.custom-search{
+  color:#FFFFFF;
+  font-size: 16px;
+  font-weight: 400;
+  border-radius: 5px;
+  background-color: #141414;
+}
+
+.custom-reset{
+  font-size: 16px;
+  font-weight: 700;
+  color:  #141414;
+  background-color:#FFF ;
+  border: 2px solid #141414;
+  border-radius: 5px;
+}
+
+.table-responsive{
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.table th,
+.table td {
+  border: none !important; /* removes all borders */
+}
+
+.table-light{
+  font-size: 12px;
+  font-style: bold;
+  font-weight: 700;
+}
+
+.table-data{
+  font-size: 12px;
+  font-weight: 400;
+  color: #232323;
+}
+
+
 /* Pagination */
 .page-input {
   width: 60px;
   padding: 6px 8px;
   border-radius: 5px;
   text-align: center;
-  border: 1px solid #ccc;
+  border: 2px solid #e0dddd;
   outline: none;
+  margin-right: 8px; /* spacing before "Previous" */
 }
 
+
+.page-link{
+  border: none;
+  color: #000;
+}
+
+.page-link:not(.prev-next):hover {
+  background-color: #9FD3E8;
+  color: #000;
+  border-radius: 7px;
+}
 /* Responsive adjustments */
 @media (max-width: 576px) {
   .dashboard {
