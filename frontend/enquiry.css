@@ -189,3 +189,16 @@ body {
     margin-right: 10px !important; /* keep it even */
   }
 }
+
+/* Table responsive scroll only on small devices */
+@media (max-width: 576px) {
+  .table-responsive {
+    overflow-x: auto;   /* allow horizontal scroll */
+    overflow-y: hidden; /* prevent vertical scroll */
+    -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+  }
+
+  .table {
+    min-width: 700px;   /* force wider table so it can scroll */
+  }
+}
