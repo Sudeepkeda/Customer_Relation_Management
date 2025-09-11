@@ -121,3 +121,12 @@ body {
   color: #000000;
   font-weight: 600;
 }
+
+
+@media (max-width: 576px) {
+  .dashboard-head,
+  .main-content {
+    margin-left: 10px !important;  /* reduce left space */
+    margin-right: 10px !important; /* keep it even */
+  }
+}

@@ -25,7 +25,6 @@ body {
 .content-wrapper {
   margin-left: 0;
   width: 100%;
-  transition: margin-left 0.3s ease;
 }
 
 /* Large screens */
@@ -38,6 +37,8 @@ body {
     width: calc(100% - 265px);
   }
 }
+
+
 
 /* Nav links */
 .nav-list .nav-link {
@@ -91,6 +92,9 @@ body {
   border: none;
   background: none;
   cursor: pointer;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+
 }
 
 /* Main Content */
@@ -103,7 +107,6 @@ body {
 .sub-main {
   font-weight: 600;
   font-size: 24px;
-  margin-left: 20px;
 }
 
 .custombtn{
@@ -184,11 +187,9 @@ body {
 }
 /* Responsive adjustments */
 @media (max-width: 576px) {
-  .dashboard {
-    font-size: 18px;
-  }
-  .dashboard-head img {
-    width: 32px !important;
-    height: 32px !important;
+  .dashboard-head,
+  .main-content {
+    margin-left: 10px !important;  /* reduce left space */
+    margin-right: 10px !important; /* keep it even */
   }
 }
