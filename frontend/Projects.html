@@ -3,25 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Projects</title>
+  <title>Clients</title>
 
   <!-- Google Fonts + Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <link rel="stylesheet" href="Projects.css">
+  <link rel="stylesheet" href="Clients.css">
 </head>
 
 <body>  
 
-<div class="d-flex flex-column flex-lg-row">  
+<div class="d-flex">  
   <!-- Sidebar -->
   <div class="sidebar d-flex flex-column p-3" id="sidebar">
+      <!-- Logo -->
       <div class="logo mb-4 text-center">
           <img src="images/logo.png" alt="Logo" class="img-fluid" style="max-height:54px;">
       </div>
 
+      <!-- Navigation -->
       <ul class="nav flex-column nav-list">
           <li class="nav-item mb-2">
               <a class="nav-link d-flex align-items-center" href="dashboard.html">
@@ -30,13 +32,13 @@
               </a>
           </li>
           <li class="nav-item mb-2">
-              <a class="nav-link d-flex align-items-center" href="Clients.html">
+              <a class="nav-link d-flex align-items-center active" href="Clients.html">
                   <img src="images/clients.png" alt="clients" class="nav-icon"> 
                   <span>Clients</span>
               </a>
           </li>
           <li class="nav-item mb-2">
-              <a class="nav-link d-flex align-items-center active" href="Projects.html">
+              <a class="nav-link d-flex align-items-center" href="Projects.html">
                   <img src="images/projects.png" alt="projects" class="nav-icon"> 
                   <span>Projects</span>
               </a>
@@ -61,6 +63,7 @@
           </li>
       </ul>
 
+      <!-- Logout -->
       <div class="logout mt-auto">
           <a href="#" class="nav-link d-flex align-items-center">
               <img src="images/logout.png" alt="Logout" class="nav-icon"> 
@@ -70,19 +73,15 @@
   </div>
 
   <!-- Content Wrapper -->
-  <div class="content-wrapper flex-grow-1 p-3">
+  <div class="content-wrapper flex-grow-1">
       <!-- Header -->
-      <div class="dashboard-head d-flex justify-content-between align-items-center flex-wrap mb-4 px-3">
-          <div class="d-flex align-items-center">
-              <!-- Sidebar Toggle Button (visible on small screens) -->
-              <button class="btn btn-outline-secondary d-lg-none me-3" id="sidebarToggle">
-                  <i class="bi bi-list"></i>
-              </button>
-              <h1 class="dashboard m-0">Projects</h1>
-          </div>
-          <div class="d-flex align-items-center mt-2 mt-lg-0">
-              <img src="images/Notifications.png" alt="Notification" class="me-3" style="width:28px;">
-              <img src="images/logo.png" alt="Profile" class="rounded-circle" style="width:50px; height:50px;">
+      <div class="dashboard-head d-flex justify-content-between align-items-center px-3 flex-nowrap mb-4">
+          <!-- Toggle button for mobile -->
+          <button class="btn toggle-btn d-lg-none me-2" id="sidebarToggle">☰</button>
+
+          <h1 class="dashboard m-0 flex-grow-1 text-start">Projects</h1>
+          <div class="d-flex align-items-center ms-auto">
+              <img src="images/logo.png" alt="Profile" class="rounded-circle" style="width:40px; height:40px;">
           </div>
       </div>
 
@@ -94,26 +93,29 @@
 
           <!-- Search Section -->
           <div class="row g-2 align-items-center search-div">
-              <div class="col-lg-6 col-md-12">
-                  <div class="input-group">
-                      <input type="text" class="form-control" placeholder="Search for anything...">
-                      <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
-                  </div>
+            <div class="col-lg-6 col-md-12">
+                <div class="input-group">
+                    <input type="text" class="form-control border-end-0" placeholder="Search for anything...">
+                    <span class="input-group-text bg-white border-start-0">
+                        <i class="bi bi-search"></i>
+                    </span>
+                </div>
+            </div>
+
+              <div class="col-lg-2 col-md-4 col-6">
+                  <button class="btn custom-category w-100">All Category</button>
               </div>
               <div class="col-lg-2 col-md-4 col-6">
-                  <button class="btn btn-outline-dark w-100">All Category</button>
-              </div>
-              <div class="col-lg-2 col-md-4 col-6">
-                  <button class="btn btn-dark w-100">Search</button>
+                  <button class="btn custom-search custom-search w-100">Search</button>
               </div>
               <div class="col-lg-2 col-md-4 col-12">
-                  <button class="btn btn-secondary w-100">Reset</button>
+                  <button class="btn custom-reset  w-100">Reset</button>
               </div>
           </div>
 
           <!-- Responsive Table -->
           <div class="table-responsive mt-3">
-              <table class="table table-bordered align-middle">
+              <table class="table align-middle">
                   <thead class="table-light">
                       <tr>
                           <th>SL No</th>
@@ -124,7 +126,7 @@
                           <th>Action</th>
                       </tr>
                   </thead>
-                  <tbody>
+                  <tbody class="table-data">
                       <tr>
                           <td>1</td>
                           <td>ABC</td>
@@ -132,47 +134,43 @@
                           <td>9876543210</td>
                           <td>john@example.com</td>
                           <td>
-                              <button class="btn btn-sm btn-outline-primary me-1">
-                                  <img src="images/View.png" alt="View">
-                              </button>
+                              <button class="btn btn-sm  me-1"><img src="images/View.png" alt="View"></button>
                           </td>
                       </tr>
                       <tr>
-                          <td>2</td>
-                          <td>XYZ</td>
-                          <td>Riya</td>
-                          <td>9876543221</td>
-                          <td>riya@example.com</td>
+                          <td>1</td>
+                          <td>ABC</td>
+                          <td>Ishan</td>
+                          <td>9876543210</td>
+                          <td>john@example.com</td>
                           <td>
-                              <button class="btn btn-sm btn-outline-primary me-1">
-                                  <img src="images/View.png" alt="View">
-                              </button>
+                              <button class="btn btn-sm  me-1"><img src="images/View.png" alt="View"></button>
                           </td>
                       </tr>
+                     
                   </tbody>
               </table>
           </div>
 
           <!-- Pagination -->
-          <div class="d-flex justify-content-end align-items-center mt-3 gap-3">
-              <div>
-                  <input type="number" class="form-control page-input" min="1" value="1">
-              </div>
-              <nav>
-                  <ul class="pagination mb-0">
-                      <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                      <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                      <li class="page-item"><a class="page-link" href="#">2</a></li>
-                      <li class="page-item"><a class="page-link" href="#">3</a></li>
-                      <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                  </ul>
-              </nav>
-          </div>
+         <div class="d-flex justify-content-end align-items-center flex-wrap mt-3">
+  <nav>
+    <ul class="pagination mb-0">
+      <li class="page-item">
+        <input type="number" id="pageInput" class="page-input" min="1" value="1">
+      </li>
+      <li class="page-item"><a class="page-link prev-next" href="#">Previous</a></li>
+      <li class="page-item"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item"><a class="page-link" href="#">3</a></li>
+      <li class="page-item"><a class="page-link prev-next" href="#">Next</a></li>
+    </ul>
+  </nav>
+</div>
       </div>
   </div>
 </div>
 
-<!-- JS -->
 <script>
   // Active menu highlight
   const currentPage = window.location.pathname.split("/").pop().toLowerCase();
@@ -187,9 +185,13 @@
   });
 
   // Sidebar toggle (mobile)
-  document.getElementById("sidebarToggle").addEventListener("click", () => {
-    document.getElementById("sidebar").classList.toggle("active");
-  });
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('sidebarToggle');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('active');
+    });
+  }
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
