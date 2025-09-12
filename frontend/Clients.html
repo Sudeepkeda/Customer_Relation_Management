@@ -14,6 +14,7 @@
 </head>
 
 <body>  
+  <script src="Clients.js"></script>
 
 <div class="d-flex">  
   <!-- Sidebar -->
@@ -104,8 +105,19 @@
             </div>
 
               <div class="col-lg-2 col-md-4 col-6">
-                  <button class="btn custom-category w-100">All Category</button>
-              </div>
+  <div class="dropdown w-100">
+    <button class="btn custom-category dropdown-toggle w-100" type="button" id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+      All Category
+    </button>
+    <ul class="dropdown-menu w-100" aria-labelledby="categoryDropdown" id="categoryList">
+      <li><a class="dropdown-item" href="#" data-category="all">All Category</a></li>
+      <li><a class="dropdown-item" href="#" data-category="IT Services">IT Services</a></li>
+      <li><a class="dropdown-item" href="#" data-category="Consulting">Consulting</a></li>
+      <!-- You can add more industries here -->
+    </ul>
+  </div>
+</div>
+
               <div class="col-lg-2 col-md-4 col-6">
                   <button class="btn custom-search custom-search w-100">Search</button>
               </div>
