@@ -76,7 +76,6 @@
       <div class="dashboard-head">
           <h1 class="dashboard m-0 me-4">Add New Quotation</h1>
           <div class="d-flex align-items-center flex-shrink-0">
-              <img src="images/Notifications.png" alt="Notification" class="me-3">
               <img src="images/logo.png" alt="Profile" class="rounded-circle profile-img">
           </div>
       </div>
@@ -163,50 +162,15 @@
             </div>
 
             <!-- CKEditor -->
-            <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
-            <script>
-              const servicesDropdown = document.getElementById("services");
-              const editorRow = document.getElementById("editorRow");
-              const editorLabel = document.getElementById("editorLabel");
-
-              servicesDropdown.addEventListener("change", function() {
-                if (this.value) {
-                  editorLabel.textContent = this.options[this.selectedIndex].text;
-                  editorRow.style.display = "block";
-                  if (!CKEDITOR.instances.editor) {
-                    CKEDITOR.replace("editor");
-                  }
-                } else {
-                  editorRow.style.display = "none";
-                }
-              });
-            </script>
-
-            <!-- Buttons -->
-            <div class="row mb-3">
-                <div class="col-md-4 d-flex">
-                    <button type="submit" class="custom-btn1 btn-success me-2">Save</button>
-                    <button type="reset" class="custom-btn2 btn-secondary">Cancel</button>
-                </div>
+            <div class="col-12 d-flex justify-content-start mt-3">
+                <button type="submit" class="btn custom-btn1 me-2">Save</button>
+                <button type="reset" class="btn custom-btn2">Cancel</button>
             </div>
         </form>
       </div>
   </div>
 </div>
-
-<!-- Active Nav Highlighter -->
-<script>
-  const currentPage = window.location.pathname.split("/").pop().toLowerCase();
-  const navLinks = document.querySelectorAll('.nav-list .nav-link');
-  navLinks.forEach(link => {
-      const linkPage = link.getAttribute('href').toLowerCase();
-      if(linkPage === currentPage){
-          link.classList.add('active');
-      } else {
-          link.classList.remove('active');
-      }
-  });
-</script>
-
+   <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
+   <script src="addquotation.js"></script>
 </body>
 </html>

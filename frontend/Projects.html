@@ -127,27 +127,7 @@
                       </tr>
                   </thead>
                   <tbody class="table-data">
-                      <tr>
-                          <td>1</td>
-                          <td>ABC</td>
-                          <td>Ishan</td>
-                          <td>9876543210</td>
-                          <td>john@example.com</td>
-                          <td>
-                              <button class="btn btn-sm  me-1"><img src="images/View.png" alt="View"></button>
-                          </td>
-                      </tr>
-                      <tr>
-                          <td>1</td>
-                          <td>ABC</td>
-                          <td>Ishan</td>
-                          <td>9876543210</td>
-                          <td>john@example.com</td>
-                          <td>
-                              <button class="btn btn-sm  me-1"><img src="images/View.png" alt="View"></button>
-                          </td>
-                      </tr>
-                     
+                      <!-- Rows will be inserted dynamically from project.js -->
                   </tbody>
               </table>
           </div>
@@ -171,28 +151,7 @@
   </div>
 </div>
 
-<script>
-  // Active menu highlight
-  const currentPage = window.location.pathname.split("/").pop().toLowerCase();
-  const navLinks = document.querySelectorAll('.nav-list .nav-link');
-  navLinks.forEach(link => {
-      const linkPage = link.getAttribute('href').toLowerCase();
-      if (linkPage === currentPage) {
-          link.classList.add('active');
-      } else {
-          link.classList.remove('active');
-      }
-  });
-
-  // Sidebar toggle (mobile)
-  const sidebar = document.getElementById('sidebar');
-  const toggleBtn = document.getElementById('sidebarToggle');
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('active');
-    });
-  }
-</script>
+<script src="project.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

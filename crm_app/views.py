@@ -7,7 +7,11 @@ from .models import Client
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework import viewsets
+from rest_framework import generics
 from .serializers import ClientSerializer
+from .models import Quotation
+from .serializers import QuotationSerializer
+from django.utils.timezone import now
 
 
 @csrf_exempt
@@ -66,6 +70,33 @@ class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
 
+
+class QuotationViewSet(viewsets.ModelViewSet):
+    queryset = Quotation.objects.all().order_by("-quotation_date")
+    serializer_class = QuotationSerializer
+
+    def perform_create(self, serializer):
+        """Auto-set quotation_date and generate quotation_number"""
+
+        # Auto quotation date
+        quotation_date = now().date()
+
+        # Financial year (e.g., 2025-26)
+        year = quotation_date.year
+        next_year = year + 1
+        financial_year = f"{str(year)[-2:]}-{str(next_year)[-2:]}"
+
+        # Count existing quotations for this financial year
+        count = Quotation.objects.filter(
+            quotation_number__contains=f"DT/Q/{financial_year}"
+        ).count() + 1
+
+        quotation_number = f"DT/Q/{financial_year}-{count:03d}"
+
+        serializer.save(
+            quotation_date=quotation_date,
+            quotation_number=quotation_number
+        )
 
 def dashboard(request):
     return render(request, "dashboard.html")
