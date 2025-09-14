@@ -37,6 +37,7 @@ class Quotation(models.Model):
     website = models.URLField(blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)  
     services = models.JSONField(blank=True, null=True)
 
     # Services

@@ -12,67 +12,45 @@
 </head>
 
 <body>  
-
 <div class="d-flex">  
   <!-- Sidebar -->
   <div class="sidebar d-flex flex-column p-3" id="sidebar">
-      <!-- Logo -->
       <div class="logo mb-4 text-center">
           <img src="images/logo.png" alt="Logo" class="img-fluid" style="max-height:54px;">
       </div>
 
-      <!-- Navigation -->
       <ul class="nav flex-column nav-list">
           <li class="nav-item mb-2">
               <a class="nav-link d-flex align-items-center" href="dashboard.html">
-                  <img src="images/dashboard.png" alt="dashboard" class="nav-icon"> 
-                  <span>Dashboard</span>
+                  <img src="images/dashboard.png" class="nav-icon"> <span>Dashboard</span>
               </a>
           </li>
           <li class="nav-item mb-2">
               <a class="nav-link d-flex align-items-center" href="Clients.html">
-                  <img src="images/clients.png" alt="clients" class="nav-icon"> 
-                  <span>Clients</span>
+                  <img src="images/clients.png" class="nav-icon"> <span>Clients</span>
               </a>
           </li>
           <li class="nav-item mb-2">
               <a class="nav-link d-flex align-items-center" href="Projects.html">
-                  <img src="images/projects.png" alt="projects" class="nav-icon"> 
-                  <span>Projects</span>
+                  <img src="images/projects.png" class="nav-icon"> <span>Projects</span>
               </a>
           </li>
           <li class="nav-item mb-2">
               <a class="nav-link d-flex align-items-center" href="quotation.html">
-                  <img src="images/quotation.png" alt="Quotation" class="nav-icon"> 
-                  <span>Quotation</span>
-              </a>
-          </li>
-          <li class="nav-item mb-2">
-              <a class="nav-link d-flex align-items-center" href="enquiry.html">
-                  <img src="images/enquiry.png" alt="Enquiry" class="nav-icon"> 
-                  <span>Enquiry</span>
-              </a>
-          </li>
-          <li class="nav-item mb-2">
-              <a class="nav-link d-flex align-items-center" href="expiry.html">
-                  <img src="images/expiry.png" alt="Expiry" class="nav-icon"> 
-                  <span>Expiry</span>
+                  <img src="images/quotation.png" class="nav-icon"> <span>Quotation</span>
               </a>
           </li>
       </ul>
 
-      <!-- Logout at bottom -->
       <div class="logout mt-auto">
           <a href="#" class="nav-link d-flex align-items-center">
-              <img src="images/logout.png" alt="Logout" class="nav-icon"> 
-              <span>Logout</span>
+              <img src="images/logout.png" class="nav-icon"> <span>Logout</span>
           </a>
       </div>
   </div>
 
   <!-- Content Wrapper -->
   <div class="content-wrapper flex-grow-1">
-      <!-- Header -->
       <div class="dashboard-head">
           <h1 class="dashboard m-0 me-4">Add New Quotation</h1>
           <div class="d-flex align-items-center flex-shrink-0">
@@ -80,66 +58,54 @@
           </div>
       </div>
 
-      <!-- Main Content -->
       <div class="main-content p-3">
         <form>
             <div class="row text mb-3">
-              <!-- Company Name -->
               <div class="col-md-4">
-                  <label for="companyName" class="form-label">
-                       Name of the Company <span style="color: red;">*</span>
-                  </label>
-                  <input type="text" class="form-control subtext" id="companyName" placeholder="Enter company name" required>
+                  <label for="companyName" class="form-label">Company Name <span style="color:red">*</span></label>
+                  <input type="text" class="form-control subtext" id="companyName" required>
               </div>
-
-              <!-- Industry -->
               <div class="col-md-4">
                   <label for="industry" class="form-label">Industry</label>
-                  <input type="text" class="form-control subtext" id="industry" placeholder="Enter industry">
+                  <input type="text" class="form-control subtext" id="industry">
               </div>
-
-              <!-- Person Name -->
               <div class="col-md-4">
                   <label for="personName" class="form-label">Person Name</label>
-                  <input type="text" class="form-control subtext" id="personName" placeholder="Enter person name">
+                  <input type="text" class="form-control subtext" id="personName">
               </div>
             </div>
 
             <div class="row text mb-3">
-              <!-- Contact -->
               <div class="col-md-4">
                   <label for="Contact" class="form-label">Contact</label>
-                  <input type="text" class="form-control subtext" id="Contact" placeholder="Contact">
+                  <input type="text" class="form-control subtext" id="Contact">
               </div>
-
-              <!-- Email -->
               <div class="col-md-4">
                   <label for="Email" class="form-label">Email</label>
-                  <input type="email" class="form-control subtext" id="Email" placeholder="Enter Email">
+                  <input type="email" class="form-control subtext" id="Email">
               </div>
-
-              <!-- Website URL -->
               <div class="col-md-4">
-                  <label for="Website" class="form-label">Website URL</label>
-                  <input type="url" class="form-control subtext" id="Website" placeholder="Enter Website">
+                  <label for="Website" class="form-label">Website</label>
+                  <input type="url" class="form-control subtext" id="Website">
               </div>
             </div>
 
             <div class="row text mb-3">
-              <!-- Address -->
               <div class="col-md-4">
                   <label for="Address" class="form-label">Address</label>
-                  <input type="text" class="form-control subtext" id="Address" placeholder="Enter Address">
+                  <input type="text" class="form-control subtext" id="Address">
               </div>
-
-              <!-- Description -->
               <div class="col-md-4">
                   <label for="Description" class="form-label">Description</label>
-                  <input type="text" class="form-control subtext" id="Description" placeholder="Enter Description">
+                  <input type="text" class="form-control subtext" id="Description">
+              </div>
+              <div class="col-md-4">
+                  <label for="Price" class="form-label">Total Price</label>
+                  <input type="number" class="form-control subtext" id="Price" placeholder="₹">
               </div>
             </div>
 
-            <!-- Services Section -->
+            <!-- Services -->
             <div class="row text mb-3">
               <div class="col-md-4">
                 <label for="services" class="form-label">Services</label>
@@ -148,12 +114,14 @@
                   <option value="about">About Us</option>
                   <option value="tech">Technical Details of Design Services</option>
                   <option value="scope">Out of Scope</option>
-                  <option value="pricing">Pricing</option>
                 </select>
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-primary" id="addServiceBtn">+ Add Service</button>
               </div>
             </div>
 
-            <!-- Text Editor Section (hidden by default) -->
+            <!-- CKEditor -->
             <div class="row text mb-3" id="editorRow" style="display:none;">
               <div class="col-md-12">
                 <label for="editor" class="form-label" id="editorLabel"></label>
@@ -161,7 +129,13 @@
               </div>
             </div>
 
-            <!-- CKEditor -->
+            <!-- Service Summary -->
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <ul id="servicesSummary" class="list-unstyled"></ul>
+              </div>
+            </div>
+
             <div class="col-12 d-flex justify-content-start mt-3">
                 <button type="submit" class="btn custom-btn1 me-2">Save</button>
                 <button type="reset" class="btn custom-btn2">Cancel</button>
@@ -170,7 +144,8 @@
       </div>
   </div>
 </div>
-   <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
-   <script src="addquotation.js"></script>
+
+<script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
+<script src="addquotation.js"></script>
 </body>
 </html>

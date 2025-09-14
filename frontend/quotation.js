@@ -2,9 +2,7 @@
 // Sidebar + Table + API Integration
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
-  // ===================
   // Sidebar Active Menu Highlight
-  // ===================
   const currentPage = window.location.pathname.split("/").pop().toLowerCase();
   const navLinks = document.querySelectorAll(".nav-list .nav-link");
   navLinks.forEach((link) => {
@@ -16,9 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // ===================
   // Sidebar Toggle (Mobile)
-  // ===================
   const sidebar = document.getElementById("sidebar");
   const toggleBtn = document.getElementById("sidebarToggle");
   if (toggleBtn) {
@@ -48,13 +44,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             <td>${quotation.quotation_number || "-"}</td>
             <td>${quotation.company_name || "-"}</td>
             <td>${quotation.description || "-"}</td>
-            <td>${quotation.services?.find(s => s.type === "pricing")?.price || "-"}</td>
+            <td>₹${quotation.price ? Number(quotation.price).toFixed(2) : "0.00"}</td>
             <td>
               <button class="btn btn-sm me-1"><img src="images/View.png" alt="View"></button>
               <button class="btn btn-sm"><img src="images/Edit.png" alt="Edit"></button>
             </td>
           </tr>
         `;
+
         tableBody.insertAdjacentHTML("beforeend", row);
       });
 
@@ -125,7 +122,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       rows.forEach((row, index) => {
         row.style.display =
-          index >= (page - 1) * rowsPerPage && index < page * rowsPerPage ? "" : "none";
+          index >= (page - 1) * rowsPerPage && index < page * rowsPerPage
+            ? ""
+            : "none";
       });
     }
 
