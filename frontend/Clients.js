@@ -115,85 +115,103 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Search + Pagination
   function initSearchAndPagination() {
-    const searchInput = document.querySelector(".search-div input");
-    const categoryBtn = document.querySelector(".custom-category");
-    const searchBtn = document.querySelector(".custom-search");
-    const resetBtn = document.querySelector(".custom-reset");
-    const tableRows = document.querySelectorAll(".table-data tr");
+  const searchInput = document.querySelector(".search-div input");
+  const categoryBtn = document.querySelector(".custom-category");
+  const searchBtn = document.querySelector(".custom-search");
+  const resetBtn = document.querySelector(".custom-reset");
+  const tableRows = document.querySelectorAll(".table-data tr");
 
-    function searchTable() {
-      const searchTerm = searchInput.value.toLowerCase();
-      tableRows.forEach((row) => {
-        const rowText = row.innerText.toLowerCase();
-        row.style.display = rowText.includes(searchTerm) ? "" : "none";
-      });
-    }
-
-    if (searchBtn) searchBtn.addEventListener("click", searchTable);
-    if (searchInput) {
-      searchInput.addEventListener("keyup", (e) => {
-        if (e.key === "Enter") searchTable();
-      });
-    }
-
-    if (categoryBtn) {
-      categoryBtn.addEventListener("click", () => {
-        alert("Category filter clicked (expand to filter by industry/company).");
-      });
-    }
-
-    if (resetBtn) {
-      resetBtn.addEventListener("click", () => {
-        searchInput.value = "";
-        tableRows.forEach((row) => (row.style.display = ""));
-      });
-    }
-
-    // Pagination
-    const pageInput = document.getElementById("pageInput");
-    const paginationLinks = document.querySelectorAll(".pagination .page-link");
-    const rowsPerPage = 5;
-    let currentPageNumber = 1;
-
-    function paginate(page) {
-      const rows = Array.from(tableRows);
-      const totalPages = Math.ceil(rows.length / rowsPerPage);
-
-      if (page < 1) page = 1;
-      if (page > totalPages) page = totalPages;
-
-      currentPageNumber = page;
-      if (pageInput) pageInput.value = currentPageNumber;
-
-      rows.forEach((row, index) => {
-        row.style.display =
-          index >= (page - 1) * rowsPerPage && index < page * rowsPerPage ? "" : "none";
-      });
-    }
-
-    paginate(1);
-
-    if (pageInput) {
-      pageInput.addEventListener("change", () => {
-        paginate(parseInt(pageInput.value, 10));
-      });
-    }
-
-    paginationLinks.forEach((link) => {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        const text = link.innerText.toLowerCase();
-
-        if (text === "previous") {
-          paginate(currentPageNumber - 1);
-        } else if (text === "next") {
-          paginate(currentPageNumber + 1);
-        } else {
-          paginate(parseInt(text, 10));
-        }
-      });
+  // -------------------
+  // Search Functionality
+  // -------------------
+  function searchTable() {
+    const searchTerm = searchInput.value.toLowerCase();
+    tableRows.forEach((row) => {
+      const rowText = row.innerText.toLowerCase();
+      row.style.display = rowText.includes(searchTerm) ? "" : "none";
     });
   }
+
+  if (searchBtn) searchBtn.addEventListener("click", searchTable);
+  if (searchInput) {
+    searchInput.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") searchTable();
+    });
+  }
+
+  if (categoryBtn) {
+    categoryBtn.addEventListener("click", () => {
+      alert("Category filter clicked (expand to filter by industry/company).");
+    });
+  }
+
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      tableRows.forEach((row) => (row.style.display = ""));
+    });
+  }
+
+  // -------------------
+  // Pagination
+  // -------------------
+  const pageInput = document.getElementById("pageInput"); // rows per page input
+  const paginationLinks = document.querySelectorAll(".pagination .page-link");
+
+  let rowsPerPage = 5; // default
+  let currentPageNumber = 1;
+
+  function paginate(page) {
+    const rows = Array.from(tableRows);
+    const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+
+    currentPageNumber = page;
+
+    rows.forEach((row, index) => {
+      row.style.display =
+        index >= (page - 1) * rowsPerPage && index < page * rowsPerPage
+          ? ""
+          : "none";
+    });
+  }
+
+  // initial load
+  paginate(1);
+
+  // rows-per-page change
+  if (pageInput) {
+    pageInput.addEventListener("change", () => {
+      const val = parseInt(pageInput.value, 10);
+      if (!isNaN(val) && val > 0) {
+        rowsPerPage = val; // update rows per page
+        currentPageNumber = 1; // reset to first page
+        paginate(currentPageNumber);
+      }
+    });
+  }
+
+  // pagination buttons (Prev / Next / Page Numbers)
+  paginationLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const text = link.innerText.toLowerCase();
+
+      if (text === "previous") {
+        paginate(currentPageNumber - 1);
+      } else if (text === "next") {
+        paginate(currentPageNumber + 1);
+      } else {
+        const pageNum = parseInt(text, 10);
+        if (!isNaN(pageNum)) {
+          paginate(pageNum);
+        }
+      }
+    });
+  });
+}
 
   // Add Client Button → must clear editClientId
   const addClientBtn = document.querySelector(".custombtn");
