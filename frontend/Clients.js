@@ -119,7 +119,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Search + Pagination
  // Search + Pagination
 function initSearchAndPagination() {
   const searchInput = document.querySelector(".search-div input");
