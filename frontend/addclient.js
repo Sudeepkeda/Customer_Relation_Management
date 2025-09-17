@@ -17,12 +17,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   const editClientId = localStorage.getItem("editClientId");
 
   if (editClientId) {
-    // Fetch client data from backend for editing
+    // Editing existing client
     try {
       const res = await fetch(`http://127.0.0.1:8000/api/clients/${editClientId}/`);
       if (!res.ok) throw new Error("Failed to fetch client");
       const client = await res.json();
 
+      // Prefill form
       document.getElementById("companyName").value = client.company_name || "";
       document.getElementById("industry").value = client.industry || "";
       document.getElementById("personName").value = client.person_name || "";
@@ -43,11 +44,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.querySelector("h1.dashboard").innerText = "Edit Client";
       document.querySelector(".custom-btn1").innerText = "Update";
 
-      // Update submit → PUT
+      // Submit → PUT update
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-
         const data = getFormData();
+
         try {
           const response = await fetch(`http://127.0.0.1:8000/api/clients/${editClientId}/`, {
             method: "PUT",
@@ -72,11 +73,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       alert("Error loading client data.");
     }
   } else {
-    // Normal Create (POST)
+    // Adding new client
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-
       const data = getFormData();
+
       try {
         const response = await fetch("http://127.0.0.1:8000/api/clients/", {
           method: "POST",

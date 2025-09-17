@@ -2,9 +2,7 @@
 // Sidebar + Table + API Integration
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
-  // ===================
   // Sidebar Active Menu Highlight
-  // ===================
   const currentPage = window.location.pathname.split("/").pop().toLowerCase();
   const navLinks = document.querySelectorAll(".nav-list .nav-link");
   navLinks.forEach((link) => {
@@ -16,9 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // ===================
   // Sidebar Toggle (Mobile)
-  // ===================
   const sidebar = document.getElementById("sidebar");
   const toggleBtn = document.getElementById("sidebarToggle");
   if (toggleBtn) {
@@ -27,9 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // ===================
   // Fetch Clients from API
-  // ===================
   const tableBody = document.querySelector(".table-data");
 
   async function loadClients() {
@@ -71,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function initActions() {
-    // View button → fetch from backend
+    // View button
     document.querySelectorAll(".view-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const clientId = btn.getAttribute("data-id");
@@ -109,19 +103,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
 
-    // Edit button → redirect with localStorage
+    // Edit button
     document.querySelectorAll(".edit-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const clientId = btn.getAttribute("data-id");
-        localStorage.setItem("editClientId", clientId);
+        localStorage.setItem("editClientId", clientId); // keep id for edit
         window.location.href = "addclient.html";
       });
     });
   }
 
-  // ===================
-  // Search + Reset + Category Filter + Pagination
-  // ===================
+  // Search + Pagination
   function initSearchAndPagination() {
     const searchInput = document.querySelector(".search-div input");
     const categoryBtn = document.querySelector(".custom-category");
@@ -138,7 +130,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (searchBtn) searchBtn.addEventListener("click", searchTable);
-
     if (searchInput) {
       searchInput.addEventListener("keyup", (e) => {
         if (e.key === "Enter") searchTable();
@@ -204,12 +195,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // ===================
-  // Add Client Button
-  // ===================
+  // Add Client Button → must clear editClientId
   const addClientBtn = document.querySelector(".custombtn");
   if (addClientBtn) {
     addClientBtn.addEventListener("click", () => {
+      localStorage.removeItem("editClientId"); // ensure fresh form
       window.location.href = "addclient.html";
     });
   }
