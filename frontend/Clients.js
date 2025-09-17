@@ -120,90 +120,100 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Search + Pagination
-  function initSearchAndPagination() {
-    const searchInput = document.querySelector(".search-div input");
-    const searchBtn = document.querySelector(".custom-search");
-    const resetBtn = document.querySelector(".custom-reset");
-    const tableRows = document.querySelectorAll(".table-data tr");
+ // Search + Pagination
+function initSearchAndPagination() {
+  const searchInput = document.querySelector(".search-div input");
+  const searchBtn = document.querySelector(".custom-search");
+  const resetBtn = document.querySelector(".custom-reset");
 
-    function searchTable() {
-      const searchTerm = searchInput.value.toLowerCase();
-      tableRows.forEach((row) => {
-        const rowText = row.innerText.toLowerCase();
-        row.style.display = rowText.includes(searchTerm) ? "" : "none";
-      });
-    }
+  function searchTable() {
+    const searchTerm = searchInput.value.toLowerCase().trim();
 
-    if (searchBtn) searchBtn.addEventListener("click", searchTable);
-    if (searchInput) {
-      searchInput.addEventListener("keyup", (e) => {
-        if (e.key === "Enter") searchTable();
-      });
-    }
+    // filter by industry, company, person name, or email
+    const filtered = allClients.filter(c => {
+      return (
+        (c.company_name && c.company_name.toLowerCase().includes(searchTerm)) ||
+        (c.industry && c.industry.toLowerCase().includes(searchTerm)) ||
+        (c.person_name && c.person_name.toLowerCase().includes(searchTerm)) ||
+        (c.email && c.email.toLowerCase().includes(searchTerm))
+      );
+    });
 
-    if (resetBtn) {
-      resetBtn.addEventListener("click", () => {
-        searchInput.value = "";
-        renderTable(allClients);
-        initActions();
-      });
-    }
+    renderTable(filtered);
+    initActions();
+  }
 
-    // Pagination (kept same)
-    const pageInput = document.getElementById("pageInput");
-    const paginationLinks = document.querySelectorAll(".pagination .page-link");
-
-    let rowsPerPage = 5;
-    let currentPageNumber = 1;
-
-    function paginate(page) {
-      const rows = Array.from(document.querySelectorAll(".table-data tr"));
-      const totalPages = Math.ceil(rows.length / rowsPerPage);
-
-      if (page < 1) page = 1;
-      if (page > totalPages) page = totalPages;
-
-      currentPageNumber = page;
-
-      rows.forEach((row, index) => {
-        row.style.display =
-          index >= (page - 1) * rowsPerPage && index < page * rowsPerPage
-            ? ""
-            : "none";
-      });
-    }
-
-    paginate(1);
-
-    if (pageInput) {
-      pageInput.addEventListener("change", () => {
-        const val = parseInt(pageInput.value, 10);
-        if (!isNaN(val) && val > 0) {
-          rowsPerPage = val;
-          currentPageNumber = 1;
-          paginate(currentPageNumber);
-        }
-      });
-    }
-
-    paginationLinks.forEach((link) => {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        const text = link.innerText.toLowerCase();
-
-        if (text === "previous") {
-          paginate(currentPageNumber - 1);
-        } else if (text === "next") {
-          paginate(currentPageNumber + 1);
-        } else {
-          const pageNum = parseInt(text, 10);
-          if (!isNaN(pageNum)) {
-            paginate(pageNum);
-          }
-        }
-      });
+  if (searchBtn) searchBtn.addEventListener("click", searchTable);
+  if (searchInput) {
+    searchInput.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") searchTable();
     });
   }
+
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      renderTable(allClients);
+      initActions();
+    });
+  }
+
+  // Pagination (kept same as before) --------------------------
+  const pageInput = document.getElementById("pageInput");
+  const paginationLinks = document.querySelectorAll(".pagination .page-link");
+
+  let rowsPerPage = 5;
+  let currentPageNumber = 1;
+
+  function paginate(page) {
+    const rows = Array.from(document.querySelectorAll(".table-data tr"));
+    const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+
+    currentPageNumber = page;
+
+    rows.forEach((row, index) => {
+      row.style.display =
+        index >= (page - 1) * rowsPerPage && index < page * rowsPerPage
+          ? ""
+          : "none";
+    });
+  }
+
+  paginate(1);
+
+  if (pageInput) {
+    pageInput.addEventListener("change", () => {
+      const val = parseInt(pageInput.value, 10);
+      if (!isNaN(val) && val > 0) {
+        rowsPerPage = val;
+        currentPageNumber = 1;
+        paginate(currentPageNumber);
+      }
+    });
+  }
+
+  paginationLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const text = link.innerText.toLowerCase();
+
+      if (text === "previous") {
+        paginate(currentPageNumber - 1);
+      } else if (text === "next") {
+        paginate(currentPageNumber + 1);
+      } else {
+        const pageNum = parseInt(text, 10);
+        if (!isNaN(pageNum)) {
+          paginate(pageNum);
+        }
+      }
+    });
+  });
+}
+
 
   // ✅ Industry Category Filter
   function initCategoryFilter() {
