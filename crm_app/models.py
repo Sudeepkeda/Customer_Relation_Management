@@ -25,6 +25,14 @@ class Client(models.Model):
     maintenance_start_date = models.DateField(blank=True, null=True)
     maintenance_end_date = models.DateField(blank=True, null=True)
     comments = models.TextField(blank=True, null=True)
+    PRIORITY_CHOICES = [
+        ("High", "High"),
+        ("Medium", "Medium"),
+        ("Low", "Low"),
+    ]
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, blank=True, null=True)
+
+
 
     def __str__(self):
         return self.company_name

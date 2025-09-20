@@ -128,6 +128,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     maintenance_start_date: document.getElementById("Maintenancestartdate").value,
     maintenance_end_date: document.getElementById("MaintenanceEnddate").value,
     comments: document.getElementById("Comments").value,
+    priority: document.getElementById("Priority").value,
+
   };
 }
 });
