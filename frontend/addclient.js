@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("Serverendate").value = client.server_end_date || "";
       document.getElementById("Maintenancestartdate").value = client.maintenance_start_date || "";
       document.getElementById("MaintenanceEnddate").value = client.maintenance_end_date || "";
-
+      document.getElementById("Priority").value = client.priority || "";
       document.querySelector("h1.dashboard").innerText = "Edit Client";
       document.querySelector(".custom-btn1").innerText = "Update";
 
