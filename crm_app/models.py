@@ -96,3 +96,29 @@ class Quotation(models.Model):
 
     def __str__(self):
         return self.quotation_number
+    
+
+    
+class Enquiry(models.Model):
+    company_name = models.CharField(max_length=255)
+    person_name = models.CharField(max_length=255, blank=True, null=True)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("Inprogress", "In Progress"),
+            ("Notstarted", "Not Yet Started"),
+            ("Completed", "Completed"),
+        ],
+        default="Notstarted",
+    )
+    comments = models.TextField(blank=True, null=True)
+
+    # Auto add date
+    date = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.company_name
+

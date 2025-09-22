@@ -12,7 +12,8 @@ from .serializers import ClientSerializer
 from .models import Quotation
 from .serializers import QuotationSerializer
 from django.utils.timezone import now
-
+from .serializers import EnquirySerializer
+from .models import Enquiry
 
 @csrf_exempt
 def login_view(request):
@@ -97,6 +98,28 @@ class QuotationViewSet(viewsets.ModelViewSet):
             quotation_date=quotation_date,
             quotation_number=quotation_number
         )
+
+
+def add_project(request):
+    return render(request, "addproject.html")
+
+
+class EnquiryViewSet(viewsets.ModelViewSet):
+    queryset = Enquiry.objects.all().order_by("-date")
+    serializer_class = EnquirySerializer
+
+def add_enquiry(request):
+    if request.method == "POST":
+        Enquiry.objects.create(
+            name=request.POST.get("name"),
+            email=request.POST.get("email"),
+            phone=request.POST.get("phone"),
+            message=request.POST.get("message"),
+        )
+        return redirect("enquiry")  # redirect to enquiry list page
+
+    return render(request, "addenquiry.html")
+
 
 def dashboard(request):
     return render(request, "dashboard.html")

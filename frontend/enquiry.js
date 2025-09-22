@@ -1,4 +1,126 @@
-function initSearchAndPagination() {
+// ===================
+// Sidebar + Table + API Integration for Enquiries
+// ===================
+document.addEventListener("DOMContentLoaded", async () => {
+  // Sidebar Active Menu Highlight
+  const currentPage = window.location.pathname.split("/").pop().toLowerCase();
+  const navLinks = document.querySelectorAll(".nav-list .nav-link");
+  navLinks.forEach((link) => {
+    const linkPage = link.getAttribute("href").toLowerCase();
+    if (linkPage === currentPage) {
+      link.classList.add("active");
+    } else {
+      link.classList.remove("active");
+    }
+  });
+
+  // Sidebar Toggle (Mobile)
+  const sidebar = document.getElementById("sidebar");
+  const toggleBtn = document.getElementById("sidebarToggle");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+    });
+  }
+
+  // Fetch Enquiries from API
+  const tableBody = document.querySelector(".table-data");
+  let allEnquiries = []; // keep full list for filtering
+
+  async function loadEnquiries() {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/enquiries/");
+      if (!response.ok) throw new Error("Failed to fetch enquiries");
+
+      allEnquiries = await response.json();
+      renderTable(allEnquiries);
+
+      initActions();
+      initSearchAndPagination();
+      initStatusFilter();
+    } catch (err) {
+      console.error("Error loading enquiries:", err);
+      tableBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Failed to load enquiries.</td></tr>`;
+    }
+  }
+
+  // Render table rows
+  function renderTable(enquiries) {
+    tableBody.innerHTML = "";
+
+    if (enquiries.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="9" class="text-center">No enquiries found</td></tr>`;
+      return;
+    }
+
+    enquiries.forEach((enquiry, index) => {
+      const row = `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${enquiry.date || "-"}</td>
+          <td>${enquiry.company_name || "-"}</td>
+          <td>${enquiry.person_name || "-"}</td>
+          <td>${enquiry.contact_number || "-"}</td>
+          <td>${enquiry.email || "-"}</td>
+          <td>${enquiry.website || "-"}</td>
+          <td>${enquiry.status || "-"}</td>
+          <td>
+            <button class="btn btn-sm me-1 view-btn" data-id="${enquiry.id}">
+              <img src="images/View.png" alt="View">
+            </button>
+            <button class="btn btn-sm edit-btn" data-id="${enquiry.id}">
+              <img src="images/Edit.png" alt="Edit">
+            </button>
+          </td>
+        </tr>
+      `;
+      tableBody.insertAdjacentHTML("beforeend", row);
+    });
+  }
+
+  function initActions() {
+    // View button
+    document.querySelectorAll(".view-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const enquiryId = btn.getAttribute("data-id");
+
+        try {
+          const res = await fetch(`http://127.0.0.1:8000/api/enquiries/${enquiryId}/`);
+          if (!res.ok) throw new Error("Failed to fetch enquiry details");
+          const enquiry = await res.json();
+
+          let html = `
+            <p><strong>Date:</strong> ${enquiry.date || "-"}</p>
+            <p><strong>Company:</strong> ${enquiry.company_name || "-"}</p>
+            <p><strong>Person:</strong> ${enquiry.person_name || "-"}</p>
+            <p><strong>Contact:</strong> ${enquiry.contact_number || "-"}</p>
+            <p><strong>Email:</strong> ${enquiry.email || "-"}</p>
+            <p><strong>Website:</strong> ${enquiry.website || "-"}</p>
+            <p><strong>Status:</strong> ${enquiry.status || "-"}</p>
+            <p><strong>Comments:</strong> ${enquiry.comments || "-"}</p>
+          `;
+
+          document.getElementById("viewClientBody").innerHTML = html;
+          new bootstrap.Modal(document.getElementById("viewClientModal")).show();
+        } catch (error) {
+          console.error(error);
+          alert("Failed to load enquiry details.");
+        }
+      });
+    });
+
+    // Edit button
+    document.querySelectorAll(".edit-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const enquiryId = btn.getAttribute("data-id");
+        localStorage.setItem("editEnquiryId", enquiryId);
+        window.location.href = "addenquiry.html";
+      });
+    });
+  }
+
+  // Search + Pagination
+  function initSearchAndPagination() {
     const searchInput = document.querySelector(".search-div input");
     const searchBtn = document.querySelector(".custom-search");
     const resetBtn = document.querySelector(".custom-reset");
@@ -6,12 +128,12 @@ function initSearchAndPagination() {
     function searchTable() {
       const searchTerm = searchInput.value.toLowerCase().trim();
 
-      const filtered = allClients.filter((c) => {
+      const filtered = allEnquiries.filter(c => {
         return (
           (c.company_name && c.company_name.toLowerCase().includes(searchTerm)) ||
-          (c.industry && c.industry.toLowerCase().includes(searchTerm)) ||
           (c.person_name && c.person_name.toLowerCase().includes(searchTerm)) ||
-          (c.email && c.email.toLowerCase().includes(searchTerm))
+          (c.email && c.email.toLowerCase().includes(searchTerm)) ||
+          (c.status && c.status.toLowerCase().includes(searchTerm))
         );
       });
 
@@ -29,12 +151,12 @@ function initSearchAndPagination() {
     if (resetBtn) {
       resetBtn.addEventListener("click", () => {
         searchInput.value = "";
-        renderTable(allClients);
+        renderTable(allEnquiries);
         initActions();
       });
     }
 
-    // Pagination --------------------------
+    // Pagination
     const pageInput = document.getElementById("pageInput");
     const paginationLinks = document.querySelectorAll(".pagination .page-link");
 
@@ -90,46 +212,41 @@ function initSearchAndPagination() {
     });
   }
 
-  // ===================
-  // Industry Category Filter
-  // ===================
-  function initCategoryFilter() {
-    const categoryBtn = document.querySelector(".custom-category");
-    if (!categoryBtn) return;
+  // ✅ Status Filter
+  function initStatusFilter() {
+    const statusBtn = document.querySelector(".custom-category");
+    if (!statusBtn) return;
 
-    const industries = [...new Set(allClients.map((c) => c.industry).filter(Boolean))];
+    // collect unique statuses
+    const statuses = [...new Set(allEnquiries.map(c => c.status).filter(Boolean))];
 
+    // build dropdown
     let dropdownHtml = `
       <ul class="dropdown-menu show" style="position:absolute; z-index:1000;">
-        <li><a class="dropdown-item category-option" data-industry="all">All Industries</a></li>
-        ${industries
-          .map(
-            (ind) =>
-              `<li><a class="dropdown-item category-option" data-industry="${ind}">${ind}</a></li>`
-          )
-          .join("")}
+        <li><a class="dropdown-item status-option" data-status="all">All Status</a></li>
+        ${statuses.map(st => `<li><a class="dropdown-item status-option" data-status="${st}">${st}</a></li>`).join("")}
       </ul>
     `;
 
     let dropdown;
-    categoryBtn.addEventListener("click", (e) => {
+    statusBtn.addEventListener("click", (e) => {
       e.stopPropagation();
 
       if (dropdown) {
         dropdown.remove();
         dropdown = null;
       } else {
-        categoryBtn.insertAdjacentHTML("afterend", dropdownHtml);
-        dropdown = categoryBtn.nextElementSibling;
+        statusBtn.insertAdjacentHTML("afterend", dropdownHtml);
+        dropdown = statusBtn.nextElementSibling;
 
-        dropdown.querySelectorAll(".category-option").forEach((opt) => {
+        dropdown.querySelectorAll(".status-option").forEach(opt => {
           opt.addEventListener("click", () => {
-            const industry = opt.getAttribute("data-industry");
+            const status = opt.getAttribute("data-status");
 
-            if (industry === "all") {
-              renderTable(allClients);
+            if (status === "all") {
+              renderTable(allEnquiries);
             } else {
-              const filtered = allClients.filter((c) => c.industry === industry);
+              const filtered = allEnquiries.filter(c => c.status === status);
               renderTable(filtered);
             }
             initActions();
@@ -148,4 +265,14 @@ function initSearchAndPagination() {
     });
   }
 
-  
+  // Add Enquiry Button → must clear editEnquiryId
+  const addEnquiryBtn = document.querySelector(".custombtn");
+  if (addEnquiryBtn) {
+    addEnquiryBtn.addEventListener("click", () => {
+      localStorage.removeItem("editEnquiryId");
+      window.location.href = "addenquiry.html";
+    });
+  }
+
+  await loadEnquiries();
+});
