@@ -47,6 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("Maintenancestartdate").value = client.maintenance_start_date || "";
       document.getElementById("MaintenanceEnddate").value = client.maintenance_end_date || "";
       document.getElementById("Priority").value = client.priority || "";
+      document.getElementById("Status").value = client.status || "";
       document.querySelector("h1.dashboard").innerText = "Edit Client";
       document.querySelector(".custom-btn1").innerText = "Update";
 
@@ -129,6 +130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     maintenance_end_date: document.getElementById("MaintenanceEnddate").value,
     comments: document.getElementById("Comments").value,
     priority: document.getElementById("Priority").value,
+    status: document.getElementById("Status").value,
 
   };
 }

@@ -31,7 +31,13 @@ class Client(models.Model):
         ("Low", "Low"),
     ]
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, blank=True, null=True)
-
+   
+    STATUS_CHOICES = [
+        ("Inprogress", "In Progress"),
+        ("Notstarted", "Not Yet Started"),
+        ("Completed", "Completed"),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Notstarted")
 
 
     def __str__(self):
