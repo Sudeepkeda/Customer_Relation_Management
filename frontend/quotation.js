@@ -48,6 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             <td>
               <button class="btn btn-sm me-1"><img src="images/View.png" alt="View"></button>
               <button class="btn btn-sm"><img src="images/Edit.png" alt="Edit"></button>
+              <button class="btn btn-sm "><img src="images/send.png" alt="send"></button>
             </td>
           </tr>
         `;

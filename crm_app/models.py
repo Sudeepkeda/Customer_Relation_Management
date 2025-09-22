@@ -122,3 +122,14 @@ class Enquiry(models.Model):
     def __str__(self):
         return self.company_name
 
+
+
+class Project(models.Model):
+    project_name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    server_name = models.CharField(max_length=255, blank=True, null=True)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    person_name = models.CharField(max_length=255)  # ✅ store free-text or existing
+    status = models.CharField(max_length=50, choices=[("Not Started","Not Started"),("In Progress","In Progress"),("Completed","Completed")], default="Not Started")
+

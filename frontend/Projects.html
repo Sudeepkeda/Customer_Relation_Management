@@ -122,9 +122,8 @@
                       <tr>
                           <th>SL No</th>
                           <th>Project Name</th>
-                          <th>Client Name</th>
-                          <th>Status</th>
                           <th>Person Name</th>
+                          <th>Status</th>
                           <th>Contact Number</th>
                           <th>Email</th>
                           <th>Action</th>
@@ -154,6 +153,25 @@
       </div>
   </div>
 </div>
+
+<!-- View Project Modal view -->
+<div class="modal fade" id="viewProjectModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Project Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="viewProjectBody">
+        <!-- Project details will be injected here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script src="project.js"></script>
 

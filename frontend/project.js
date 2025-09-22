@@ -7,11 +7,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const navLinks = document.querySelectorAll(".nav-list .nav-link");
   navLinks.forEach((link) => {
     const linkPage = link.getAttribute("href").toLowerCase();
-    if (linkPage === currentPage) {
-      link.classList.add("active");
-    } else {
-      link.classList.remove("active");
-    }
+    link.classList.toggle("active", linkPage === currentPage);
   });
 
   // Sidebar Toggle (Mobile)
@@ -27,89 +23,114 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Global Variables
   // ===================
   const tableBody = document.querySelector(".table-data");
-  let allClients = []; // store all clients globally
+  let allProjects = []; // store all projects globally
 
   // ===================
   // Render Table
   // ===================
-  function renderTable(clients) {
+  function renderTable(projects) {
     tableBody.innerHTML = "";
 
-    clients.forEach((client, index) => {
+    projects.forEach((project, index) => {
       const row = `
         <tr>
           <td>${index + 1}</td>
-          <td>${client.company_name}</td>
-          <td>${client.person_name || "-"}</td>
-          <td>${client.contact_number || "-"}</td>
-          <td>${client.email || "-"}</td>
+          <td>${project.project_name || "-"}</td>
+          <td>${project.person_name || "-"}</td>
+          <td>${project.status || "-"}</td>
+          <td>${project.contact_number || "-"}</td>
+          <td>${project.email || "-"}</td>
           <td>
-            <button class="btn btn-sm me-1 view-btn" data-id="${client.id}">
+            <button class="btn btn-sm view-btn me-1" data-id="${project.id}">
               <img src="images/View.png" alt="View">
+            </button>
+            <button class="btn btn-sm edit-btn" data-id="${project.id}">
+              <img src="images/edit.png" alt="Edit">
             </button>
           </td>
         </tr>
       `;
       tableBody.insertAdjacentHTML("beforeend", row);
     });
+
+    initViewActions(); // re-init actions after rendering
+    initEditActions(); // re-init edit actions
   }
 
   // ===================
-  // Fetch Clients from API
+  // Fetch Projects from API
   // ===================
-  async function loadClients() {
+  async function loadProjects() {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/clients/");
-      if (!response.ok) throw new Error("Failed to fetch clients");
+      const response = await fetch("http://127.0.0.1:8000/api/projects/");
+      if (!response.ok) throw new Error("Failed to fetch projects");
 
-      allClients = await response.json(); // save globally
-      renderTable(allClients);
+      allProjects = await response.json();
+      renderTable(allProjects);
 
       initSearchAndPagination();
       initCategoryFilter();
-      initActions();
     } catch (err) {
-      console.error("Error loading clients:", err);
+      console.error("Error loading projects:", err);
     }
   }
 
   // ===================
   // View Button Action
   // ===================
-  function initActions() {
+  function initViewActions() {
     document.querySelectorAll(".view-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
-        const clientId = btn.getAttribute("data-id");
+        const projectId = btn.getAttribute("data-id");
 
         try {
-          const res = await fetch(`http://127.0.0.1:8000/api/clients/${clientId}/`);
-          if (!res.ok) throw new Error("Failed to fetch client details");
-          const client = await res.json();
+          const res = await fetch(`http://127.0.0.1:8000/api/projects/${projectId}/`);
+          if (!res.ok) throw new Error("Failed to fetch project details");
 
-          let html = `
-            <p><strong>Company:</strong> ${client.company_name}</p>
-            <p><strong>Industry:</strong> ${client.industry || "-"}</p>
-            <p><strong>Person:</strong> ${client.person_name || "-"}</p>
-            <p><strong>Contact:</strong> ${client.contact_number || "-"}</p>
-            <p><strong>Email:</strong> ${client.email || "-"}</p>
-            <p><strong>Website:</strong> ${client.website || "-"}</p>
-            <p><strong>Address:</strong> ${client.address || "-"}</p>
-            <p><strong>GST:</strong> ${client.gst || "-"}</p>
-            <p><strong>AMC:</strong> ${client.amc || "-"}</p>
-            <p><strong>AMC Price:</strong> ${client.amc_price || "-"}</p>
-            <p><strong>Domain:</strong> ${client.domain_name || "-"}</p>
-            <p><strong>Domain Charges:</strong> ${client.domain_charges || "-"}</p>
-            <p><strong>Server:</strong> ${client.server_details || "-"}</p>
-            <p><strong>Server Price:</strong> ${client.server_price || "-"}</p>
-            <p><strong>Maintenance:</strong> ${client.maintenance_value || "-"}</p>
-            <p><strong>Comments:</strong> ${client.comments || "-"}</p>
+          const project = await res.json();
+
+          const modalBody = `
+            <p><strong>Project Name:</strong> ${project.project_name || "-"}</p>
+            <p><strong>Person Name:</strong> ${project.person_name || "-"}</p>
+            <p><strong>Description:</strong> ${project.description || "-"}</p>
+            <p><strong>Server Name:</strong> ${project.server_name || "-"}</p>
+            <p><strong>Contact Number:</strong> ${project.contact_number || "-"}</p>
+            <p><strong>Email:</strong> ${project.email || "-"}</p>
+            <p><strong>Status:</strong> ${project.status || "-"}</p>
           `;
 
-          document.getElementById("viewClientBody").innerHTML = html;
-          new bootstrap.Modal(document.getElementById("viewClientModal")).show();
+          document.getElementById("viewProjectBody").innerHTML = modalBody;
+          new bootstrap.Modal(document.getElementById("viewProjectModal")).show();
         } catch (error) {
           console.error(error);
-          alert("Failed to load client details.");
+          alert("Failed to load project details.");
+        }
+      });
+    });
+  }
+
+  // ===================
+  // Edit Button Action
+  // ===================
+  function initEditActions() {
+    document.querySelectorAll(".edit-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const projectId = btn.getAttribute("data-id");
+
+        try {
+          const res = await fetch(`http://127.0.0.1:8000/api/projects/${projectId}/`);
+          if (!res.ok) throw new Error("Failed to fetch project details");
+
+          const project = await res.json();
+
+          // Store project data in localStorage or sessionStorage to prefill form
+          sessionStorage.setItem("editProject", JSON.stringify(project));
+
+          // Redirect to addproject.html for editing
+          window.location.href = "addproject.html";
+        } catch (error) {
+          console.error(error);
+          alert("Failed to load project for editing.");
         }
       });
     });
@@ -124,51 +145,37 @@ document.addEventListener("DOMContentLoaded", async () => {
     const resetBtn = document.querySelector(".custom-reset");
 
     function searchTable() {
-      const searchTerm = searchInput.value.toLowerCase().trim();
-
-      const filtered = allClients.filter((c) => {
-        return (
-          (c.company_name && c.company_name.toLowerCase().includes(searchTerm)) ||
-          (c.industry && c.industry.toLowerCase().includes(searchTerm)) ||
-          (c.person_name && c.person_name.toLowerCase().includes(searchTerm)) ||
-          (c.email && c.email.toLowerCase().includes(searchTerm))
-        );
-      });
-
+      const term = searchInput.value.toLowerCase().trim();
+      const filtered = allProjects.filter(p =>
+        (p.project_name && p.project_name.toLowerCase().includes(term)) ||
+        (p.person_name && p.person_name.toLowerCase().includes(term)) ||
+        (p.status && p.status.toLowerCase().includes(term)) ||
+        (p.email && p.email.toLowerCase().includes(term))
+      );
       renderTable(filtered);
-      initActions();
     }
 
     if (searchBtn) searchBtn.addEventListener("click", searchTable);
-    if (searchInput) {
-      searchInput.addEventListener("keyup", (e) => {
-        if (e.key === "Enter") searchTable();
-      });
-    }
+    if (searchInput) searchInput.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") searchTable();
+    });
+    if (resetBtn) resetBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      renderTable(allProjects);
+    });
 
-    if (resetBtn) {
-      resetBtn.addEventListener("click", () => {
-        searchInput.value = "";
-        renderTable(allClients);
-        initActions();
-      });
-    }
-
-    // Pagination --------------------------
+    // Pagination
     const pageInput = document.getElementById("pageInput");
     const paginationLinks = document.querySelectorAll(".pagination .page-link");
-
     let rowsPerPage = 5;
-    let currentPageNumber = 1;
+    let currentPage = 1;
 
     function paginate(page) {
       const rows = Array.from(document.querySelectorAll(".table-data tr"));
       const totalPages = Math.ceil(rows.length / rowsPerPage);
-
       if (page < 1) page = 1;
       if (page > totalPages) page = totalPages;
-
-      currentPageNumber = page;
+      currentPage = page;
 
       rows.forEach((row, index) => {
         row.style.display =
@@ -185,56 +192,45 @@ document.addEventListener("DOMContentLoaded", async () => {
         const val = parseInt(pageInput.value, 10);
         if (!isNaN(val) && val > 0) {
           rowsPerPage = val;
-          currentPageNumber = 1;
-          paginate(currentPageNumber);
+          currentPage = 1;
+          paginate(currentPage);
         }
       });
     }
 
-    paginationLinks.forEach((link) => {
+    paginationLinks.forEach(link => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
         const text = link.innerText.toLowerCase();
-
-        if (text === "previous") {
-          paginate(currentPageNumber - 1);
-        } else if (text === "next") {
-          paginate(currentPageNumber + 1);
-        } else {
+        if (text === "previous") paginate(currentPage - 1);
+        else if (text === "next") paginate(currentPage + 1);
+        else {
           const pageNum = parseInt(text, 10);
-          if (!isNaN(pageNum)) {
-            paginate(pageNum);
-          }
+          if (!isNaN(pageNum)) paginate(pageNum);
         }
       });
     });
   }
 
   // ===================
-  // Industry Category Filter
+  // Category Filter (Project Status)
   // ===================
   function initCategoryFilter() {
     const categoryBtn = document.querySelector(".custom-category");
     if (!categoryBtn) return;
 
-    const industries = [...new Set(allClients.map((c) => c.industry).filter(Boolean))];
+    const statuses = [...new Set(allProjects.map(p => p.status).filter(Boolean))];
 
     let dropdownHtml = `
       <ul class="dropdown-menu show" style="position:absolute; z-index:1000;">
-        <li><a class="dropdown-item category-option" data-industry="all">All Industries</a></li>
-        ${industries
-          .map(
-            (ind) =>
-              `<li><a class="dropdown-item category-option" data-industry="${ind}">${ind}</a></li>`
-          )
-          .join("")}
+        <li><a class="dropdown-item category-option" data-status="all">All Status</a></li>
+        ${statuses.map(s => `<li><a class="dropdown-item category-option" data-status="${s}">${s}</a></li>`).join("")}
       </ul>
     `;
 
     let dropdown;
     categoryBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-
       if (dropdown) {
         dropdown.remove();
         dropdown = null;
@@ -242,17 +238,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         categoryBtn.insertAdjacentHTML("afterend", dropdownHtml);
         dropdown = categoryBtn.nextElementSibling;
 
-        dropdown.querySelectorAll(".category-option").forEach((opt) => {
+        dropdown.querySelectorAll(".category-option").forEach(opt => {
           opt.addEventListener("click", () => {
-            const industry = opt.getAttribute("data-industry");
-
-            if (industry === "all") {
-              renderTable(allClients);
-            } else {
-              const filtered = allClients.filter((c) => c.industry === industry);
-              renderTable(filtered);
-            }
-            initActions();
+            const status = opt.getAttribute("data-status");
+            if (status === "all") renderTable(allProjects);
+            else renderTable(allProjects.filter(p => p.status === status));
             dropdown.remove();
             dropdown = null;
           });
@@ -268,10 +258,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  
-
   // ===================
-  // Load Clients
+  // Load Projects
   // ===================
-  await loadClients();
+  await loadProjects();
 });

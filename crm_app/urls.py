@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
-from .views import login_view, ClientViewSet, QuotationViewSet, EnquiryViewSet
+from .views import login_view, ClientViewSet, QuotationViewSet, EnquiryViewSet, ProjectViewSet  # ✅ Added
 from . import views
 
 # DRF router
@@ -8,6 +8,8 @@ router = routers.DefaultRouter()
 router.register(r'clients', ClientViewSet, basename='client')
 router.register(r'quotations', QuotationViewSet, basename='quotation')
 router.register(r'enquiries', EnquiryViewSet, basename='enquiry')
+router.register(r'projects', ProjectViewSet, basename='project')  # ✅ Added
+
 
 
 urlpatterns = [

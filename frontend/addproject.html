@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">    
 <head>
@@ -84,35 +83,40 @@
       <div class="main-content p-3 bg-white shadow-sm rounded-3">
         <form>
           <div class="row g-3">
-            <!-- Row 1 (3 inputs) -->
-            <div class="col-lg-12 col-md-6">
+            <!-- Row 1 -->
+            <div class="col-lg-6 col-md-6">
                 <label for="ProjectName" class="form-label">Project Name <span class="text-danger">*</span></label>
                 <input type="text" class="form-control subtext" id="ProjectName" placeholder="Enter Project Name" required>
             </div>
+
+           <div class="col-lg-6 col-md-6">
+  <label for="PersonName" class="form-label">Person Name <span class="text-danger">*</span></label>
+  <input list="personList" class="form-control subtext" id="PersonName" placeholder="Type or select a name" required>
+  <datalist id="personList"></datalist>
+</div>
+
+
+
             <div class="col-lg-12 col-md-6">
-                <label for="description" class="form-label">Description</label>
-                <input type="text" class="form-control subtext" id="description" placeholder="Enter description">
-            </div>
-            <div class="col-lg-12 col-md-6">
-                <label for="Serverdescription" class="form-label">Server Description</label>
-                <input type="text" class="form-control subtext" id="Serverdescription" placeholder="Enter server description">
+                <label for="description" class="form-label">Project Description</label>
+                <input type="text" class="form-control subtext" id="description" placeholder="Enter project description">
             </div>
 
-            <!-- Row 2 (3 inputs) -->
+            <div class="col-lg-12 col-md-6">
+                <label for="ServerName" class="form-label">Server Name</label>
+                <input type="text" class="form-control subtext" id="ServerName" placeholder="Enter server name">
+            </div>
+
+            <!-- Row 2 -->
             <div class="col-lg-4 col-md-6">
-                <label for="Contact" class="form-label">Contact Number </label>
+                <label for="Contact" class="form-label">Contact Number</label>
                 <input type="text" class="form-control subtext" id="Contact" placeholder="Enter contact number">
             </div>
             <div class="col-lg-4 col-md-6">
                 <label for="Email" class="form-label">Email</label>
                 <input type="email" class="form-control subtext" id="Email" placeholder="Enter email">
             </div>
-            <div class="col-lg-4 col-md-6">
-                <label for="Personname" class="form-label">Person Name</label>
-                <input type="text" class="form-control subtext" id="Personname" placeholder="Enter Person name">
-            </div>
 
-            <!-- From here only 2 per row -->
             <div class="col-lg-6 col-md-6">
                 <label for="projectstatus" class="form-label">Project Status</label>
                 <select class="form-select subtext" id="projectstatus">
@@ -122,7 +126,6 @@
                     <option value="Completed">Completed</option>
                 </select>
             </div>
-
 
             <!-- Buttons -->
             <div class="col-12 d-flex justify-content-start mt-3">
@@ -137,6 +140,5 @@
 
 <!-- External JS -->
 <script src="addproject.js"></script>
-
 </body>
 </html>

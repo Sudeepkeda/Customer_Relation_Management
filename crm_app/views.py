@@ -14,6 +14,8 @@ from .serializers import QuotationSerializer
 from django.utils.timezone import now
 from .serializers import EnquirySerializer
 from .models import Enquiry
+from .models import Project
+from .serializers import ProjectSerializer
 
 @csrf_exempt
 def login_view(request):
@@ -119,6 +121,12 @@ def add_enquiry(request):
         return redirect("enquiry")  # redirect to enquiry list page
 
     return render(request, "addenquiry.html")
+
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.all().order_by("-id")  # newest first
+    serializer_class = ProjectSerializer
+
 
 
 def dashboard(request):
