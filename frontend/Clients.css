@@ -145,6 +145,15 @@ body {
   overflow: hidden;
 }
 
+
+/* for url or long text to break nicely */
+.table th:nth-child(7),
+.table td:nth-child(7) {
+  white-space: normal; 
+  word-break: break-word;
+  max-width: 150px;
+}
+
 .table th,
 .table td {
   border: none !important; /* removes all borders */
@@ -154,6 +163,7 @@ body {
   font-size: 12px;
   font-style: bold;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .table-data{

@@ -25,7 +25,6 @@ body {
 .content-wrapper {
   margin-left: 0;
   width: 100%;
-  transition: margin-left 0.3s ease;
 }
 
 /* Large screens */
@@ -38,6 +37,8 @@ body {
     width: calc(100% - 265px);
   }
 }
+
+
 
 /* Nav links */
 .nav-list .nav-link {
@@ -91,6 +92,9 @@ body {
   border: none;
   background: none;
   cursor: pointer;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+
 }
 
 /* Main Content */
@@ -141,6 +145,14 @@ body {
   overflow: hidden;
 }
 
+/* for url or long text to break nicely */
+.table th:nth-child(7),
+.table td:nth-child(7) {
+  white-space: normal; 
+  word-break: break-word;
+  max-width: 150px;
+}
+
 .table th,
 .table td {
   border: none !important; /* removes all borders */
@@ -150,6 +162,7 @@ body {
   font-size: 12px;
   font-style: bold;
   font-weight: 700;
+   white-space: nowrap;
 }
 
 .table-data{
@@ -189,6 +202,8 @@ body {
     margin-right: 10px !important; /* keep it even */
   }
 }
+
+
 
 /* Table responsive scroll only on small devices */
 @media (max-width: 576px) {

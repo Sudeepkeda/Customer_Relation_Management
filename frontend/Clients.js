@@ -33,6 +33,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!response.ok) throw new Error("Failed to fetch clients");
 
       allClients = await response.json();
+
+      // ✅ Sort so latest (highest id) comes first
+      allClients.sort((a, b) => b.id - a.id);
+
       renderTable(allClients);
 
       initActions();
@@ -81,6 +85,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (!res.ok) throw new Error("Failed to fetch client details");
           const client = await res.json();
 
+          // ✅ Show all fields
           let html = `
             <p><strong>Company:</strong> ${client.company_name}</p>
             <p><strong>Industry:</strong> ${client.industry || "-"}</p>
@@ -94,10 +99,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             <p><strong>AMC Price:</strong> ${client.amc_price || "-"}</p>
             <p><strong>Domain:</strong> ${client.domain_name || "-"}</p>
             <p><strong>Domain Charges:</strong> ${client.domain_charges || "-"}</p>
-            <p><strong>Server:</strong> ${client.server_details || "-"}</p>
+            <p><strong>Domain Start Date:</strong> ${client.domain_start_date || "-"}</p>
+            <p><strong>Domain End Date:</strong> ${client.domain_end_date || "-"}</p>
+            <p><strong>Server Details:</strong> ${client.server_details || "-"}</p>
             <p><strong>Server Price:</strong> ${client.server_price || "-"}</p>
-            <p><strong>Maintenance:</strong> ${client.maintenance_value || "-"}</p>
+            <p><strong>Server Start Date:</strong> ${client.server_start_date || "-"}</p>
+            <p><strong>Server End Date:</strong> ${client.server_end_date || "-"}</p>
+            <p><strong>Maintenance Value:</strong> ${client.maintenance_value || "-"}</p>
+            <p><strong>Maintenance Start Date:</strong> ${client.maintenance_start_date || "-"}</p>
+            <p><strong>Maintenance End Date:</strong> ${client.maintenance_end_date || "-"}</p>
             <p><strong>Comments:</strong> ${client.comments || "-"}</p>
+            <p><strong>Priority:</strong> ${client.priority || "-"}</p>
+            <p><strong>Status:</strong> ${client.status || "-"}</p>
           `;
 
           document.getElementById("viewClientBody").innerHTML = html;
@@ -119,100 +132,97 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
- // Search + Pagination
-function initSearchAndPagination() {
-  const searchInput = document.querySelector(".search-div input");
-  const searchBtn = document.querySelector(".custom-search");
-  const resetBtn = document.querySelector(".custom-reset");
+  // Search + Pagination
+  function initSearchAndPagination() {
+    const searchInput = document.querySelector(".search-div input");
+    const searchBtn = document.querySelector(".custom-search");
+    const resetBtn = document.querySelector(".custom-reset");
 
-  function searchTable() {
-    const searchTerm = searchInput.value.toLowerCase().trim();
+    function searchTable() {
+      const searchTerm = searchInput.value.toLowerCase().trim();
 
-    // filter by industry, company, person name, or email
-    const filtered = allClients.filter(c => {
-      return (
-        (c.company_name && c.company_name.toLowerCase().includes(searchTerm)) ||
-        (c.industry && c.industry.toLowerCase().includes(searchTerm)) ||
-        (c.person_name && c.person_name.toLowerCase().includes(searchTerm)) ||
-        (c.email && c.email.toLowerCase().includes(searchTerm))
-      );
-    });
+      // filter by industry, company, person name, or email
+      const filtered = allClients.filter((c) => {
+        return (
+          (c.company_name && c.company_name.toLowerCase().includes(searchTerm)) ||
+          (c.industry && c.industry.toLowerCase().includes(searchTerm)) ||
+          (c.person_name && c.person_name.toLowerCase().includes(searchTerm)) ||
+          (c.email && c.email.toLowerCase().includes(searchTerm))
+        );
+      });
 
-    renderTable(filtered);
-    initActions();
-  }
-
-  if (searchBtn) searchBtn.addEventListener("click", searchTable);
-  if (searchInput) {
-    searchInput.addEventListener("keyup", (e) => {
-      if (e.key === "Enter") searchTable();
-    });
-  }
-
-  if (resetBtn) {
-    resetBtn.addEventListener("click", () => {
-      searchInput.value = "";
-      renderTable(allClients);
+      renderTable(filtered);
       initActions();
-    });
-  }
+    }
 
-  // Pagination (kept same as before) --------------------------
-  const pageInput = document.getElementById("pageInput");
-  const paginationLinks = document.querySelectorAll(".pagination .page-link");
+    if (searchBtn) searchBtn.addEventListener("click", searchTable);
+    if (searchInput) {
+      searchInput.addEventListener("keyup", (e) => {
+        if (e.key === "Enter") searchTable();
+      });
+    }
 
-  let rowsPerPage = 5;
-  let currentPageNumber = 1;
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        renderTable(allClients);
+        initActions();
+      });
+    }
 
-  function paginate(page) {
-    const rows = Array.from(document.querySelectorAll(".table-data tr"));
-    const totalPages = Math.ceil(rows.length / rowsPerPage);
+    // Pagination --------------------------
+    const pageInput = document.getElementById("pageInput");
+    const paginationLinks = document.querySelectorAll(".pagination .page-link");
 
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
+    let rowsPerPage = 5;
+    let currentPageNumber = 1;
 
-    currentPageNumber = page;
+    function paginate(page) {
+      const rows = Array.from(document.querySelectorAll(".table-data tr"));
+      const totalPages = Math.ceil(rows.length / rowsPerPage);
 
-    rows.forEach((row, index) => {
-      row.style.display =
-        index >= (page - 1) * rowsPerPage && index < page * rowsPerPage
-          ? ""
-          : "none";
-    });
-  }
+      if (page < 1) page = 1;
+      if (page > totalPages) page = totalPages;
 
-  paginate(1);
+      currentPageNumber = page;
 
-  if (pageInput) {
-    pageInput.addEventListener("change", () => {
-      const val = parseInt(pageInput.value, 10);
-      if (!isNaN(val) && val > 0) {
-        rowsPerPage = val;
-        currentPageNumber = 1;
-        paginate(currentPageNumber);
-      }
-    });
-  }
+      rows.forEach((row, index) => {
+        row.style.display =
+          index >= (page - 1) * rowsPerPage && index < page * rowsPerPage ? "" : "none";
+      });
+    }
 
-  paginationLinks.forEach((link) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      const text = link.innerText.toLowerCase();
+    paginate(1);
 
-      if (text === "previous") {
-        paginate(currentPageNumber - 1);
-      } else if (text === "next") {
-        paginate(currentPageNumber + 1);
-      } else {
-        const pageNum = parseInt(text, 10);
-        if (!isNaN(pageNum)) {
-          paginate(pageNum);
+    if (pageInput) {
+      pageInput.addEventListener("change", () => {
+        const val = parseInt(pageInput.value, 10);
+        if (!isNaN(val) && val > 0) {
+          rowsPerPage = val;
+          currentPageNumber = 1;
+          paginate(currentPageNumber);
         }
-      }
-    });
-  });
-}
+      });
+    }
 
+    paginationLinks.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const text = link.innerText.toLowerCase();
+
+        if (text === "previous") {
+          paginate(currentPageNumber - 1);
+        } else if (text === "next") {
+          paginate(currentPageNumber + 1);
+        } else {
+          const pageNum = parseInt(text, 10);
+          if (!isNaN(pageNum)) {
+            paginate(pageNum);
+          }
+        }
+      });
+    });
+  }
 
   // ✅ Industry Category Filter
   function initCategoryFilter() {
@@ -220,13 +230,18 @@ function initSearchAndPagination() {
     if (!categoryBtn) return;
 
     // collect unique industries
-    const industries = [...new Set(allClients.map(c => c.industry).filter(Boolean))];
+    const industries = [...new Set(allClients.map((c) => c.industry).filter(Boolean))];
 
     // build dropdown
     let dropdownHtml = `
       <ul class="dropdown-menu show" style="position:absolute; z-index:1000;">
         <li><a class="dropdown-item category-option" data-industry="all">All Industries</a></li>
-        ${industries.map(ind => `<li><a class="dropdown-item category-option" data-industry="${ind}">${ind}</a></li>`).join("")}
+        ${industries
+          .map(
+            (ind) =>
+              `<li><a class="dropdown-item category-option" data-industry="${ind}">${ind}</a></li>`
+          )
+          .join("")}
       </ul>
     `;
 
@@ -243,14 +258,14 @@ function initSearchAndPagination() {
         dropdown = categoryBtn.nextElementSibling;
 
         // handle clicks
-        dropdown.querySelectorAll(".category-option").forEach(opt => {
+        dropdown.querySelectorAll(".category-option").forEach((opt) => {
           opt.addEventListener("click", () => {
             const industry = opt.getAttribute("data-industry");
 
             if (industry === "all") {
               renderTable(allClients);
             } else {
-              const filtered = allClients.filter(c => c.industry === industry);
+              const filtered = allClients.filter((c) => c.industry === industry);
               renderTable(filtered);
             }
             initActions();
