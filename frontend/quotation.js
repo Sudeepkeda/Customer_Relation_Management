@@ -33,7 +33,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       const response = await fetch("http://127.0.0.1:8000/api/quotations/");
       if (!response.ok) throw new Error("Failed to fetch quotations");
 
-      const quotations = await response.json();
+      let quotations = await response.json();
+
+      // sort newest first by id
+      quotations.sort((a, b) => b.id - a.id);
+
       tableBody.innerHTML = "";
 
       quotations.forEach((quotation, index) => {
@@ -46,16 +50,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             <td>${quotation.description || "-"}</td>
             <td>₹${quotation.price ? Number(quotation.price).toFixed(2) : "0.00"}</td>
             <td>
-              <button class="btn btn-sm me-1"><img src="images/View.png" alt="View"></button>
-              <button class="btn btn-sm"><img src="images/Edit.png" alt="Edit"></button>
-              <button class="btn btn-sm "><img src="images/send.png" alt="send"></button>
+              <button class="btn btn-sm me-1 btn-view" data-id="${quotation.id}">
+                <img src="images/View.png" alt="View">
+              </button>
+              <button class="btn btn-sm btn-edit" data-id="${quotation.id}">
+                <img src="images/Edit.png" alt="Edit">
+              </button>
+              <button class="btn btn-sm btn-send" data-id="${quotation.id}">
+                <img src="images/send.png" alt="Send">
+              </button>
             </td>
           </tr>
         `;
-
         tableBody.insertAdjacentHTML("beforeend", row);
       });
 
+      initActions();
       initSearchAndPagination();
     } catch (err) {
       console.error("Error loading quotations:", err);
@@ -64,43 +74,70 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await loadQuotations();
 
+  // ===================
+  // Action Buttons
+  // ===================
+  function initActions() {
+    // View
+    document.querySelectorAll(".btn-view").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-id");
+        try {
+          const res = await fetch(`http://127.0.0.1:8000/api/quotations/${id}/`);
+          if (!res.ok) throw new Error("Failed to fetch details");
+          const q = await res.json();
+
+          document.getElementById("viewModalBody").innerHTML = `
+            <p><strong>Quotation Number:</strong> ${q.quotation_number || "-"}</p>
+            <p><strong>Date:</strong> ${q.quotation_date || "-"}</p>
+            <p><strong>Company Name:</strong> ${q.company_name || "-"}</p>
+            <p><strong>Description:</strong> ${q.description || "-"}</p>
+            <p><strong>Price:</strong> ₹${q.price ? Number(q.price).toFixed(2) : "0.00"}</p>
+            <p><strong>Services:</strong></p>
+            <ul>
+              ${(q.services || []).map((s) => `<li><strong>${s.type}</strong>: ${s.content}</li>`).join("")}
+            </ul>
+          `;
+
+          const modal = new bootstrap.Modal(document.getElementById("viewModal"));
+          modal.show();
+        } catch (err) {
+          console.error("View failed:", err);
+        }
+      });
+    });
+
+    // Edit
+    document.querySelectorAll(".btn-edit").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        window.location.href = `addquotation.html?id=${id}`;
+      });
+    });
+
+    // Send
+    document.querySelectorAll(".btn-send").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        alert("Send feature not implemented yet.");
+      });
+    });
+  }
+
+  // ===================
+  // Search + Pagination (simple demo)
+  // ===================
   function initSearchAndPagination() {
     const searchInput = document.querySelector(".search-div input");
     const searchBtn = document.querySelector(".custom-search");
     const resetBtn = document.querySelector(".custom-reset");
 
-    function searchTable() {
-      const searchTerm = searchInput.value.toLowerCase().trim();
-
-      const filtered = allClients.filter((c) => {
-        return (
-          (c.company_name && c.company_name.toLowerCase().includes(searchTerm)) ||
-          (c.industry && c.industry.toLowerCase().includes(searchTerm)) ||
-          (c.person_name && c.person_name.toLowerCase().includes(searchTerm)) ||
-          (c.email && c.email.toLowerCase().includes(searchTerm))
-        );
-      });
-
-      renderTable(filtered);
-      initActions();
+    if (searchBtn) {
+      searchBtn.addEventListener("click", () => alert("Search not implemented yet."));
     }
-
-    if (searchBtn) searchBtn.addEventListener("click", searchTable);
-    if (searchInput) {
-      searchInput.addEventListener("keyup", (e) => {
-        if (e.key === "Enter") searchTable();
-      });
-    }
-
     if (resetBtn) {
-      resetBtn.addEventListener("click", () => {
-        searchInput.value = "";
-        renderTable(allClients);
-        initActions();
-      });
+      resetBtn.addEventListener("click", () => alert("Reset not implemented yet."));
     }
 
-    // Pagination --------------------------
     const pageInput = document.getElementById("pageInput");
     const paginationLinks = document.querySelectorAll(".pagination .page-link");
 
@@ -118,9 +155,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       rows.forEach((row, index) => {
         row.style.display =
-          index >= (page - 1) * rowsPerPage && index < page * rowsPerPage
-            ? ""
-            : "none";
+          index >= (page - 1) * rowsPerPage && index < page * rowsPerPage ? "" : "none";
       });
     }
 
@@ -153,74 +188,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         }
       });
-    });
-  }
-
-  // ===================
-  // Industry Category Filter
-  // ===================
-  function initCategoryFilter() {
-    const categoryBtn = document.querySelector(".custom-category");
-    if (!categoryBtn) return;
-
-    const industries = [...new Set(allClients.map((c) => c.industry).filter(Boolean))];
-
-    let dropdownHtml = `
-      <ul class="dropdown-menu show" style="position:absolute; z-index:1000;">
-        <li><a class="dropdown-item category-option" data-industry="all">All Industries</a></li>
-        ${industries
-          .map(
-            (ind) =>
-              `<li><a class="dropdown-item category-option" data-industry="${ind}">${ind}</a></li>`
-          )
-          .join("")}
-      </ul>
-    `;
-
-    let dropdown;
-    categoryBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-
-      if (dropdown) {
-        dropdown.remove();
-        dropdown = null;
-      } else {
-        categoryBtn.insertAdjacentHTML("afterend", dropdownHtml);
-        dropdown = categoryBtn.nextElementSibling;
-
-        dropdown.querySelectorAll(".category-option").forEach((opt) => {
-          opt.addEventListener("click", () => {
-            const industry = opt.getAttribute("data-industry");
-
-            if (industry === "all") {
-              renderTable(allClients);
-            } else {
-              const filtered = allClients.filter((c) => c.industry === industry);
-              renderTable(filtered);
-            }
-            initActions();
-            dropdown.remove();
-            dropdown = null;
-          });
-        });
-      }
-    });
-
-    document.addEventListener("click", () => {
-      if (dropdown) {
-        dropdown.remove();
-        dropdown = null;
-      }
-    });
-  }
-  
-  // ===================
-  // Add quotation Button
-  // ===================
-  const addQuotationBtn = document.querySelector(".custombtn");
-  if (addQuotationBtn) {
-    addQuotationBtn.addEventListener("click", () => {
-      window.location.href = "addquotation.html";
     });
   }
 });

@@ -7,12 +7,22 @@ const serviceSummaryRow = document.getElementById("serviceSummaryRow");
 const servicesSummary = document.getElementById("servicesSummary");
 
 let editorInstance = null;
-let servicesArray = []; // Store multiple services
+let servicesArray = [];
 let currentServiceType = null;
+let editId = null; // <-- to detect edit mode
 
 // Initialize after DOM loaded
-document.addEventListener("DOMContentLoaded", () => {
-  loadCompanies();
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadCompanies();
+
+  // Check for edit mode (get ?id=123 from URL)
+  const urlParams = new URLSearchParams(window.location.search);
+  editId = urlParams.get("id");
+
+  if (editId) {
+    loadQuotationForEdit(editId);
+  }
+
   servicesDropdown.addEventListener("change", handleServiceChange);
   document.getElementById("quotationForm").addEventListener("submit", handleFormSubmit);
 });
@@ -54,15 +64,42 @@ function handleCompanyChange() {
   document.getElementById("Address").value = selected.dataset.address || "";
 }
 
+// Load quotation data for editing
+async function loadQuotationForEdit(id) {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/quotations/${id}/`);
+    if (!res.ok) throw new Error("Failed to fetch quotation for edit");
+    const q = await res.json();
+
+    // Fill company dropdown
+    companyDropdown.value = q.company_id || "";
+    handleCompanyChange.call(companyDropdown);
+
+    // Fill other fields
+    document.getElementById("industry").value = q.industry || "";
+    document.getElementById("personName").value = q.person_name || "";
+    document.getElementById("Contact").value = q.contact || "";
+    document.getElementById("Email").value = q.email || "";
+    document.getElementById("Website").value = q.website || "";
+    document.getElementById("Address").value = q.address || "";
+    document.getElementById("Description").value = q.description || "";
+    document.getElementById("Price").value = q.price || "";
+
+    // Load services into array + summary
+    servicesArray = q.services || [];
+    updateSummaryUI();
+  } catch (err) {
+    console.error("Error loading quotation for edit:", err);
+  }
+}
+
 // Handle service dropdown changes
 function handleServiceChange() {
   const newType = this.value;
 
-  // Save previous service if editor had content
   if (currentServiceType && editorInstance) {
     const content = editorInstance.getData().trim();
     if (content) {
-      // Check if already exists -> update instead of duplicate
       const existing = servicesArray.find(s => s.type === currentServiceType);
       if (existing) {
         existing.content = content;
@@ -73,13 +110,11 @@ function handleServiceChange() {
     }
   }
 
-  // Reset editor for new selection
   if (newType) {
     editorLabel.textContent = this.options[this.selectedIndex].text;
     editorRow.style.display = "block";
     currentServiceType = newType;
 
-    // Initialize CKEditor if not already
     if (!editorInstance) {
       editorInstance = CKEDITOR.replace("editor", {
         height: 300,
@@ -94,7 +129,6 @@ function handleServiceChange() {
       });
     }
 
-    // Load existing content if already saved
     const existingService = servicesArray.find(s => s.type === newType);
     editorInstance.setData(existingService ? existingService.content : "");
   } else {
@@ -120,7 +154,6 @@ async function handleFormSubmit(e) {
   e.preventDefault();
   if (!companyDropdown.value) { alert("Please select a company."); return; }
 
-  // Save the last active editor content
   if (currentServiceType && editorInstance) {
     const content = editorInstance.getData().trim();
     if (content) {
@@ -151,19 +184,25 @@ async function handleFormSubmit(e) {
     address: document.getElementById("Address").value,
     description: document.getElementById("Description").value,
     price: Number(document.getElementById("Price").value) || 0,
-    services: servicesArray   // <--- all services collected
+    services: servicesArray
   };
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/api/quotations/", {
-      method: "POST",
+    const url = editId 
+      ? `http://127.0.0.1:8000/api/quotations/${editId}/` 
+      : "http://127.0.0.1:8000/api/quotations/";
+
+    const method = editId ? "PUT" : "POST";
+
+    const response = await fetch(url, {
+      method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
 
     if (response.ok) {
       const result = await response.json();
-      alert(`Quotation saved! Number: ${result.quotation_number}`);
+      alert(`Quotation ${editId ? "updated" : "saved"}! Number: ${result.quotation_number}`);
       window.location.href = "quotation.html";
     } else {
       const errorText = await response.text();
