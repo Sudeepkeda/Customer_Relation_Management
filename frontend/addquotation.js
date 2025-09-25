@@ -83,9 +83,6 @@ function handleCompanyChange() {
 // ===================
 // Load quotation data for editing
 // ===================
-// ===================
-// Load quotation data for editing
-// ===================
 async function loadQuotationForEdit(id) {
   try {
     const res = await fetch(`http://127.0.0.1:8000/api/quotations/${id}/`);
@@ -93,9 +90,9 @@ async function loadQuotationForEdit(id) {
     const q = await res.json();
 
     // Load companies and pre-select
-    await loadCompanies(q.company_id);
+    await loadCompanies(q.client); // client field from backend
 
-    // ✅ Directly populate readonly fields
+    //  Directly populate readonly fields
     document.getElementById("industry").value = q.industry || "";
     document.getElementById("personName").value = q.person_name || "";
     document.getElementById("Contact").value = q.contact || "";
@@ -119,7 +116,6 @@ async function loadQuotationForEdit(id) {
     console.error("Error loading quotation for edit:", err);
   }
 }
-
 
 // ===================
 // Handle service dropdown changes
@@ -188,6 +184,7 @@ async function handleFormSubmit(e) {
   e.preventDefault();
   if (!companyDropdown.value) { alert("Please select a company."); return; }
 
+  // Save current editor content
   if (currentServiceType && editorInstance) {
     const content = editorInstance.getData().trim();
     if (content) {
@@ -207,15 +204,9 @@ async function handleFormSubmit(e) {
   }
 
   const selectedCompany = companyDropdown.options[companyDropdown.selectedIndex];
+
   const data = {
-    company_id: selectedCompany.value,
-    company_name: selectedCompany.textContent,
-    industry: document.getElementById("industry").value,
-    person_name: document.getElementById("personName").value,
-    contact: document.getElementById("Contact").value,
-    email: document.getElementById("Email").value,
-    website: document.getElementById("Website").value,
-    address: document.getElementById("Address").value,
+    client_id: selectedCompany.value, // <-- must match serializer field
     description: document.getElementById("Description").value,
     price: Number(document.getElementById("Price").value) || 0,
     services: servicesArray

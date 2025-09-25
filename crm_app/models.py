@@ -48,10 +48,10 @@ class Quotation(models.Model):
     quotation_number = models.CharField(max_length=50, unique=True, editable=False)
     quotation_date = models.DateField(auto_now_add=True)
 
-    # ✅ ForeignKey to Client
-    client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True,blank=True, related_name="quotations")
+    # ✅ Enforce that every quotation must belong to a client
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=False, blank=False, related_name="quotations")
 
-    # ✅ Snapshot fields
+    # ✅ Snapshot fields (copied from Client at creation time)
     company_name = models.CharField(max_length=200)
     industry = models.CharField(max_length=200, blank=True, null=True)
     person_name = models.CharField(max_length=200, blank=True, null=True)
@@ -77,6 +77,7 @@ class Quotation(models.Model):
 
     def __str__(self):
         return self.quotation_number
+
     
 class Enquiry(models.Model):
     company_name = models.CharField(max_length=255)
