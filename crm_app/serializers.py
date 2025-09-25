@@ -11,10 +11,11 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class QuotationSerializer(serializers.ModelSerializer):
+    company_id = serializers.IntegerField(source="client.id", required=False)
+
     class Meta:
         model = Quotation
         fields = "__all__"
-        read_only_fields = ("quotation_number", "quotation_date")  
 
 
 class EnquirySerializer(serializers.ModelSerializer):

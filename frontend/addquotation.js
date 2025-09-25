@@ -1,4 +1,6 @@
+// ===================
 // DOM Elements
+// ===================
 const companyDropdown = document.getElementById("companyName");
 const servicesDropdown = document.getElementById("services");
 const editorRow = document.getElementById("editorRow");
@@ -11,24 +13,30 @@ let servicesArray = [];
 let currentServiceType = null;
 let editId = null; // <-- to detect edit mode
 
+// ===================
 // Initialize after DOM loaded
+// ===================
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadCompanies();
-
-  // Check for edit mode (get ?id=123 from URL)
+  // Check for edit mode (?id=123)
   const urlParams = new URLSearchParams(window.location.search);
   editId = urlParams.get("id");
 
   if (editId) {
-    loadQuotationForEdit(editId);
+    // Editing → load quotation first, then companies with preselect
+    await loadQuotationForEdit(editId);
+  } else {
+    // Adding → just load companies
+    await loadCompanies();
   }
 
   servicesDropdown.addEventListener("change", handleServiceChange);
   document.getElementById("quotationForm").addEventListener("submit", handleFormSubmit);
 });
 
+// ===================
 // Load companies from API
-async function loadCompanies() {
+// ===================
+async function loadCompanies(selectedCompanyId = null) {
   try {
     const response = await fetch("http://127.0.0.1:8000/api/clients/");
     const companies = await response.json();
@@ -47,13 +55,21 @@ async function loadCompanies() {
       companyDropdown.appendChild(option);
     });
 
+    // ✅ Only pre-select when editing
+    if (selectedCompanyId) {
+      companyDropdown.value = String(selectedCompanyId);
+      handleCompanyChange.call(companyDropdown);
+    }
+
     companyDropdown.addEventListener("change", handleCompanyChange);
   } catch (error) {
     console.error("Error loading companies:", error);
   }
 }
 
+// ===================
 // Populate fields when company changes
+// ===================
 function handleCompanyChange() {
   const selected = this.options[this.selectedIndex];
   document.getElementById("industry").value = selected.dataset.industry || "";
@@ -64,36 +80,50 @@ function handleCompanyChange() {
   document.getElementById("Address").value = selected.dataset.address || "";
 }
 
+// ===================
 // Load quotation data for editing
+// ===================
+// ===================
+// Load quotation data for editing
+// ===================
 async function loadQuotationForEdit(id) {
   try {
     const res = await fetch(`http://127.0.0.1:8000/api/quotations/${id}/`);
     if (!res.ok) throw new Error("Failed to fetch quotation for edit");
     const q = await res.json();
 
-    // Fill company dropdown
-    companyDropdown.value = q.company_id || "";
-    handleCompanyChange.call(companyDropdown);
+    // Load companies and pre-select
+    await loadCompanies(q.company_id);
 
-    // Fill other fields
+    // ✅ Directly populate readonly fields
     document.getElementById("industry").value = q.industry || "";
     document.getElementById("personName").value = q.person_name || "";
     document.getElementById("Contact").value = q.contact || "";
     document.getElementById("Email").value = q.email || "";
     document.getElementById("Website").value = q.website || "";
     document.getElementById("Address").value = q.address || "";
+
+    // Fill editable fields
     document.getElementById("Description").value = q.description || "";
     document.getElementById("Price").value = q.price || "";
 
     // Load services into array + summary
     servicesArray = q.services || [];
     updateSummaryUI();
+
+    if (servicesArray.length > 0) {
+      servicesDropdown.value = servicesArray[0].type;
+      handleServiceChange.call(servicesDropdown);
+    }
   } catch (err) {
     console.error("Error loading quotation for edit:", err);
   }
 }
 
+
+// ===================
 // Handle service dropdown changes
+// ===================
 function handleServiceChange() {
   const newType = this.value;
 
@@ -137,7 +167,9 @@ function handleServiceChange() {
   }
 }
 
+// ===================
 // Update Service Summary list
+// ===================
 function updateSummaryUI() {
   servicesSummary.innerHTML = "";
   servicesArray.forEach(s => {
@@ -149,7 +181,9 @@ function updateSummaryUI() {
   serviceSummaryRow.style.display = servicesArray.length > 0 ? "block" : "none";
 }
 
+// ===================
 // Form submission
+// ===================
 async function handleFormSubmit(e) {
   e.preventDefault();
   if (!companyDropdown.value) { alert("Please select a company."); return; }

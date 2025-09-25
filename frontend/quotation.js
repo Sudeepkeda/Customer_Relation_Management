@@ -91,11 +91,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             <p><strong>Quotation Number:</strong> ${q.quotation_number || "-"}</p>
             <p><strong>Date:</strong> ${q.quotation_date || "-"}</p>
             <p><strong>Company Name:</strong> ${q.company_name || "-"}</p>
+            <p><strong>Person Name:</strong> ${q.person_name || "-"}</p>
             <p><strong>Description:</strong> ${q.description || "-"}</p>
             <p><strong>Price:</strong> ₹${q.price ? Number(q.price).toFixed(2) : "0.00"}</p>
             <p><strong>Services:</strong></p>
             <ul>
-              ${(q.services || []).map((s) => `<li><strong>${s.type}</strong>: ${s.content}</li>`).join("")}
+              ${(q.services || [])
+                .map((s) => `<li><strong>${s.type}</strong>: ${s.content}</li>`)
+                .join("")}
             </ul>
           `;
 
@@ -111,6 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.querySelectorAll(".btn-edit").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-id");
+        // ✅ Redirect with ?id= so addquotation.js loads in edit mode
         window.location.href = `addquotation.html?id=${id}`;
       });
     });

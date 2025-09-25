@@ -75,8 +75,9 @@ class ClientViewSet(viewsets.ModelViewSet):
 
 
 class QuotationViewSet(viewsets.ModelViewSet):
-    queryset = Quotation.objects.all().order_by("-quotation_date","quotation_number")
+    queryset = Quotation.objects.all().order_by("-id")
     serializer_class = QuotationSerializer
+
 
     def perform_create(self, serializer):
         """Auto-set quotation_date and generate quotation_number"""
