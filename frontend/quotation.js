@@ -88,19 +88,23 @@ document.addEventListener("DOMContentLoaded", async () => {
           const q = await res.json();
 
           document.getElementById("viewModalBody").innerHTML = `
-            <p><strong>Quotation Number:</strong> ${q.quotation_number || "-"}</p>
-            <p><strong>Date:</strong> ${q.quotation_date || "-"}</p>
-            <p><strong>Company Name:</strong> ${q.company_name || "-"}</p>
-            <p><strong>Person Name:</strong> ${q.person_name || "-"}</p>
-            <p><strong>Description:</strong> ${q.description || "-"}</p>
-            <p><strong>Price:</strong> ₹${q.price ? Number(q.price).toFixed(2) : "0.00"}</p>
-            <p><strong>Services:</strong></p>
-            <ul>
-              ${(q.services || [])
-                .map((s) => `<li><strong>${s.type}</strong>: ${s.content}</li>`)
-                .join("")}
-            </ul>
-          `;
+  <p><strong>Quotation Number:</strong> ${q.quotation_number || "-"}</p>
+  <p><strong>Date:</strong> ${q.quotation_date || "-"}</p>
+  <p><strong>Company Name:</strong> ${q.company_name || "-"}</p>
+  <p><strong>Industry:</strong> ${q.industry || "-"}</p>
+  <p><strong>Person Name:</strong> ${q.person_name || "-"}</p>
+  <p><strong>Contact:</strong> ${q.contact || "-"}</p>
+  <p><strong>Email:</strong> ${q.email || "-"}</p>
+  <p><strong>Website:</strong> ${q.website || "-"}</p>
+  <p><strong>Address:</strong> ${q.address || "-"}</p>
+  <p><strong>Description:</strong> ${q.description || "-"}</p>
+  <p><strong>Price:</strong> ₹${q.price ? Number(q.price).toFixed(2) : "0.00"}</p>
+  <p><strong>Services:</strong></p>
+  <ul>
+    ${(q.services || []).map((s) => `<li><strong>${s.type}</strong>: ${s.content}</li>`).join("")}
+  </ul>
+`;
+
 
           const modal = new bootstrap.Modal(document.getElementById("viewModal"));
           modal.show();
