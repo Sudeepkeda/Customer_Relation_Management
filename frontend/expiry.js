@@ -80,6 +80,9 @@ function renderTable(clients) {
           <button class="btn btn-sm me-1 view-btn" data-id="${client.id}">
             <img src="images/View.png" alt="View">
           </button>
+          <button class="btn btn-sm btn-send" data-id="">
+                <img src="images/send.png" alt="Send">
+              </button>
         </td>
       </tr>
     `;
