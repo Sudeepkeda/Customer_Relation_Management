@@ -1,46 +1,159 @@
 // ===================
+// Expiry.js - Expired Clients Management
+// ===================
+
+let allClients = [];
+
+// ===================
 // Sidebar + Table + API Integration
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
   // Sidebar Active Menu Highlight
   const currentPage = window.location.pathname.split("/").pop().toLowerCase();
-  const navLinks = document.querySelectorAll(".nav-list .nav-link");
-  navLinks.forEach((link) => {
+  document.querySelectorAll(".nav-list .nav-link").forEach(link => {
     const linkPage = link.getAttribute("href").toLowerCase();
-    if (linkPage === currentPage) {
-      link.classList.add("active");
-    } else {
-      link.classList.remove("active");
-    }
+    link.classList.toggle("active", linkPage === currentPage);
   });
 
   // Sidebar Toggle (Mobile)
   const sidebar = document.getElementById("sidebar");
   const toggleBtn = document.getElementById("sidebarToggle");
   if (toggleBtn) {
-    toggleBtn.addEventListener("click", () => {
-      sidebar.classList.toggle("active");
-    });
+    toggleBtn.addEventListener("click", () => sidebar.classList.toggle("active"));
   }
 
-  // Search + Pagination
+  // Fetch Clients
+  try {
+    const res = await fetch("http://127.0.0.1:8000/api/clients/");
+    if (!res.ok) throw new Error("Failed to fetch clients");
+    allClients = await res.json();
+
+    // Filter clients with at least one expired service
+    const expiredClients = allClients.filter(c => getExpiredServices(c) !== "-");
+
+    renderTable(expiredClients);
+    initActions();
+    initSearchAndPagination();
+    initCategoryFilter();
+  } catch (err) {
+    console.error("Error loading clients:", err);
+  }
+});
+
+// ===================
+// Helpers
+// ===================
+function isExpiredDate(dateStr) {
+  if (!dateStr) return false;
+  const today = new Date().toISOString().split("T")[0];
+  return new Date(dateStr) < new Date(today);
+}
+
+function getExpiredServices(client) {
+  const expired = [];
+  if (isExpiredDate(client.domain_end_date)) expired.push("Domain");
+  if (isExpiredDate(client.server_end_date)) expired.push("Server");
+  if (isExpiredDate(client.maintenance_end_date)) expired.push("Maintenance");
+  return expired.length > 0 ? expired.join(", ") : "-";
+}
+
+// ===================
+// Render Table
+// ===================
+function renderTable(clients) {
+  const tableBody = document.querySelector(".table-data");
+  tableBody.innerHTML = "";
+
+  clients.forEach((client, index) => {
+    const expiredServices = getExpiredServices(client);
+    if (expiredServices === "-") return; // skip non-expired
+
+    const row = `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${client.company_name || "-"}</td>
+        <td>${client.email || "-"}</td>
+        <td>${client.contact_number || "-"}</td>
+        <td>${expiredServices}</td>
+        <td>${client.priority || "-"}</td>
+        <td>
+          <button class="btn btn-sm me-1 view-btn" data-id="${client.id}">
+            <img src="images/View.png" alt="View">
+          </button>
+        </td>
+      </tr>
+    `;
+    tableBody.insertAdjacentHTML("beforeend", row);
+  });
+
+  paginate(1); // reset pagination whenever table is re-rendered
+}
+
+// ===================
+// Actions (View Only)
+// ===================
+function initActions() {
+  document.querySelectorAll(".view-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      const res = await fetch(`http://127.0.0.1:8000/api/clients/${id}/`);
+      const client = await res.json();
+
+      const details = `
+        <p><strong>Company:</strong> ${client.company_name || "-"}</p>
+        <p><strong>Email:</strong> ${client.email || "-"}</p>
+        <p><strong>Contact:</strong> ${client.contact_number || "-"}</p>
+        <p><strong>Domain End:</strong> ${client.domain_end_date || "-"}</p>
+        <p><strong>Server End:</strong> ${client.server_end_date || "-"}</p>
+        <p><strong>Maintenance End:</strong> ${client.maintenance_end_date || "-"}</p>
+        <p><strong>Expired Services:</strong> ${getExpiredServices(client)}</p>
+      `;
+      document.getElementById("viewClientBody").innerHTML = details;
+      new bootstrap.Modal(document.getElementById("viewClientModal")).show();
+    });
+  });
+}
+
+// ===================
+// Search + Pagination (expired only)
+// ===================
+let rowsPerPage = 5;
+let currentPageNumber = 1;
+
+function paginate(page) {
+  const rows = Array.from(document.querySelectorAll(".table-data tr"));
+  const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+  if (page < 1) page = 1;
+  if (page > totalPages) page = totalPages;
+
+  currentPageNumber = page;
+
+  rows.forEach((row, index) => {
+    row.style.display =
+      index >= (page - 1) * rowsPerPage && index < page * rowsPerPage ? "" : "none";
+  });
+}
+
 function initSearchAndPagination() {
   const searchInput = document.querySelector(".search-div input");
   const searchBtn = document.querySelector(".custom-search");
   const resetBtn = document.querySelector(".custom-reset");
+  const pageInput = document.getElementById("pageInput");
+  const paginationLinks = document.querySelectorAll(".pagination .page-link");
 
   function searchTable() {
     const searchTerm = searchInput.value.toLowerCase().trim();
-
-    // filter by industry, company, person name, or email
-    const filtered = allClients.filter(c => {
-      return (
-        (c.company_name && c.company_name.toLowerCase().includes(searchTerm)) ||
-        (c.industry && c.industry.toLowerCase().includes(searchTerm)) ||
-        (c.person_name && c.person_name.toLowerCase().includes(searchTerm)) ||
-        (c.email && c.email.toLowerCase().includes(searchTerm))
-      );
-    });
+    const filtered = allClients
+      .filter(c => getExpiredServices(c) !== "-")
+      .filter(c => {
+        return (
+          (c.company_name && c.company_name.toLowerCase().includes(searchTerm)) ||
+          (c.industry && c.industry.toLowerCase().includes(searchTerm)) ||
+          (c.person_name && c.person_name.toLowerCase().includes(searchTerm)) ||
+          (c.email && c.email.toLowerCase().includes(searchTerm))
+        );
+      });
 
     renderTable(filtered);
     initActions();
@@ -48,44 +161,16 @@ function initSearchAndPagination() {
 
   if (searchBtn) searchBtn.addEventListener("click", searchTable);
   if (searchInput) {
-    searchInput.addEventListener("keyup", (e) => {
-      if (e.key === "Enter") searchTable();
-    });
+    searchInput.addEventListener("keyup", (e) => { if (e.key === "Enter") searchTable(); });
   }
 
   if (resetBtn) {
     resetBtn.addEventListener("click", () => {
       searchInput.value = "";
-      renderTable(allClients);
+      renderTable(allClients.filter(c => getExpiredServices(c) !== "-"));
       initActions();
     });
   }
-
-  // Pagination (kept same as before) --------------------------
-  const pageInput = document.getElementById("pageInput");
-  const paginationLinks = document.querySelectorAll(".pagination .page-link");
-
-  let rowsPerPage = 5;
-  let currentPageNumber = 1;
-
-  function paginate(page) {
-    const rows = Array.from(document.querySelectorAll(".table-data tr"));
-    const totalPages = Math.ceil(rows.length / rowsPerPage);
-
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-
-    currentPageNumber = page;
-
-    rows.forEach((row, index) => {
-      row.style.display =
-        index >= (page - 1) * rowsPerPage && index < page * rowsPerPage
-          ? ""
-          : "none";
-    });
-  }
-
-  paginate(1);
 
   if (pageInput) {
     pageInput.addEventListener("change", () => {
@@ -116,62 +201,57 @@ function initSearchAndPagination() {
     });
   });
 }
+// ===================
+// Category Filter (Expired Services Only)
+// ===================
+function initCategoryFilter() {
+  const categoryBtn = document.querySelector(".custom-category");
+  if (!categoryBtn) return;
 
+  const services = ["Domain", "Server", "Maintenance"];
 
-  // ✅ Industry Category Filter
-  function initCategoryFilter() {
-    const categoryBtn = document.querySelector(".custom-category");
-    if (!categoryBtn) return;
+  let dropdownHtml = `
+    <ul class="dropdown-menu show" style="position:absolute; z-index:1000;">
+      <li><a class="dropdown-item category-option" data-type="all">All Expired</a></li>
+      <li><hr class="dropdown-divider"></li>
+      ${services.map(s => `<li><a class="dropdown-item category-option" data-type="service" data-value="${s}">${s}</a></li>`).join("")}
+    </ul>
+  `;
 
-    // collect unique industries
-    const industries = [...new Set(allClients.map(c => c.industry).filter(Boolean))];
+  let dropdown;
+  categoryBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (dropdown) {
+      dropdown.remove();
+      dropdown = null;
+    } else {
+      categoryBtn.insertAdjacentHTML("afterend", dropdownHtml);
+      dropdown = categoryBtn.nextElementSibling;
 
-    // build dropdown
-    let dropdownHtml = `
-      <ul class="dropdown-menu show" style="position:absolute; z-index:1000;">
-        <li><a class="dropdown-item category-option" data-industry="all">All Industries</a></li>
-        ${industries.map(ind => `<li><a class="dropdown-item category-option" data-industry="${ind}">${ind}</a></li>`).join("")}
-      </ul>
-    `;
+      dropdown.querySelectorAll(".category-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+          const type = opt.getAttribute("data-type");
+          const value = opt.getAttribute("data-value");
 
-    let dropdown;
-    categoryBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
+          let filtered = allClients.filter(c => getExpiredServices(c) !== "-");
 
-      // toggle dropdown
-      if (dropdown) {
-        dropdown.remove();
-        dropdown = null;
-      } else {
-        categoryBtn.insertAdjacentHTML("afterend", dropdownHtml);
-        dropdown = categoryBtn.nextElementSibling;
+          if (type === "service") {
+            filtered = filtered.filter(c => getExpiredServices(c).includes(value));
+          }
 
-        // handle clicks
-        dropdown.querySelectorAll(".category-option").forEach(opt => {
-          opt.addEventListener("click", () => {
-            const industry = opt.getAttribute("data-industry");
-
-            if (industry === "all") {
-              renderTable(allClients);
-            } else {
-              const filtered = allClients.filter(c => c.industry === industry);
-              renderTable(filtered);
-            }
-            initActions();
-            dropdown.remove();
-            dropdown = null;
-          });
+          renderTable(filtered);
+          initActions();
+          dropdown.remove();
+          dropdown = null;
         });
-      }
-    });
+      });
+    }
+  });
 
-    // close dropdown when clicking outside
-    document.addEventListener("click", () => {
-      if (dropdown) {
-        dropdown.remove();
-        dropdown = null;
-      }
-    });
-  }
-
-});
+  document.addEventListener("click", () => {
+    if (dropdown) {
+      dropdown.remove();
+      dropdown = null;
+    }
+  });
+}
