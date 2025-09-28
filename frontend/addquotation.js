@@ -22,6 +22,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   editId = urlParams.get("id");
 
   if (editId) {
+    // ✅ Change button text to "Update"
+    const submitBtn = document.querySelector("#quotationForm button[type='submit']");
+    if (submitBtn) submitBtn.textContent = "Update";
+
     // Editing → load quotation first, then companies with preselect
     await loadQuotationForEdit(editId);
   } else {
@@ -32,6 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   servicesDropdown.addEventListener("change", handleServiceChange);
   document.getElementById("quotationForm").addEventListener("submit", handleFormSubmit);
 });
+
 
 // ===================
 // Load companies from API
@@ -206,11 +211,19 @@ async function handleFormSubmit(e) {
   const selectedCompany = companyDropdown.options[companyDropdown.selectedIndex];
 
   const data = {
-    client_id: selectedCompany.value, // <-- must match serializer field
-    description: document.getElementById("Description").value,
-    price: Number(document.getElementById("Price").value) || 0,
-    services: servicesArray
-  };
+  client_id: selectedCompany.value,
+  company_name: selectedCompany.textContent,
+  industry: document.getElementById("industry").value,
+  person_name: document.getElementById("personName").value,
+  contact: document.getElementById("Contact").value,
+  email: document.getElementById("Email").value,
+  website: document.getElementById("Website").value,
+  address: document.getElementById("Address").value,
+  description: document.getElementById("Description").value,
+  price: Number(document.getElementById("Price").value) || 0,
+  services: servicesArray
+};
+
 
   try {
     const url = editId 
