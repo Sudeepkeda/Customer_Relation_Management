@@ -5,6 +5,8 @@ import json
 from django.shortcuts import render,redirect
 from .models import Client
 from django.core.mail import send_mail
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from django.conf import settings
 from rest_framework import viewsets
 from rest_framework import generics
@@ -130,6 +132,88 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
 
 
+@api_view(["POST"])
+def send_renewal_email(request):
+    to_email = request.data.get("to")
+    subject = request.data.get("subject")
+    body = request.data.get("body")
+
+    try:
+        send_mail(
+            subject,
+            body,
+            "info@dhenutechnologies.com",  # From email
+            [to_email],
+            fail_silently=False,
+        )
+        return Response({"message": "Email sent successfully"})
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+    
+
+
+
+@csrf_exempt
+def send_renewal_mail(request, pk):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+
+    try:
+        client = Client.objects.get(pk=pk)
+    except Client.DoesNotExist:
+        return JsonResponse({"error": "Client not found"}, status=404)
+
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        service = data.get("service", "Service")
+
+        # Pick correct expiry date
+        expiry_date = "-"
+        if "Domain" in service and client.domain_end_date:
+            expiry_date = client.domain_end_date.strftime("%d/%m/%Y")
+        elif "Server" in service and client.server_end_date:
+            expiry_date = client.server_end_date.strftime("%d/%m/%Y")
+        elif "Maintenance" in service and client.maintenance_end_date:
+            expiry_date = client.maintenance_end_date.strftime("%d/%m/%Y")
+
+        subject = f"⚠ Renewal Reminder: Your {service} Will Expire in 30 Days"
+        body = f"""
+Dear {client.company_name or "Client"},
+
+We hope this message finds you well.
+
+This is a friendly reminder that your {service} associated with Dhenu Technologies is set to expire in 30 days.
+
+To ensure uninterrupted access and avoid any downtime or loss of services, we recommend renewing it before the expiry date.
+
+📅 Expiry Date: {expiry_date}
+🔁 Service: {service}
+
+Please get in touch with us at 📞 +91 96636 88088 to proceed with the renewal or if you have any questions regarding your plan.
+
+Thank you for choosing Dhenu Technologies. We look forward to continuing to serve you.
+
+Best regards,
+Sathya Shankara P K  
+Dhenu Technologies  
+📞 +91 96636 88088  
+📧 info@dhenutechnologies.com  
+🌐 https://dhenutechnologies.com
+"""
+
+        send_mail(
+            subject,
+            body,
+            "info@dhenutechnologies.com",  # from email
+            [client.email],  # to email
+            fail_silently=False,
+        )
+
+        return JsonResponse({"success": True, "message": f"Email sent to {client.email}"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+    
 def dashboard(request):
     return render(request, "dashboard.html")
 

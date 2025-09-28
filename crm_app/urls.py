@@ -2,6 +2,8 @@ from django.urls import path, include
 from rest_framework import routers
 from .views import login_view, ClientViewSet, QuotationViewSet, EnquiryViewSet, ProjectViewSet  # ✅ Added
 from . import views
+from .views import send_renewal_email
+
 
 # DRF router
 router = routers.DefaultRouter()
@@ -16,7 +18,7 @@ urlpatterns = [
     # API endpoints
     path('api/login/', login_view, name='login'),
     path('api/', include(router.urls)),
-
+    path("api/send-renewal-email/", send_renewal_email),
     # Frontend views
     path("dashboard/", views.dashboard, name="dashboard"),
     path("clients/", views.clients, name="clients"),
@@ -28,4 +30,6 @@ urlpatterns = [
     path("enquiry/", views.enquiry, name="enquiry"),
     path("enquiry/add/", views.add_enquiry, name="add_enquiry"),
     path("expiry/", views.expiry, name="expiry"),
+    path("api/send-renewal-mail/<int:pk>/", views.send_renewal_mail, name="send_renewal_mail"),
+
 ]

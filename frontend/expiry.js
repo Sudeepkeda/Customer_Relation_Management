@@ -80,9 +80,9 @@ function renderTable(clients) {
           <button class="btn btn-sm me-1 view-btn" data-id="${client.id}">
             <img src="images/View.png" alt="View">
           </button>
-          <button class="btn btn-sm btn-send" data-id="">
-                <img src="images/send.png" alt="Send">
-              </button>
+          <button class="btn btn-sm btn-send" data-id="${client.id}">
+            <img src="images/send.png" alt="Send">
+          </button>
         </td>
       </tr>
     `;
@@ -93,9 +93,10 @@ function renderTable(clients) {
 }
 
 // ===================
-// Actions (View Only)
+// Actions (View and send mail)
 // ===================
 function initActions() {
+  // View button
   document.querySelectorAll(".view-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
@@ -113,6 +114,29 @@ function initActions() {
       `;
       document.getElementById("viewClientBody").innerHTML = details;
       new bootstrap.Modal(document.getElementById("viewClientModal")).show();
+    });
+  });
+
+  // Send button
+  document.querySelectorAll(".btn-send").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      try {
+        const sendRes = await fetch(`http://127.0.0.1:8000/api/send-renewal-mail/${id}/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            service: getExpiredServices(await (await fetch(`http://127.0.0.1:8000/api/clients/${id}/`)).json())
+          })
+        });
+
+        if (!sendRes.ok) throw new Error("Failed to send email");
+
+        alert(`✅ Renewal reminder sent successfully`);
+      } catch (err) {
+        console.error(err);
+        alert("❌ Failed to send email. Check backend logs.");
+      }
     });
   });
 }
@@ -204,6 +228,7 @@ function initSearchAndPagination() {
     });
   });
 }
+
 // ===================
 // Category Filter (Expired Services Only)
 // ===================
