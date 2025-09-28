@@ -124,11 +124,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     // Send
-    document.querySelectorAll(".btn-send").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        alert("Send feature not implemented yet.");
+    // Send
+document.querySelectorAll(".btn-send").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const id = btn.getAttribute("data-id");
+
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/send-quotation-mail/${id}/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
       });
-    });
+
+      if (!res.ok) throw new Error("Failed to send quotation email");
+
+      const data = await res.json();
+      alert(`✅ Quotation email sent to ${data.email}`);
+    } catch (err) {
+      console.error("Send failed:", err);
+      alert("❌ Failed to send quotation email. Check backend logs.");
+    }
+  });
+});
+
   }
 
   // ===================

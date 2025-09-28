@@ -31,5 +31,6 @@ urlpatterns = [
     path("enquiry/add/", views.add_enquiry, name="add_enquiry"),
     path("expiry/", views.expiry, name="expiry"),
     path("api/send-renewal-mail/<int:pk>/", views.send_renewal_mail, name="send_renewal_mail"),
+    path("api/send-quotation-mail/<int:pk>/", views.send_quotation_mail, name="send_quotation_mail"),
 
 ]

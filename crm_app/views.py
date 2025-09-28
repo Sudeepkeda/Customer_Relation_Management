@@ -213,6 +213,51 @@ Dhenu Technologies
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
     
+@csrf_exempt
+def send_quotation_mail(request, pk):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+
+    try:
+        quotation = Quotation.objects.get(pk=pk)
+    except Quotation.DoesNotExist:
+        return JsonResponse({"error": "Quotation not found"}, status=404)
+
+    try:
+        subject = f"📄 Quotation for {quotation.description or 'Requested Service'} – As Discussed"
+        body = f"""
+Dear {quotation.person_name or quotation.company_name},
+
+Greetings from Dhenu Technologies!
+
+As discussed, please find attached the quotation for the required services based on your current needs and requirements. The proposal includes details of the scope of work, deliverables, and pricing for your review.
+
+We are confident that our solution will help you achieve your goals efficiently and effectively.
+
+If you have any questions or would like to proceed with the next steps, please feel free to contact us at 📞 +91 96636 88088.
+
+Looking forward to your confirmation.
+
+Best regards,
+Sathya Shankara P K  
+Dhenu Technologies  
+📞 +91 96636 88088  
+📧 info@dhenutechnologies.com  
+🌐 https://dhenutechnologies.com
+"""
+
+        send_mail(
+            subject,
+            body,
+            "info@dhenutechnologies.com",  # From email
+            [quotation.email],             # To email
+            fail_silently=False,
+        )
+
+        return JsonResponse({"success": True, "email": quotation.email})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
     
 def dashboard(request):
     return render(request, "dashboard.html")
