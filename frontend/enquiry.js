@@ -71,6 +71,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             <button class="btn btn-sm edit-btn" data-id="${enquiry.id}">
               <img src="images/Edit.png" alt="Edit">
             </button>
+            <button class="btn btn-sm delete-btn" data-id="${enquiry.id}">
+        <img src="images/Delete.png" alt="Delete">
+      </button>
           </td>
         </tr>
       `;
@@ -117,6 +120,33 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.location.href = "addenquiry.html";
       });
     });
+
+// Delete button
+document.querySelectorAll(".delete-btn").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const enquiryId = btn.getAttribute("data-id");
+
+    if (!confirm("Are you sure you want to delete this enquiry?")) return;
+
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/enquiries/${enquiryId}/`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        alert("Enquiry deleted successfully!");
+        await loadEnquiries(); // refresh table
+      } else {
+        alert("Failed to delete enquiry.");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Something went wrong while deleting.");
+    }
+  });
+});
+
+
   }
 
   // Search + Pagination

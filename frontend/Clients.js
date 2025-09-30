@@ -67,6 +67,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             <button class="btn btn-sm edit-btn" data-id="${client.id}">
               <img src="images/Edit.png" alt="Edit">
             </button>
+            <button class="btn btn-sm delete-btn" data-id="${client.id}">
+              <img src="images/Delete.png" alt="Delete">
+            </button>
           </td>
         </tr>
       `;
@@ -128,6 +131,32 @@ document.addEventListener("DOMContentLoaded", async () => {
         const clientId = btn.getAttribute("data-id");
         localStorage.setItem("editClientId", clientId);
         window.location.href = "addclient.html";
+      });
+    });
+  
+
+   // Delete button
+    document.querySelectorAll(".delete-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const clientId = btn.getAttribute("data-id");
+
+        if (!confirm("Are you sure you want to delete this client?")) return;
+
+        try {
+          const res = await fetch(`http://127.0.0.1:8000/api/clients/${clientId}/`, {
+            method: "DELETE",
+          });
+
+          if (res.ok) {
+            alert("Client deleted successfully!");
+            await loadClients(); // refresh table
+          } else {
+            alert("Failed to delete client.");
+          }
+        } catch (error) {
+          console.error("Delete error:", error);
+          alert("Something went wrong while deleting.");
+        }
       });
     });
   }

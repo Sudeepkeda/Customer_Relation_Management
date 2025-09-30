@@ -47,6 +47,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             <button class="btn btn-sm edit-btn" data-id="${project.id}">
               <img src="images/edit.png" alt="Edit">
             </button>
+             <button class="btn btn-sm delete-btn" data-id="${project.id}">
+    <img src="images/Delete.png" alt="Delete">
+  </button>
           </td>
         </tr>
       `;
@@ -55,6 +58,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     initViewActions(); // re-init actions after rendering
     initEditActions(); // re-init edit actions
+    initDeleteActions(); 
   }
 
   // ===================
@@ -107,6 +111,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       });
     });
+
   }
 
   // ===================
@@ -135,6 +140,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
   }
+// ===================
+// Delete Button Action
+// ===================
+function initDeleteActions() {
+  document.querySelectorAll(".delete-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const projectId = btn.getAttribute("data-id");
+
+      if (!confirm("Are you sure you want to delete this project?")) return;
+
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/projects/${projectId}/`, {
+          method: "DELETE",
+        });
+
+        if (res.ok) {
+          alert("Project deleted successfully!");
+          await loadProjects(); // reload table
+        } else {
+          alert("Failed to delete project.");
+        }
+      } catch (error) {
+        console.error("Delete error:", error);
+        alert("Something went wrong while deleting.");
+      }
+    });
+  });
+}
 
   // ===================
   // Search + Pagination

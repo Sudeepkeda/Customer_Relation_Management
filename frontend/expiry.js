@@ -1,5 +1,5 @@
 // ===================
-// Expiry.js - Expired Clients Management
+// Expiry.js - Expired Clients Management (Updated)
 // ===================
 
 let allClients = [];
@@ -28,8 +28,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!res.ok) throw new Error("Failed to fetch clients");
     allClients = await res.json();
 
-    // Filter clients with at least one expired service
-    const expiredClients = allClients.filter(c => getExpiredServices(c) !== "-");
+    // Filter clients with at least one expired or expiring service
+    const expiredClients = allClients.filter(c => getExpiryStatus(c).length > 0);
 
     renderTable(expiredClients);
     initActions();
@@ -43,18 +43,50 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ===================
 // Helpers
 // ===================
-function isExpiredDate(dateStr) {
-  if (!dateStr) return false;
-  const today = new Date().toISOString().split("T")[0];
-  return new Date(dateStr) < new Date(today);
+function daysUntil(dateStr) {
+  if (!dateStr) return Infinity;
+  const today = new Date();
+  const expiry = new Date(dateStr);
+  return Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
 }
 
-function getExpiredServices(client) {
-  const expired = [];
-  if (isExpiredDate(client.domain_end_date)) expired.push("Domain");
-  if (isExpiredDate(client.server_end_date)) expired.push("Server");
-  if (isExpiredDate(client.maintenance_end_date)) expired.push("Maintenance");
-  return expired.length > 0 ? expired.join(", ") : "-";
+function isExpiredDate(dateStr) {
+  if (!dateStr) return false;
+  return new Date(dateStr) < new Date();
+}
+
+// Returns array of services that are expired or expiring within 60 days
+function getExpiryStatus(client) {
+  const services = [
+    { name: "Domain", date: client.domain_end_date, short: "D" },
+    { name: "Server", date: client.server_end_date, short: "S" },
+    { name: "Maintenance", date: client.maintenance_end_date, short: "M" },
+  ];
+
+  const expiredServices = services
+    .filter(s => s.date && daysUntil(s.date) <= 60)
+    .map(s => s.name);
+
+  return expiredServices; // Only names like ["Domain", "Maintenance"]
+}
+
+// Returns string like D-10, M-5, S-0 but only for services <=60 days remaining
+function getRemainingDays(client) {
+  const services = [
+    { name: "Domain", date: client.domain_end_date, short: "D" },
+    { name: "Server", date: client.server_end_date, short: "S" },
+    { name: "Maintenance", date: client.maintenance_end_date, short: "M" },
+  ];
+
+  const remaining = services
+    .filter(s => s.date && daysUntil(s.date) <= 60)
+    .map(s => {
+      let d = daysUntil(s.date);
+      if (d < 0) d = 0; // expired services show as 0
+      return `${s.short}-${d}`;
+    });
+
+  return remaining.length > 0 ? remaining.join(", ") : "-";
 }
 
 // ===================
@@ -65,16 +97,19 @@ function renderTable(clients) {
   tableBody.innerHTML = "";
 
   clients.forEach((client, index) => {
-    const expiredServices = getExpiredServices(client);
-    if (expiredServices === "-") return; // skip non-expired
+    const expiredServices = getExpiryStatus(client);
+    if (expiredServices.length === 0) return;
+
+    const remainingDays = getRemainingDays(client);
 
     const row = `
       <tr>
         <td>${index + 1}</td>
-        <td>${client.company_name || "-"}</td>
+        <td>${client.person_name || "-"}</td>
         <td>${client.email || "-"}</td>
         <td>${client.contact_number || "-"}</td>
-        <td>${expiredServices}</td>
+        <td>${expiredServices.join(", ")}</td>
+        <td>${remainingDays}</td>
         <td>${client.priority || "-"}</td>
         <td>
           <button class="btn btn-sm me-1 view-btn" data-id="${client.id}">
@@ -89,14 +124,13 @@ function renderTable(clients) {
     tableBody.insertAdjacentHTML("beforeend", row);
   });
 
-  paginate(1); // reset pagination whenever table is re-rendered
+  paginate(1); // reset pagination
 }
 
 // ===================
-// Actions (View and send mail)
+// Actions (View and Send Mail)
 // ===================
 function initActions() {
-  // View button
   document.querySelectorAll(".view-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
@@ -104,45 +138,108 @@ function initActions() {
       const client = await res.json();
 
       const details = `
-        <p><strong>Company:</strong> ${client.company_name || "-"}</p>
+        <p><strong>Client Name:</strong> ${client.person_name || "-"}</p>
         <p><strong>Email:</strong> ${client.email || "-"}</p>
         <p><strong>Contact:</strong> ${client.contact_number || "-"}</p>
         <p><strong>Domain End:</strong> ${client.domain_end_date || "-"}</p>
         <p><strong>Server End:</strong> ${client.server_end_date || "-"}</p>
         <p><strong>Maintenance End:</strong> ${client.maintenance_end_date || "-"}</p>
-        <p><strong>Expired Services:</strong> ${getExpiredServices(client)}</p>
+        <p><strong>Expired Services:</strong> ${getExpiryStatus(client).join(", ")}</p>
+        <p><strong>Remaining Days:</strong> ${getRemainingDays(client)}</p>
       `;
       document.getElementById("viewClientBody").innerHTML = details;
       new bootstrap.Modal(document.getElementById("viewClientModal")).show();
     });
   });
 
-  // Send button
   document.querySelectorAll(".btn-send").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const id = btn.dataset.id;
-      try {
-        const sendRes = await fetch(`http://127.0.0.1:8000/api/send-renewal-mail/${id}/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            service: getExpiredServices(await (await fetch(`http://127.0.0.1:8000/api/clients/${id}/`)).json())
-          })
-        });
+  btn.addEventListener("click", async () => {
+    const id = btn.dataset.id;
+    const res = await fetch(`http://127.0.0.1:8000/api/clients/${id}/`);
+    const client = await res.json();
 
-        if (!sendRes.ok) throw new Error("Failed to send email");
+    const services = [
+      { name: "Domain", date: client.domain_end_date, short: "D" },
+      { name: "Server", date: client.server_end_date, short: "S" },
+      { name: "Maintenance", date: client.maintenance_end_date, short: "M" },
+    ];
 
-        alert(`✅ Renewal reminder sent successfully`);
-      } catch (err) {
-        console.error(err);
-        alert("❌ Failed to send email. Check backend logs.");
-      }
-    });
+    // Filter services expiring in <=60 days
+    const expiringServices = services
+      .filter(s => s.date && daysUntil(s.date) <= 60)
+      .map(s => {
+        let remaining = daysUntil(s.date);
+        if (remaining < 0) remaining = 0; // expired
+        return { ...s, remaining };
+      });
+
+    if (expiringServices.length === 0) {
+      alert("No services expiring in ≤60 days for this client.");
+      return;
+    }
+
+    // Find nearest expiry service (within 60 days)
+const nearest = expiringServices.reduce((a, b) => (a.remaining < b.remaining ? a : b));
+
+// Format expiry date as DD/MM/YYYY
+const formatDate = (dateStr) => {
+  const d = new Date(dateStr);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+const expiryDate = formatDate(nearest.date);
+
+// ✅ Exact subject format you asked
+const subject = `⚠ Renewal Reminder: Your ${nearest.name} Will Expire in ${nearest.remaining} Days`;
+
+// ✅ Exact body format you asked
+const body = `
+Dear ${client.person_name || "Client"},
+
+We hope this message finds you well.
+
+This is a friendly reminder that your ${nearest.name} associated with ${client.company_name || "your company"} is set to expire in ${nearest.remaining} days.
+
+To ensure uninterrupted access and avoid any downtime or loss of services, we recommend renewing it before the expiry date.
+
+📅 Expiry Date: ${expiryDate}
+🔁 Service: ${nearest.name}
+
+Please get in touch with us at 📞 ‪+91 96636 88088‬ to proceed with the renewal or if you have any questions regarding your plan.
+
+Thank you for choosing ${client.company_name || "Dhenu Technologies"}. We look forward to continuing to serve you.
+
+Best regards,
+Sathya Shankara P K
+Dhenu Technologies
+📞 ‪+91 96636 88088‬
+📧 info[at]dhenutechnologies.com
+🌐 https://dhenutechnologies.com
+`;
+
+
+    try {
+      const sendRes = await fetch("http://127.0.0.1:8000/api/send-renewal-email/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: client.email, subject, body })
+      });
+      if (!sendRes.ok) throw new Error("Failed to send email");
+      alert(`✅ Renewal reminder sent to ${client.email}`);
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to send email. Check backend logs.");
+    }
   });
+});
+
 }
 
 // ===================
-// Search + Pagination (expired only)
+// Search + Pagination
 // ===================
 let rowsPerPage = 5;
 let currentPageNumber = 1;
@@ -170,67 +267,49 @@ function initSearchAndPagination() {
   const paginationLinks = document.querySelectorAll(".pagination .page-link");
 
   function searchTable() {
-    const searchTerm = searchInput.value.toLowerCase().trim();
+    const term = searchInput.value.toLowerCase().trim();
     const filtered = allClients
-      .filter(c => getExpiredServices(c) !== "-")
-      .filter(c => {
-        return (
-          (c.company_name && c.company_name.toLowerCase().includes(searchTerm)) ||
-          (c.industry && c.industry.toLowerCase().includes(searchTerm)) ||
-          (c.person_name && c.person_name.toLowerCase().includes(searchTerm)) ||
-          (c.email && c.email.toLowerCase().includes(searchTerm))
-        );
-      });
-
+      .filter(c => getExpiryStatus(c) !== "-")
+      .filter(c =>
+        (c.company_name && c.company_name.toLowerCase().includes(term)) ||
+        (c.email && c.email.toLowerCase().includes(term))
+      );
     renderTable(filtered);
     initActions();
   }
 
   if (searchBtn) searchBtn.addEventListener("click", searchTable);
-  if (searchInput) {
-    searchInput.addEventListener("keyup", (e) => { if (e.key === "Enter") searchTable(); });
-  }
+  if (searchInput) searchInput.addEventListener("keyup", e => { if (e.key === "Enter") searchTable(); });
+  if (resetBtn) resetBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    renderTable(allClients.filter(c => getExpiryStatus(c) !== "-"));
+    initActions();
+  });
 
-  if (resetBtn) {
-    resetBtn.addEventListener("click", () => {
-      searchInput.value = "";
-      renderTable(allClients.filter(c => getExpiredServices(c) !== "-"));
-      initActions();
-    });
-  }
+  if (pageInput) pageInput.addEventListener("change", () => {
+    const val = parseInt(pageInput.value, 10);
+    if (!isNaN(val) && val > 0) {
+      rowsPerPage = val;
+      paginate(1);
+    }
+  });
 
-  if (pageInput) {
-    pageInput.addEventListener("change", () => {
-      const val = parseInt(pageInput.value, 10);
-      if (!isNaN(val) && val > 0) {
-        rowsPerPage = val;
-        currentPageNumber = 1;
-        paginate(currentPageNumber);
-      }
-    });
-  }
-
-  paginationLinks.forEach((link) => {
-    link.addEventListener("click", (e) => {
+  paginationLinks.forEach(link => {
+    link.addEventListener("click", e => {
       e.preventDefault();
       const text = link.innerText.toLowerCase();
-
-      if (text === "previous") {
-        paginate(currentPageNumber - 1);
-      } else if (text === "next") {
-        paginate(currentPageNumber + 1);
-      } else {
+      if (text === "previous") paginate(currentPageNumber - 1);
+      else if (text === "next") paginate(currentPageNumber + 1);
+      else {
         const pageNum = parseInt(text, 10);
-        if (!isNaN(pageNum)) {
-          paginate(pageNum);
-        }
+        if (!isNaN(pageNum)) paginate(pageNum);
       }
     });
   });
 }
 
 // ===================
-// Category Filter (Expired Services Only)
+// Category Filter
 // ===================
 function initCategoryFilter() {
   const categoryBtn = document.querySelector(".custom-category");
@@ -240,14 +319,14 @@ function initCategoryFilter() {
 
   let dropdownHtml = `
     <ul class="dropdown-menu show" style="position:absolute; z-index:1000;">
-      <li><a class="dropdown-item category-option" data-type="all">All Expired</a></li>
+      <li><a class="dropdown-item category-option" data-type="all">All Expired/Expiring</a></li>
       <li><hr class="dropdown-divider"></li>
       ${services.map(s => `<li><a class="dropdown-item category-option" data-type="service" data-value="${s}">${s}</a></li>`).join("")}
     </ul>
   `;
 
   let dropdown;
-  categoryBtn.addEventListener("click", (e) => {
+  categoryBtn.addEventListener("click", e => {
     e.stopPropagation();
     if (dropdown) {
       dropdown.remove();
@@ -261,11 +340,8 @@ function initCategoryFilter() {
           const type = opt.getAttribute("data-type");
           const value = opt.getAttribute("data-value");
 
-          let filtered = allClients.filter(c => getExpiredServices(c) !== "-");
-
-          if (type === "service") {
-            filtered = filtered.filter(c => getExpiredServices(c).includes(value));
-          }
+          let filtered = allClients.filter(c => getExpiryStatus(c) !== "-");
+          if (type === "service") filtered = filtered.filter(c => getExpiryStatus(c).includes(value));
 
           renderTable(filtered);
           initActions();
