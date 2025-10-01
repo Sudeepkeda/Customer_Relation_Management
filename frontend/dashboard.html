@@ -87,13 +87,13 @@
       <div class="main-content p-3">
           <div class="row g-3">
               <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                  <div class="card custom-card1">
+                  <div class="card custom-card1" id="expiry60Card">
                       <h5 class="custom-title">Expiry Period (60 days)</h5>
                       <p class="custom-text" id="expiry60">0</p>  
                   </div>
               </div>
               <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                  <div class="card custom-card2">
+                  <div class="card custom-card2" id="expiry30Card">
                       <h5 class="custom-title">Expiry Period (30 days)</h5>
                       <p class="custom-text" id="expiry30">0</p>
                   </div>
@@ -118,6 +118,26 @@
               </div>
           </div>
       </div>
+  </div>
+</div>
+
+<!-- Expiry Modal -->
+<div class="modal fade" id="expiryModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="expiryModalTitle">Clients Expiring</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+            <tr><th>Client</th><th>Service</th><th>Days Left</th></tr>
+          </thead>
+          <tbody id="expiryList"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
