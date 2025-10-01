@@ -22,7 +22,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // Click events for expiry cards
   document.getElementById("expiry30").parentElement.addEventListener("click", () => showExpiryClients(30));
   document.getElementById("expiry60").parentElement.addEventListener("click", () => showExpiryClients(60));
+
+  // 🔹 Added navigation for dashboard cards
+  document.getElementById("totalClients").addEventListener("click", () => {
+    window.location.href = "Clients.html";
+  });
+
+  document.getElementById("currentProjects").addEventListener("click", () => {
+    window.location.href = "Projects.html?filter=inprogress";
+  });
+
+  document.getElementById("totalProjects").addEventListener("click", () => {
+    window.location.href = "Projects.html?filter=all";
+  });
 });
+
 
 async function loadDashboardData() {
   try {
