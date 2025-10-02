@@ -1,5 +1,5 @@
 // ===================
-// Expiry.js - Expired Clients Management (Updated)
+// Expiry.js - Expired Clients Management (Fixed Days Calculation from Start Date)
 // ===================
 
 let allClients = [];
@@ -22,9 +22,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     toggleBtn.addEventListener("click", () => sidebar.classList.toggle("active"));
   }
 
-  // Fetch Clients
+  // Initial Load
+  await loadExpiryClients();
+});
+
+// ===================
+// Fetch + Refresh Function
+// ===================
+async function loadExpiryClients() {
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/clients/");
+    const res = await fetch("http://127.0.0.1:8000/api/clients/", { cache: "no-store" });
     if (!res.ok) throw new Error("Failed to fetch clients");
     allClients = await res.json();
 
@@ -38,56 +45,73 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (err) {
     console.error("Error loading clients:", err);
   }
-});
+}
 
 // ===================
 // Helpers
 // ===================
-function daysUntil(dateStr) {
-  if (!dateStr) return Infinity;
-  const today = new Date();
-  const expiry = new Date(dateStr);
-  return Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+function normalizeDate(dateStr) {
+  const d = new Date(dateStr);
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
+// Calculate total days from start to end
+function daysFromStart(startDateStr, endDateStr) {
+  if (!startDateStr || !endDateStr) return 0;
+
+  const start = new Date(startDateStr);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(endDateStr);
+  end.setHours(0, 0, 0, 0);
+
+  const diffMs = end - start;
+  return Math.max(Math.ceil(diffMs / (1000 * 60 * 60 * 24)), 0);
+}
+
+// Check if service is expired based on end date
 function isExpiredDate(dateStr) {
   if (!dateStr) return false;
-  return new Date(dateStr) < new Date();
+  return normalizeDate(dateStr) < new Date();
 }
 
-// Returns array of services that are expired or expiring within 60 days
+// Returns array of services that are expired or expiring within 60 days from start
 function getExpiryStatus(client) {
   const services = [
-    { name: "Domain", date: client.domain_end_date, short: "D" },
-    { name: "Server", date: client.server_end_date, short: "S" },
-    { name: "Maintenance", date: client.maintenance_end_date, short: "M" },
+    { name: "Domain", start: client.domain_start_date, end: client.domain_end_date },
+    { name: "Server", start: client.server_start_date, end: client.server_end_date },
+    { name: "Maintenance", start: client.maintenance_start_date, end: client.maintenance_end_date },
   ];
 
   const expiredServices = services
-    .filter(s => s.date && daysUntil(s.date) <= 60)
+    .filter(s => s.start && s.end && daysFromStart(s.start, s.end) <= 60)
     .map(s => s.name);
 
   return expiredServices; // Only names like ["Domain", "Maintenance"]
 }
 
-// Returns string like D-10, M-5, S-0 but only for services <=60 days remaining
+// Returns string like D-10, M-5, S-0 using start date as base
+// Returns string like D-10, M-5, S-0 using start date as base but only for <=60 days
 function getRemainingDays(client) {
   const services = [
-    { name: "Domain", date: client.domain_end_date, short: "D" },
-    { name: "Server", date: client.server_end_date, short: "S" },
-    { name: "Maintenance", date: client.maintenance_end_date, short: "M" },
+    { name: "Domain", start: client.domain_start_date, end: client.domain_end_date, short: "D" },
+    { name: "Server", start: client.server_start_date, end: client.server_end_date, short: "S" },
+    { name: "Maintenance", start: client.maintenance_start_date, end: client.maintenance_end_date, short: "M" },
   ];
 
   const remaining = services
-    .filter(s => s.date && daysUntil(s.date) <= 60)
+    .filter(s => s.start && s.end)       // only services with valid dates
     .map(s => {
-      let d = daysUntil(s.date);
-      if (d < 0) d = 0; // expired services show as 0
-      return `${s.short}-${d}`;
-    });
+      const d = daysFromStart(s.start, s.end);
+      return { short: s.short, days: d };
+    })
+    .filter(s => s.days <= 60)           // only include services <= 60 days
+    .map(s => `${s.short}-${s.days}`);
 
   return remaining.length > 0 ? remaining.join(", ") : "-";
 }
+
 
 // ===================
 // Render Table
@@ -134,7 +158,7 @@ function initActions() {
   document.querySelectorAll(".view-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
-      const res = await fetch(`http://127.0.0.1:8000/api/clients/${id}/`);
+      const res = await fetch(`http://127.0.0.1:8000/api/clients/${id}/`, { cache: "no-store" });
       const client = await res.json();
 
       const details = `
@@ -153,47 +177,49 @@ function initActions() {
   });
 
   document.querySelectorAll(".btn-send").forEach((btn) => {
-  btn.addEventListener("click", async () => {
-    const id = btn.dataset.id;
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
 
-    const clientRes = await fetch(`http://127.0.0.1:8000/api/clients/${id}/`);
-    const client = await clientRes.json();
+      const clientRes = await fetch(`http://127.0.0.1:8000/api/clients/${id}/`, { cache: "no-store" });
+      const client = await clientRes.json();
 
-    const services = [
-      { name: "Domain", date: client.domain_end_date, short: "D" },
-      { name: "Server", date: client.server_end_date, short: "S" },
-      { name: "Maintenance", date: client.maintenance_end_date, short: "M" },
-    ];
+      const services = [
+        { name: "Domain", start: client.domain_start_date, end: client.domain_end_date, short: "D" },
+        { name: "Server", start: client.server_start_date, end: client.server_end_date, short: "S" },
+        { name: "Maintenance", start: client.maintenance_start_date, end: client.maintenance_end_date, short: "M" },
+      ];
 
-    const expiringServices = services
-      .filter(s => s.date && daysUntil(s.date) <= 60)
-      .map(s => ({ ...s, remaining: Math.max(daysUntil(s.date), 0) }));
+      const expiringServices = services
+        .filter(s => s.start && s.end && daysFromStart(s.start, s.end) <= 60)
+        .map(s => ({ ...s, remaining: daysFromStart(s.start, s.end) }));
 
-    if (expiringServices.length === 0) {
-      alert("No services expiring in ≤60 days for this client.");
-      return;
-    }
+      if (expiringServices.length === 0) {
+        alert("No services expiring in ≤60 days for this client.");
+        return;
+      }
 
-    const nearest = expiringServices.reduce((a, b) => (a.remaining < b.remaining ? a : b));
+      const nearest = expiringServices.reduce((a, b) => (a.remaining < b.remaining ? a : b));
 
-    try {
-      const sendRes = await fetch(`http://127.0.0.1:8000/api/send-renewal-mail/${id}/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ service: nearest.name })
-      });
+      try {
+        const sendRes = await fetch(`http://127.0.0.1:8000/api/send-renewal-mail/${id}/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ service: nearest.name })
+        });
 
-      if (!sendRes.ok) throw new Error("Failed to send renewal email");
+        if (!sendRes.ok) throw new Error("Failed to send renewal email");
 
-      alert(`✅ Renewal reminder sent for ${nearest.name} to ${client.email}`);
-    } catch (err) {
-      console.error(err);
-      alert("❌ Failed to send renewal email. Check backend logs.");
-    }
+        alert(`✅ Renewal reminder sent for ${nearest.name} to ${client.email}`);
+
+        // 🔄 Refresh data after sending mail
+        await loadExpiryClients();
+
+      } catch (err) {
+        console.error(err);
+        alert("❌ Failed to send renewal email. Check backend logs.");
+      }
+    });
   });
-});
-
-
 }
 
 // ===================
@@ -227,7 +253,7 @@ function initSearchAndPagination() {
   function searchTable() {
     const term = searchInput.value.toLowerCase().trim();
     const filtered = allClients
-      .filter(c => getExpiryStatus(c) !== "-")
+      .filter(c => getExpiryStatus(c).length > 0)
       .filter(c =>
         (c.company_name && c.company_name.toLowerCase().includes(term)) ||
         (c.email && c.email.toLowerCase().includes(term))
@@ -240,7 +266,7 @@ function initSearchAndPagination() {
   if (searchInput) searchInput.addEventListener("keyup", e => { if (e.key === "Enter") searchTable(); });
   if (resetBtn) resetBtn.addEventListener("click", () => {
     searchInput.value = "";
-    renderTable(allClients.filter(c => getExpiryStatus(c) !== "-"));
+    renderTable(allClients.filter(c => getExpiryStatus(c).length > 0));
     initActions();
   });
 
@@ -298,7 +324,7 @@ function initCategoryFilter() {
           const type = opt.getAttribute("data-type");
           const value = opt.getAttribute("data-value");
 
-          let filtered = allClients.filter(c => getExpiryStatus(c) !== "-");
+          let filtered = allClients.filter(c => getExpiryStatus(c).length > 0);
           if (type === "service") filtered = filtered.filter(c => getExpiryStatus(c).includes(value));
 
           renderTable(filtered);
