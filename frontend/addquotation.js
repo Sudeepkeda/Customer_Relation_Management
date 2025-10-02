@@ -5,8 +5,6 @@ const companyDropdown = document.getElementById("companyName");
 const servicesDropdown = document.getElementById("services");
 const editorRow = document.getElementById("editorRow");
 const editorLabel = document.getElementById("editorLabel");
-const serviceSummaryRow = document.getElementById("serviceSummaryRow");
-const servicesSummary = document.getElementById("servicesSummary");
 
 let editorInstance = null;
 let servicesArray = [];
@@ -36,7 +34,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   servicesDropdown.addEventListener("change", handleServiceChange);
   document.getElementById("quotationForm").addEventListener("submit", handleFormSubmit);
 });
-
 
 // ===================
 // Load companies from API
@@ -109,9 +106,8 @@ async function loadQuotationForEdit(id) {
     document.getElementById("Description").value = q.description || "";
     document.getElementById("Price").value = q.price || "";
 
-    // Load services into array + summary
+    // Load services into array
     servicesArray = q.services || [];
-    updateSummaryUI();
 
     if (servicesArray.length > 0) {
       servicesDropdown.value = servicesArray[0].type;
@@ -128,6 +124,7 @@ async function loadQuotationForEdit(id) {
 function handleServiceChange() {
   const newType = this.value;
 
+  // Save previous editor content
   if (currentServiceType && editorInstance) {
     const content = editorInstance.getData().trim();
     if (content) {
@@ -137,7 +134,6 @@ function handleServiceChange() {
       } else {
         servicesArray.push({ type: currentServiceType, content });
       }
-      updateSummaryUI();
     }
   }
 
@@ -147,31 +143,29 @@ function handleServiceChange() {
     currentServiceType = newType;
 
     if (!editorInstance) {
-  editorInstance = CKEDITOR.replace("editor", {
-  height: 400,
-  removePlugins: 'elementspath',
-  resize_enabled: true,
-  toolbar: [
-    { name: 'document', items: ['Source','Preview','Print','PageBreak'] },
-    { name: 'clipboard', items: ['Cut','Copy','Paste','PasteText','PasteFromWord','Undo','Redo'] },
-    { name: 'editing', items: ['Find','Replace','SelectAll','Scayt'] },
-    '/',
-    { name: 'basicstyles', items: ['Bold','Italic','Underline','Strike','RemoveFormat','CopyFormatting'] },
-    { name: 'paragraph', items: ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote',
-      '-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'] },
-    { name: 'links', items: ['Link','Unlink','Anchor'] },
-    { name: 'insert', items: ['Image','Table','HorizontalRule','SpecialChar'] },
-    '/',
-    { name: 'styles', items: ['Styles','Format','Font','FontSize'] },
-    { name: 'colors', items: ['TextColor','BGColor'] },
-    { name: 'tools', items: ['Maximize','ShowBlocks'] },
-    { name: 'table', items: ['TableProperties','TableDelete'] } // ✅ add table tools
-  ],
-  extraPlugins: 'font,colorbutton,justify,tableresize,tableselection,tabletools'
-});
-} 
-
-
+      editorInstance = CKEDITOR.replace("editor", {
+        height: 400,
+        removePlugins: 'elementspath',
+        resize_enabled: true,
+        toolbar: [
+          { name: 'document', items: ['Source','Preview','Print','PageBreak'] },
+          { name: 'clipboard', items: ['Cut','Copy','Paste','PasteText','PasteFromWord','Undo','Redo'] },
+          { name: 'editing', items: ['Find','Replace','SelectAll','Scayt'] },
+          '/',
+          { name: 'basicstyles', items: ['Bold','Italic','Underline','Strike','RemoveFormat','CopyFormatting'] },
+          { name: 'paragraph', items: ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote',
+            '-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'] },
+          { name: 'links', items: ['Link','Unlink','Anchor'] },
+          { name: 'insert', items: ['Image','Table','HorizontalRule','SpecialChar'] },
+          '/',
+          { name: 'styles', items: ['Styles','Format','Font','FontSize'] },
+          { name: 'colors', items: ['TextColor','BGColor'] },
+          { name: 'tools', items: ['Maximize','ShowBlocks'] },
+          { name: 'table', items: ['TableProperties','TableDelete'] }
+        ],
+        extraPlugins: 'font,colorbutton,justify,tableresize,tableselection,tabletools'
+      });
+    }
 
     const existingService = servicesArray.find(s => s.type === newType);
     editorInstance.setData(existingService ? existingService.content : "");
@@ -179,20 +173,6 @@ function handleServiceChange() {
     editorRow.style.display = "none";
     currentServiceType = null;
   }
-}
-
-// ===================
-// Update Service Summary list
-// ===================
-function updateSummaryUI() {
-  servicesSummary.innerHTML = "";
-  servicesArray.forEach(s => {
-    const typeText = document.querySelector(`#services option[value="${s.type}"]`)?.text || s.type;
-    const li = document.createElement("li");
-    li.innerHTML = `<strong>${typeText}:</strong> ${s.content.substring(0, 60)}...`;
-    servicesSummary.appendChild(li);
-  });
-  serviceSummaryRow.style.display = servicesArray.length > 0 ? "block" : "none";
 }
 
 // ===================
@@ -212,7 +192,6 @@ async function handleFormSubmit(e) {
       } else {
         servicesArray.push({ type: currentServiceType, content });
       }
-      updateSummaryUI();
     }
   }
 
@@ -224,19 +203,18 @@ async function handleFormSubmit(e) {
   const selectedCompany = companyDropdown.options[companyDropdown.selectedIndex];
 
   const data = {
-  client_id: selectedCompany.value,
-  company_name: selectedCompany.textContent,
-  industry: document.getElementById("industry").value,
-  person_name: document.getElementById("personName").value,
-  contact: document.getElementById("Contact").value,
-  email: document.getElementById("Email").value,
-  website: document.getElementById("Website").value,
-  address: document.getElementById("Address").value,
-  description: document.getElementById("Description").value,
-  price: Number(document.getElementById("Price").value) || 0,
-  services: servicesArray
-};
-
+    client_id: selectedCompany.value,
+    company_name: selectedCompany.textContent,
+    industry: document.getElementById("industry").value,
+    person_name: document.getElementById("personName").value,
+    contact: document.getElementById("Contact").value,
+    email: document.getElementById("Email").value,
+    website: document.getElementById("Website").value,
+    address: document.getElementById("Address").value,
+    description: document.getElementById("Description").value,
+    price: Number(document.getElementById("Price").value) || 0,
+    services: servicesArray
+  };
 
   try {
     const url = editId 
