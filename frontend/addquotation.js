@@ -17,20 +17,26 @@ let editId = null; // <-- to detect edit mode
 // Initialize after DOM loaded
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
+  // Check for edit mode (?id=123)
   const urlParams = new URLSearchParams(window.location.search);
   editId = urlParams.get("id");
 
   if (editId) {
+    // ✅ Change button text to "Update"
     const submitBtn = document.querySelector("#quotationForm button[type='submit']");
     if (submitBtn) submitBtn.textContent = "Update";
+
+    // Editing → load quotation first, then companies with preselect
     await loadQuotationForEdit(editId);
   } else {
+    // Adding → just load companies
     await loadCompanies();
   }
 
   servicesDropdown.addEventListener("change", handleServiceChange);
   document.getElementById("quotationForm").addEventListener("submit", handleFormSubmit);
 });
+
 
 // ===================
 // Load companies from API
@@ -54,6 +60,7 @@ async function loadCompanies(selectedCompanyId = null) {
       companyDropdown.appendChild(option);
     });
 
+    // ✅ Only pre-select when editing
     if (selectedCompanyId) {
       companyDropdown.value = String(selectedCompanyId);
       handleCompanyChange.call(companyDropdown);
@@ -87,17 +94,22 @@ async function loadQuotationForEdit(id) {
     if (!res.ok) throw new Error("Failed to fetch quotation for edit");
     const q = await res.json();
 
-    await loadCompanies(q.client);
+    // Load companies and pre-select
+    await loadCompanies(q.client); // client field from backend
 
+    //  Directly populate readonly fields
     document.getElementById("industry").value = q.industry || "";
     document.getElementById("personName").value = q.person_name || "";
     document.getElementById("Contact").value = q.contact || "";
     document.getElementById("Email").value = q.email || "";
     document.getElementById("Website").value = q.website || "";
     document.getElementById("Address").value = q.address || "";
-    document.getElementById("Description").value = q.description || "";
 
-    // Load services (including Pricing if present)
+    // Fill editable fields
+    document.getElementById("Description").value = q.description || "";
+    document.getElementById("Price").value = q.price || "";
+
+    // Load services into array + summary
     servicesArray = q.services || [];
     updateSummaryUI();
 
@@ -135,18 +147,31 @@ function handleServiceChange() {
     currentServiceType = newType;
 
     if (!editorInstance) {
-      editorInstance = CKEDITOR.replace("editor", {
-        height: 300,
-        removePlugins: 'elementspath',
-        resize_enabled: false,
-        toolbar: [
-          { name: 'basicstyles', items: ['Bold','Italic','Underline','Strike','RemoveFormat'] },
-          { name: 'paragraph', items: ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'] },
-          { name: 'links', items: ['Link','Unlink'] },
-          { name: 'tools', items: ['Maximize'] }
-        ]
-      });
-    }
+  editorInstance = CKEDITOR.replace("editor", {
+  height: 400,
+  removePlugins: 'elementspath',
+  resize_enabled: true,
+  toolbar: [
+    { name: 'document', items: ['Source','Preview','Print','PageBreak'] },
+    { name: 'clipboard', items: ['Cut','Copy','Paste','PasteText','PasteFromWord','Undo','Redo'] },
+    { name: 'editing', items: ['Find','Replace','SelectAll','Scayt'] },
+    '/',
+    { name: 'basicstyles', items: ['Bold','Italic','Underline','Strike','RemoveFormat','CopyFormatting'] },
+    { name: 'paragraph', items: ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote',
+      '-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'] },
+    { name: 'links', items: ['Link','Unlink','Anchor'] },
+    { name: 'insert', items: ['Image','Table','HorizontalRule','SpecialChar'] },
+    '/',
+    { name: 'styles', items: ['Styles','Format','Font','FontSize'] },
+    { name: 'colors', items: ['TextColor','BGColor'] },
+    { name: 'tools', items: ['Maximize','ShowBlocks'] },
+    { name: 'table', items: ['TableProperties','TableDelete'] } // ✅ add table tools
+  ],
+  extraPlugins: 'font,colorbutton,justify,tableresize,tableselection,tabletools'
+});
+} 
+
+
 
     const existingService = servicesArray.find(s => s.type === newType);
     editorInstance.setData(existingService ? existingService.content : "");
@@ -177,6 +202,7 @@ async function handleFormSubmit(e) {
   e.preventDefault();
   if (!companyDropdown.value) { alert("Please select a company."); return; }
 
+  // Save current editor content
   if (currentServiceType && editorInstance) {
     const content = editorInstance.getData().trim();
     if (content) {
@@ -191,24 +217,26 @@ async function handleFormSubmit(e) {
   }
 
   if (servicesArray.length === 0) { 
-    alert("Please enter at least one service (About, Tech, Scope, or Pricing)."); 
+    alert("Please enter at least one service."); 
     return; 
   }
 
   const selectedCompany = companyDropdown.options[companyDropdown.selectedIndex];
 
   const data = {
-    client_id: selectedCompany.value,
-    company_name: selectedCompany.textContent,
-    industry: document.getElementById("industry").value,
-    person_name: document.getElementById("personName").value,
-    contact: document.getElementById("Contact").value,
-    email: document.getElementById("Email").value,
-    website: document.getElementById("Website").value,
-    address: document.getElementById("Address").value,
-    description: document.getElementById("Description").value,
-    services: servicesArray   // ✅ includes Pricing if selected
-  };
+  client_id: selectedCompany.value,
+  company_name: selectedCompany.textContent,
+  industry: document.getElementById("industry").value,
+  person_name: document.getElementById("personName").value,
+  contact: document.getElementById("Contact").value,
+  email: document.getElementById("Email").value,
+  website: document.getElementById("Website").value,
+  address: document.getElementById("Address").value,
+  description: document.getElementById("Description").value,
+  price: Number(document.getElementById("Price").value) || 0,
+  services: servicesArray
+};
+
 
   try {
     const url = editId 
