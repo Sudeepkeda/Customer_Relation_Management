@@ -22,6 +22,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const tableBody = document.querySelector(".table-data");
   let allProjects = [];
 
+  // ===================
+  // Render Table
+  // ===================
   function renderTable(projects) {
     tableBody.innerHTML = "";
 
@@ -39,7 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               <img src="images/View.png" alt="View">
             </button>
             <button class="btn btn-sm edit-btn" data-id="${project.id}">
-              <img src="images/edit.png" alt="Edit">
+              <img src="images/Edit.png" alt="Edit">
             </button>
             <button class="btn btn-sm delete-btn" data-id="${project.id}">
               <img src="images/Delete.png" alt="Delete">
@@ -56,124 +59,264 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ===================
-  // Load + Filter Projects
+  // Load Projects
   // ===================
   async function loadProjects() {
-  try {
-    const res = await fetch("http://127.0.0.1:8000/api/projects/");
-    if (!res.ok) throw new Error("Failed to fetch projects");
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/projects/");
+      if (!res.ok) throw new Error("Failed to fetch projects");
 
-    allProjects = await res.json();
+      allProjects = await res.json();
 
-    // 🔹 Handle query string filter
-    const urlParams = new URLSearchParams(window.location.search);
-    const filter = urlParams.get("filter"); // "inprogress" or "all"
+      // sort latest first
+      allProjects.sort((a, b) => b.id - a.id);
 
-    let filteredProjects = allProjects;
-    if (filter === "inprogress") {
-      filteredProjects = allProjects.filter(
-        p => p.status?.toLowerCase() === "in progress"
-      );
-    } else if (filter === "all") {
-      filteredProjects = allProjects; // just to be explicit
+      renderTable(allProjects);
+      initSearchAndPagination();
+      initCategoryFilter();
+    } catch (err) {
+      console.error("Error loading projects:", err);
+    }
+  }
+
+  // ===================
+  // Edit Button Action
+  // ===================
+  function initEditActions() {
+    document.querySelectorAll(".edit-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const projectId = btn.getAttribute("data-id");
+
+        try {
+          const res = await fetch(`http://127.0.0.1:8000/api/projects/${projectId}/`);
+          if (!res.ok) throw new Error("Failed to fetch project details");
+
+          const project = await res.json();
+          sessionStorage.setItem("editProject", JSON.stringify(project));
+          window.location.href = "addproject.html";
+        } catch (error) {
+          console.error(error);
+          alert("Failed to load project for editing.");
+        }
+      });
+    });
+  }
+
+  // ===================
+  // View Button Action
+  // ===================
+  function initViewActions() {
+    document.querySelectorAll(".view-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const projectId = btn.getAttribute("data-id");
+
+        try {
+          const res = await fetch(`http://127.0.0.1:8000/api/projects/${projectId}/`);
+          if (!res.ok) throw new Error("Failed to fetch project details");
+
+          const project = await res.json();
+
+          const modalBody = `
+            <p><strong>Project Name:</strong> ${project.project_name || "-"}</p>
+            <p><strong>Person Name:</strong> ${project.person_name || "-"}</p>
+            <p><strong>Description:</strong> ${project.description || "-"}</p>
+            <p><strong>Server Name:</strong> ${project.server_name || "-"}</p>
+            <p><strong>Contact Number:</strong> ${project.contact_number || "-"}</p>
+            <p><strong>Email:</strong> ${project.email || "-"}</p>
+            <p><strong>Status:</strong> ${project.status || "-"}</p>
+          `;
+
+          document.getElementById("viewProjectBody").innerHTML = modalBody;
+          new bootstrap.Modal(document.getElementById("viewProjectModal")).show();
+        } catch (error) {
+          console.error(error);
+          alert("Failed to load project details.");
+        }
+      });
+    });
+  }
+
+  // ===================
+  // Delete Button Action
+  // ===================
+  function initDeleteActions() {
+    document.querySelectorAll(".delete-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const projectId = btn.getAttribute("data-id");
+        if (!confirm("Are you sure you want to delete this project?")) return;
+
+        try {
+          const res = await fetch(`http://127.0.0.1:8000/api/projects/${projectId}/`, {
+            method: "DELETE",
+          });
+
+          if (res.ok) {
+            alert("Project deleted successfully!");
+            await loadProjects();
+          } else {
+            alert("Failed to delete project.");
+          }
+        } catch (error) {
+          console.error("Delete error:", error);
+          alert("Something went wrong while deleting.");
+        }
+      });
+    });
+  }
+
+  // ===================
+  // Search + Pagination
+  // ===================
+  function initSearchAndPagination() {
+    const searchInput = document.querySelector(".search-div input");
+    const searchBtn = document.querySelector(".custom-search");
+    const resetBtn = document.querySelector(".custom-reset");
+
+    function searchTable() {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+
+      const filtered = allProjects.filter((p) => {
+        return (
+          (p.project_name && p.project_name.toLowerCase().includes(searchTerm)) ||
+          (p.person_name && p.person_name.toLowerCase().includes(searchTerm)) ||
+          (p.email && p.email.toLowerCase().includes(searchTerm)) ||
+          (p.status && p.status.toLowerCase().includes(searchTerm))
+        );
+      });
+
+      renderTable(filtered);
+      paginate(1);
     }
 
-    renderTable(filteredProjects);
-    initSearchAndPagination();
-    initCategoryFilter();
-  } catch (err) {
-    console.error("Error loading projects:", err);
-  }
-}
-// ===================
-// Edit Button Action
-// ===================
-function initEditActions() {
-  document.querySelectorAll(".edit-btn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const projectId = btn.getAttribute("data-id");
+    if (searchBtn) searchBtn.addEventListener("click", searchTable);
+    if (searchInput) {
+      searchInput.addEventListener("keyup", (e) => {
+        if (e.key === "Enter") searchTable();
+      });
+    }
 
-      try {
-        const res = await fetch(`http://127.0.0.1:8000/api/projects/${projectId}/`);
-        if (!res.ok) throw new Error("Failed to fetch project details");
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        renderTable(allProjects);
+        paginate(1);
+      });
+    }
 
-        const project = await res.json();
+    // Pagination --------------------------
+    const pageInput = document.getElementById("pageInput");
+    const paginationLinks = document.querySelectorAll(".pagination .page-link");
 
-        // Store project data in sessionStorage to prefill form
-        sessionStorage.setItem("editProject", JSON.stringify(project));
+    let rowsPerPage = 5;
+    let currentPageNumber = 1;
 
-        // Redirect to addproject.html for editing
-        window.location.href = "addproject.html";
-      } catch (error) {
-        console.error(error);
-        alert("Failed to load project for editing.");
-      }
-    });
-  });
-}
+    function paginate(page) {
+      const rows = Array.from(document.querySelectorAll(".table-data tr"));
+      const totalPages = Math.ceil(rows.length / rowsPerPage);
 
-// ===================
-// View Button Action (optional, if needed)
-// ===================
-function initViewActions() {
-  document.querySelectorAll(".view-btn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const projectId = btn.getAttribute("data-id");
+      if (page < 1) page = 1;
+      if (page > totalPages) page = totalPages;
 
-      try {
-        const res = await fetch(`http://127.0.0.1:8000/api/projects/${projectId}/`);
-        if (!res.ok) throw new Error("Failed to fetch project details");
+      currentPageNumber = page;
 
-        const project = await res.json();
+      rows.forEach((row, index) => {
+        row.style.display =
+          index >= (page - 1) * rowsPerPage && index < page * rowsPerPage ? "" : "none";
+      });
+    }
 
-        const modalBody = `
-          <p><strong>Project Name:</strong> ${project.project_name || "-"}</p>
-          <p><strong>Person Name:</strong> ${project.person_name || "-"}</p>
-          <p><strong>Description:</strong> ${project.description || "-"}</p>
-          <p><strong>Server Name:</strong> ${project.server_name || "-"}</p>
-          <p><strong>Contact Number:</strong> ${project.contact_number || "-"}</p>
-          <p><strong>Email:</strong> ${project.email || "-"}</p>
-          <p><strong>Status:</strong> ${project.status || "-"}</p>
-        `;
+    paginate(1);
 
-        document.getElementById("viewProjectBody").innerHTML = modalBody;
-        new bootstrap.Modal(document.getElementById("viewProjectModal")).show();
-      } catch (error) {
-        console.error(error);
-        alert("Failed to load project details.");
-      }
-    });
-  });
-}
-
-// ===================
-// Delete Button Action
-// ===================
-function initDeleteActions() {
-  document.querySelectorAll(".delete-btn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const projectId = btn.getAttribute("data-id");
-      if (!confirm("Are you sure you want to delete this project?")) return;
-
-      try {
-        const res = await fetch(`http://127.0.0.1:8000/api/projects/${projectId}/`, {
-          method: "DELETE",
-        });
-
-        if (res.ok) {
-          alert("Project deleted successfully!");
-          await loadProjects(); // reload table
-        } else {
-          alert("Failed to delete project.");
+    if (pageInput) {
+      pageInput.addEventListener("change", () => {
+        const val = parseInt(pageInput.value, 10);
+        if (!isNaN(val) && val > 0) {
+          rowsPerPage = val;
+          currentPageNumber = 1;
+          paginate(currentPageNumber);
         }
-      } catch (error) {
-        console.error("Delete error:", error);
-        alert("Something went wrong while deleting.");
+      });
+    }
+
+    paginationLinks.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const text = link.innerText.toLowerCase();
+
+        if (text === "previous") {
+          paginate(currentPageNumber - 1);
+        } else if (text === "next") {
+          paginate(currentPageNumber + 1);
+        } else {
+          const pageNum = parseInt(text, 10);
+          if (!isNaN(pageNum)) {
+            paginate(pageNum);
+          }
+        }
+      });
+    });
+
+    // make paginate available to search/reset
+    window.paginate = paginate;
+  }
+
+  // ===================
+  // Status Category Filter
+  // ===================
+  function initCategoryFilter() {
+    const categoryBtn = document.querySelector(".custom-category");
+    if (!categoryBtn) return;
+
+    const statuses = [...new Set(allProjects.map((p) => p.status).filter(Boolean))];
+
+    let dropdownHtml = `
+      <ul class="dropdown-menu show" style="position:absolute; z-index:1000;">
+        <li><a class="dropdown-item category-option" data-status="all">All Status</a></li>
+        ${statuses
+          .map(
+            (st) =>
+              `<li><a class="dropdown-item category-option" data-status="${st}">${st}</a></li>`
+          )
+          .join("")}
+      </ul>
+    `;
+
+    let dropdown;
+    categoryBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+
+      if (dropdown) {
+        dropdown.remove();
+        dropdown = null;
+      } else {
+        categoryBtn.insertAdjacentHTML("afterend", dropdownHtml);
+        dropdown = categoryBtn.nextElementSibling;
+
+        dropdown.querySelectorAll(".category-option").forEach((opt) => {
+          opt.addEventListener("click", () => {
+            const status = opt.getAttribute("data-status");
+
+            if (status === "all") {
+              renderTable(allProjects);
+            } else {
+              const filtered = allProjects.filter((p) => p.status === status);
+              renderTable(filtered);
+            }
+            paginate(1);
+            dropdown.remove();
+            dropdown = null;
+          });
+        });
       }
     });
-  });
-}
 
+    document.addEventListener("click", () => {
+      if (dropdown) {
+        dropdown.remove();
+        dropdown = null;
+      }
+    });
+  }
 
   // ===================
   // Load Projects on Page Ready
