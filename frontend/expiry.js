@@ -152,11 +152,12 @@ function initActions() {
     });
   });
 
-  document.querySelectorAll(".btn-send").forEach(btn => {
+  document.querySelectorAll(".btn-send").forEach((btn) => {
   btn.addEventListener("click", async () => {
     const id = btn.dataset.id;
-    const res = await fetch(`http://127.0.0.1:8000/api/clients/${id}/`);
-    const client = await res.json();
+
+    const clientRes = await fetch(`http://127.0.0.1:8000/api/clients/${id}/`);
+    const client = await clientRes.json();
 
     const services = [
       { name: "Domain", date: client.domain_end_date, short: "D" },
@@ -164,77 +165,34 @@ function initActions() {
       { name: "Maintenance", date: client.maintenance_end_date, short: "M" },
     ];
 
-    // Filter services expiring in <=60 days
     const expiringServices = services
       .filter(s => s.date && daysUntil(s.date) <= 60)
-      .map(s => {
-        let remaining = daysUntil(s.date);
-        if (remaining < 0) remaining = 0; // expired
-        return { ...s, remaining };
-      });
+      .map(s => ({ ...s, remaining: Math.max(daysUntil(s.date), 0) }));
 
     if (expiringServices.length === 0) {
       alert("No services expiring in ≤60 days for this client.");
       return;
     }
 
-    // Find nearest expiry service (within 60 days)
-const nearest = expiringServices.reduce((a, b) => (a.remaining < b.remaining ? a : b));
-
-// Format expiry date as DD/MM/YYYY
-const formatDate = (dateStr) => {
-  const d = new Date(dateStr);
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
-  return `${day}/${month}/${year}`;
-};
-
-const expiryDate = formatDate(nearest.date);
-
-// ✅ Exact subject format you asked
-const subject = `⚠ Renewal Reminder: Your ${nearest.name} Will Expire in ${nearest.remaining} Days`;
-
-// ✅ Exact body format you asked
-const body = `
-Dear ${client.person_name || "Client"},
-
-We hope this message finds you well.
-
-This is a friendly reminder that your ${nearest.name} associated with ${client.company_name || "your company"} is set to expire in ${nearest.remaining} days.
-
-To ensure uninterrupted access and avoid any downtime or loss of services, we recommend renewing it before the expiry date.
-
-📅 Expiry Date: ${expiryDate}
-🔁 Service: ${nearest.name}
-
-Please get in touch with us at 📞 ‪+91 96636 88088‬ to proceed with the renewal or if you have any questions regarding your plan.
-
-Thank you for choosing ${client.company_name || "Dhenu Technologies"}. We look forward to continuing to serve you.
-
-Best regards,
-Sathya Shankara P K
-Dhenu Technologies
-📞 ‪+91 96636 88088‬
-📧 info[at]dhenutechnologies.com
-🌐 https://dhenutechnologies.com
-`;
-
+    const nearest = expiringServices.reduce((a, b) => (a.remaining < b.remaining ? a : b));
 
     try {
-      const sendRes = await fetch("http://127.0.0.1:8000/api/send-renewal-email/", {
+      const sendRes = await fetch(`http://127.0.0.1:8000/api/send-renewal-mail/${id}/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to: client.email, subject, body })
+        body: JSON.stringify({ service: nearest.name })
       });
-      if (!sendRes.ok) throw new Error("Failed to send email");
-      alert(`✅ Renewal reminder sent to ${client.email}`);
+
+      if (!sendRes.ok) throw new Error("Failed to send renewal email");
+
+      alert(`✅ Renewal reminder sent for ${nearest.name} to ${client.email}`);
     } catch (err) {
       console.error(err);
-      alert("❌ Failed to send email. Check backend logs.");
+      alert("❌ Failed to send renewal email. Check backend logs.");
     }
   });
 });
+
 
 }
 

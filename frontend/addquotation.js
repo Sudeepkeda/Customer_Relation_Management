@@ -17,26 +17,20 @@ let editId = null; // <-- to detect edit mode
 // Initialize after DOM loaded
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
-  // Check for edit mode (?id=123)
   const urlParams = new URLSearchParams(window.location.search);
   editId = urlParams.get("id");
 
   if (editId) {
-    // ✅ Change button text to "Update"
     const submitBtn = document.querySelector("#quotationForm button[type='submit']");
     if (submitBtn) submitBtn.textContent = "Update";
-
-    // Editing → load quotation first, then companies with preselect
     await loadQuotationForEdit(editId);
   } else {
-    // Adding → just load companies
     await loadCompanies();
   }
 
   servicesDropdown.addEventListener("change", handleServiceChange);
   document.getElementById("quotationForm").addEventListener("submit", handleFormSubmit);
 });
-
 
 // ===================
 // Load companies from API
@@ -60,7 +54,6 @@ async function loadCompanies(selectedCompanyId = null) {
       companyDropdown.appendChild(option);
     });
 
-    // ✅ Only pre-select when editing
     if (selectedCompanyId) {
       companyDropdown.value = String(selectedCompanyId);
       handleCompanyChange.call(companyDropdown);
@@ -94,22 +87,17 @@ async function loadQuotationForEdit(id) {
     if (!res.ok) throw new Error("Failed to fetch quotation for edit");
     const q = await res.json();
 
-    // Load companies and pre-select
-    await loadCompanies(q.client); // client field from backend
+    await loadCompanies(q.client);
 
-    //  Directly populate readonly fields
     document.getElementById("industry").value = q.industry || "";
     document.getElementById("personName").value = q.person_name || "";
     document.getElementById("Contact").value = q.contact || "";
     document.getElementById("Email").value = q.email || "";
     document.getElementById("Website").value = q.website || "";
     document.getElementById("Address").value = q.address || "";
-
-    // Fill editable fields
     document.getElementById("Description").value = q.description || "";
-    document.getElementById("Price").value = q.price || "";
 
-    // Load services into array + summary
+    // Load services (including Pricing if present)
     servicesArray = q.services || [];
     updateSummaryUI();
 
@@ -189,7 +177,6 @@ async function handleFormSubmit(e) {
   e.preventDefault();
   if (!companyDropdown.value) { alert("Please select a company."); return; }
 
-  // Save current editor content
   if (currentServiceType && editorInstance) {
     const content = editorInstance.getData().trim();
     if (content) {
@@ -204,26 +191,24 @@ async function handleFormSubmit(e) {
   }
 
   if (servicesArray.length === 0) { 
-    alert("Please enter at least one service."); 
+    alert("Please enter at least one service (About, Tech, Scope, or Pricing)."); 
     return; 
   }
 
   const selectedCompany = companyDropdown.options[companyDropdown.selectedIndex];
 
   const data = {
-  client_id: selectedCompany.value,
-  company_name: selectedCompany.textContent,
-  industry: document.getElementById("industry").value,
-  person_name: document.getElementById("personName").value,
-  contact: document.getElementById("Contact").value,
-  email: document.getElementById("Email").value,
-  website: document.getElementById("Website").value,
-  address: document.getElementById("Address").value,
-  description: document.getElementById("Description").value,
-  price: Number(document.getElementById("Price").value) || 0,
-  services: servicesArray
-};
-
+    client_id: selectedCompany.value,
+    company_name: selectedCompany.textContent,
+    industry: document.getElementById("industry").value,
+    person_name: document.getElementById("personName").value,
+    contact: document.getElementById("Contact").value,
+    email: document.getElementById("Email").value,
+    website: document.getElementById("Website").value,
+    address: document.getElementById("Address").value,
+    description: document.getElementById("Description").value,
+    services: servicesArray   // ✅ includes Pricing if selected
+  };
 
   try {
     const url = editId 

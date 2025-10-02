@@ -132,11 +132,21 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
 
 
+# ===================
+# Send Renewal Email (Clients)
+# ===================
 @api_view(["POST"])
 def send_renewal_email(request):
+    """
+    Send renewal reminder to a client.
+    Expects JSON: { "to": "email", "subject": "...", "body": "..." }
+    """
     to_email = request.data.get("to")
     subject = request.data.get("subject")
     body = request.data.get("body")
+
+    if not to_email or not subject or not body:
+        return Response({"error": "Missing fields"}, status=400)
 
     try:
         send_mail(
@@ -146,13 +156,14 @@ def send_renewal_email(request):
             [to_email],
             fail_silently=False,
         )
-        return Response({"message": "Email sent successfully"})
+        return Response({"message": f"Email sent successfully to {to_email}"})
     except Exception as e:
         return Response({"error": str(e)}, status=500)
-    
 
 
-
+# ===================
+# Send Renewal Reminder to specific client/service
+# ===================
 @csrf_exempt
 def send_renewal_mail(request, pk):
     if request.method != "POST":
@@ -167,7 +178,6 @@ def send_renewal_mail(request, pk):
         data = json.loads(request.body.decode("utf-8"))
         service = data.get("service", "Service")
 
-        # Pick correct expiry date
         expiry_date = "-"
         if "Domain" in service and client.domain_end_date:
             expiry_date = client.domain_end_date.strftime("%d/%m/%Y")
@@ -176,43 +186,27 @@ def send_renewal_mail(request, pk):
         elif "Maintenance" in service and client.maintenance_end_date:
             expiry_date = client.maintenance_end_date.strftime("%d/%m/%Y")
 
-        subject = f"⚠ Renewal Reminder: Your {service} Will Expire in 30 Days"
+        subject = f"⚠ Renewal Reminder: Your {service} Will Expire Soon"
         body = f"""
-Dear {client.company_name or "Client"},
+Dear {client.company_name or 'Client'},
 
-We hope this message finds you well.
+This is a friendly reminder that your {service} associated with Dhenu Technologies is set to expire on {expiry_date}.
 
-This is a friendly reminder that your {service} associated with Dhenu Technologies is set to expire in 30 days.
-
-To ensure uninterrupted access and avoid any downtime or loss of services, we recommend renewing it before the expiry date.
-
-📅 Expiry Date: {expiry_date}
-🔁 Service: {service}
-
-Please get in touch with us at 📞 +91 96636 88088 to proceed with the renewal or if you have any questions regarding your plan.
-
-Thank you for choosing Dhenu Technologies. We look forward to continuing to serve you.
+Please contact us at 📞 +91 96636 88088 to renew your service.
 
 Best regards,
-Sathya Shankara P K  
-Dhenu Technologies  
-📞 +91 96636 88088  
-📧 info@dhenutechnologies.com  
-🌐 https://dhenutechnologies.com
+Dhenu Technologies
 """
-
-        send_mail(
-            subject,
-            body,
-            "info@dhenutechnologies.com",  # from email
-            [client.email],  # to email
-            fail_silently=False,
-        )
+        send_mail(subject, body, "info@dhenutechnologies.com", [client.email], fail_silently=False)
 
         return JsonResponse({"success": True, "message": f"Email sent to {client.email}"})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
+
+
+# ===================
+# Send Quotation Email
+# ===================
 @csrf_exempt
 def send_quotation_mail(request, pk):
     if request.method != "POST":
@@ -224,40 +218,22 @@ def send_quotation_mail(request, pk):
         return JsonResponse({"error": "Quotation not found"}, status=404)
 
     try:
-        subject = f"📄 Quotation for {quotation.description or 'Requested Service'} – As Discussed"
+        subject = f"📄 Quotation for {quotation.description or 'Requested Service'}"
         body = f"""
 Dear {quotation.person_name or quotation.company_name},
 
-Greetings from Dhenu Technologies!
+Please find the attached quotation for your requested service.
 
-As discussed, please find attached the quotation for the required services based on your current needs and requirements. The proposal includes details of the scope of work, deliverables, and pricing for your review.
-
-We are confident that our solution will help you achieve your goals efficiently and effectively.
-
-If you have any questions or would like to proceed with the next steps, please feel free to contact us at 📞 +91 96636 88088.
-
-Looking forward to your confirmation.
+For any queries, contact us at 📞 +91 96636 88088.
 
 Best regards,
-Sathya Shankara P K  
-Dhenu Technologies  
-📞 +91 96636 88088  
-📧 info@dhenutechnologies.com  
-🌐 https://dhenutechnologies.com
+Dhenu Technologies
 """
-
-        send_mail(
-            subject,
-            body,
-            "info@dhenutechnologies.com",  # From email
-            [quotation.email],             # To email
-            fail_silently=False,
-        )
+        send_mail(subject, body, "info@dhenutechnologies.com", [quotation.email], fail_silently=False)
 
         return JsonResponse({"success": True, "email": quotation.email})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
     
 def dashboard(request):
     return render(request, "dashboard.html")
