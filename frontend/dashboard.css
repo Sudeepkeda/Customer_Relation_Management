@@ -129,3 +129,11 @@ body {
     margin-right: 10px !important; /* keep it even */
   }
 }
+
+.custom-card1,
+.custom-card2,
+.custom-card3,
+.custom-card4,
+.custom-card5 {
+    cursor: pointer; 
+}
