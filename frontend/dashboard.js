@@ -1,4 +1,3 @@
-// ===================
 // Dashboard.js
 // ===================
 let allClients = []; // store globally for listing
@@ -35,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("totalProjects").addEventListener("click", () => {
     window.location.href = "Projects.html?filter=all";
   });
+
   const profileLogo = document.querySelector(".dashboard-head img");
   if (profileLogo) {
     profileLogo.addEventListener("click", () => {
@@ -43,7 +43,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// ===================
+// Helper Functions (same logic as expiry.js)
+// ===================
+function normalizeDate(dateStr) {
+  const d = new Date(dateStr);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
+function daysFromStart(startDateStr, endDateStr) {
+  if (!startDateStr || !endDateStr) return null;
+
+  const start = normalizeDate(startDateStr);
+  const end = normalizeDate(endDateStr);
+
+  const diffMs = end - start;
+  return Math.max(Math.ceil(diffMs / (1000 * 60 * 60 * 24)), 0);
+}
+
+// ===================
+// Load Dashboard Data
+// ===================
 async function loadDashboardData() {
   try {
     const clientsRes = await fetch("http://127.0.0.1:8000/api/clients/");
@@ -52,21 +73,13 @@ async function loadDashboardData() {
     const projectsRes = await fetch("http://127.0.0.1:8000/api/projects/");
     const projects = await projectsRes.json();
 
-    const today = new Date();
-
-    function daysUntil(dateStr) {
-      if (!dateStr) return null;
-      const date = new Date(dateStr);
-      return Math.ceil((date - today) / (1000 * 60 * 60 * 24));
-    }
-
     let expiry30 = 0, expiry60 = 0;
 
     allClients.forEach(c => {
       const services = [
-        { type: "Domain", days: daysUntil(c.domain_end_date) },
-        { type: "Server", days: daysUntil(c.server_end_date) },
-        { type: "Maintenance", days: daysUntil(c.maintenance_end_date) }
+        { type: "Domain", days: daysFromStart(c.domain_start_date, c.domain_end_date) },
+        { type: "Server", days: daysFromStart(c.server_start_date, c.server_end_date) },
+        { type: "Maintenance", days: daysFromStart(c.maintenance_start_date, c.maintenance_end_date) }
       ].filter(s => s.days !== null);
 
       services.forEach(s => {
@@ -94,19 +107,11 @@ async function loadDashboardData() {
 // Show Expiry Clients in Modal
 // ===================
 function showExpiryClients(limit) {
-  const today = new Date();
-
-  function daysUntil(dateStr) {
-    if (!dateStr) return null;
-    const date = new Date(dateStr);
-    return Math.ceil((date - today) / (1000 * 60 * 60 * 24));
-  }
-
   const expiring = allClients.flatMap(c => {
     return [
-      { client: c.person_name, service: "Domain", days: daysUntil(c.domain_end_date) },
-      { client: c.person_name, service: "Server", days: daysUntil(c.server_end_date) },
-      { client: c.person_name, service: "Maintenance", days: daysUntil(c.maintenance_end_date) }
+      { client: c.person_name, service: "Domain", days: daysFromStart(c.domain_start_date, c.domain_end_date) },
+      { client: c.person_name, service: "Server", days: daysFromStart(c.server_start_date, c.server_end_date) },
+      { client: c.person_name, service: "Maintenance", days: daysFromStart(c.maintenance_start_date, c.maintenance_end_date) }
     ].filter(s => {
       if (limit === 30) {
         return s.days !== null && s.days <= 30; // include expired
@@ -118,7 +123,7 @@ function showExpiryClients(limit) {
 
   const tbody = document.getElementById("expiryList");
   tbody.innerHTML = expiring.map(e => {
-    let displayDays = e.days <= 0 ? "Expired" : e.days;
+    let displayDays = e.days <= 0 ? "Expired" : `${e.days} days`;
     return `<tr><td>${e.client}</td><td>${e.service}</td><td>${displayDays}</td></tr>`;
   }).join("");
 
