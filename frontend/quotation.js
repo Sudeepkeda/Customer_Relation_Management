@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Pagination
     const pageInput = document.getElementById("pageInput");
     const paginationLinks = document.querySelectorAll(".pagination .page-link");
-    let rowsPerPage = 5, currentPageNumber = 1;
+    let rowsPerPage = 10, currentPageNumber = 1;
 
     function paginate(page) {
       const rows = Array.from(document.querySelectorAll(".table-data tr"));

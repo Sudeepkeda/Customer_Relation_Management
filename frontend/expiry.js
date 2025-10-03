@@ -225,7 +225,7 @@ function initActions() {
 // ===================
 // Search + Pagination
 // ===================
-let rowsPerPage = 5;
+let rowsPerPage = 10;
 let currentPageNumber = 1;
 
 function paginate(page) {

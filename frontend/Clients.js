@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const pageInput = document.getElementById("pageInput");
     const paginationLinks = document.querySelectorAll(".pagination .page-link");
 
-    let rowsPerPage = 5;
+    let rowsPerPage = 10;
     let currentPageNumber = 1;
 
     function paginate(page) {
