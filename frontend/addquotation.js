@@ -143,35 +143,74 @@ function handleServiceChange() {
     currentServiceType = newType;
 
     if (!editorInstance) {
-      editorInstance = CKEDITOR.replace("editor", {
-        height: 400,
-        removePlugins: 'elementspath',
-        resize_enabled: true,
-        toolbar: [
-          { name: 'document', items: ['Source','Preview','Print','PageBreak'] },
-          { name: 'clipboard', items: ['Cut','Copy','Paste','PasteText','PasteFromWord','Undo','Redo'] },
-          { name: 'editing', items: ['Find','Replace','SelectAll','Scayt'] },
-          '/',
-          { name: 'basicstyles', items: ['Bold','Italic','Underline','Strike','RemoveFormat','CopyFormatting'] },
-          { name: 'paragraph', items: ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote',
-            '-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'] },
-          { name: 'links', items: ['Link','Unlink','Anchor'] },
-          { name: 'insert', items: ['Image','Table','HorizontalRule','SpecialChar'] },
-          '/',
-          { name: 'styles', items: ['Styles','Format','Font','FontSize'] },
-          { name: 'colors', items: ['TextColor','BGColor'] },
-          { name: 'tools', items: ['Maximize','ShowBlocks'] },
-          { name: 'table', items: ['TableProperties','TableDelete'] }
-        ],
-        extraPlugins: 'font,colorbutton,justify,tableresize,tableselection,tabletools'
-      });
+  editorInstance = CKEDITOR.replace("editor", {
+    height: 400,
+    removePlugins: 'elementspath',
+    resize_enabled: true,
+    toolbar: [
+      { name: 'document', items: ['Source','Preview','Print','PageBreak'] },
+      { name: 'clipboard', items: ['Cut','Copy','Paste','PasteText','PasteFromWord','Undo','Redo'] },
+      { name: 'editing', items: ['Find','Replace','SelectAll','Scayt'] },
+      '/',
+      { name: 'basicstyles', items: ['Bold','Italic','Underline','Strike','RemoveFormat','CopyFormatting'] },
+      { name: 'paragraph', items: ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote',
+        '-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'] },
+      { name: 'links', items: ['Link','Unlink','Anchor'] },
+      { name: 'insert', items: ['Image','Table','HorizontalRule','SpecialChar'] },
+      '/',
+      { name: 'styles', items: ['Styles','Format','Font','FontSize'] },
+      { name: 'colors', items: ['TextColor','BGColor'] },
+      { name: 'tools', items: ['Maximize','ShowBlocks'] },
+      { name: 'table', items: ['TableProperties','TableDelete'] }
+    ],
+    extraPlugins: 'font,colorbutton,justify,tableresize,tableselection,tabletools'
+  });
+
+  // ✅ Save content for any service when editor changes
+  editorInstance.on('change', function () {
+    if (!currentServiceType) return;
+    const content = editorInstance.getData().trim();
+    if (content) {
+      const existing = servicesArray.find(s => s.type === currentServiceType);
+      if (existing) {
+        existing.content = content;
+      } else {
+        servicesArray.push({ type: currentServiceType, content });
+      }
     }
+
+    // ✅ If Pricing, update total price
+    if (currentServiceType === "pricing") {
+      updateTotalPriceFromEditor();
+    }
+  });
+}
+
 
     const existingService = servicesArray.find(s => s.type === newType);
     editorInstance.setData(existingService ? existingService.content : "");
   } else {
     editorRow.style.display = "none";
     currentServiceType = null;
+  }
+}
+
+// ===================
+// Auto-calc total price from Pricing CKEditor
+// ===================
+function updateTotalPriceFromEditor() {
+  if (!editorInstance) return;
+  const content = editorInstance.getData();
+
+  // Strip HTML tags → plain text
+  const text = content.replace(/<[^>]*>/g, ' ');
+
+  // Find all numbers
+  const matches = text.match(/\d+(?:\.\d+)?/g);
+
+  if (matches) {
+    const sum = matches.reduce((acc, val) => acc + parseFloat(val), 0);
+    document.getElementById("Price").value = sum.toFixed(2);
   }
 }
 

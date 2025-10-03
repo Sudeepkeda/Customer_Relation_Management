@@ -1,24 +1,29 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
-import json
-from django.shortcuts import render,redirect
-from .models import Client
+from django.shortcuts import render, redirect
 from django.core.mail import send_mail
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.conf import settings
-from rest_framework import viewsets
-from rest_framework import generics
-from .serializers import ClientSerializer
-from .models import Quotation
-from .serializers import QuotationSerializer
+from rest_framework import viewsets, generics
 from django.utils.timezone import now
-from .serializers import EnquirySerializer
-from .models import Enquiry
-from .models import Project
-from .serializers import ProjectSerializer
+from datetime import timedelta, date
+from django.core.mail import EmailMessage
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from io import BytesIO
+from xhtml2pdf import pisa
 
+
+import json
+
+from .models import Client, Quotation, Enquiry, Project
+from .serializers import ClientSerializer, QuotationSerializer, EnquirySerializer, ProjectSerializer
+
+
+# ===================
+# Login
+# ===================
 @csrf_exempt
 def login_view(request):
     if request.method == "OPTIONS":
@@ -43,7 +48,9 @@ def login_view(request):
     return JsonResponse({"error": "Only POST allowed"}, status=405)
 
 
-
+# ===================
+# Client Management
+# ===================
 def add_client(request):
     if request.method == "POST":
         Client.objects.create(
@@ -67,36 +74,33 @@ def add_client(request):
         return redirect("clients")
     return render(request, "addclient.html")
 
+
 def clients_list(request):
     clients = Client.objects.all()
     return render(request, "clients.html", {"clients": clients})
+
 
 class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
 
 
+# ===================
+# Quotation
+# ===================
 class QuotationViewSet(viewsets.ModelViewSet):
     queryset = Quotation.objects.all().order_by("-id")
     serializer_class = QuotationSerializer
 
-
     def perform_create(self, serializer):
         """Auto-set quotation_date and generate quotation_number"""
-
-        # Auto quotation date
         quotation_date = now().date()
-
-        # Financial year (e.g., 2025-26)
         year = quotation_date.year
         next_year = year + 1
         financial_year = f"{str(year)[-2:]}-{str(next_year)[-2:]}"
-
-        # Count existing quotations for this financial year
         count = Quotation.objects.filter(
             quotation_number__contains=f"DT/Q/{financial_year}"
         ).count() + 1
-
         quotation_number = f"DT/Q/{financial_year}-{count:03d}"
 
         serializer.save(
@@ -104,197 +108,13 @@ class QuotationViewSet(viewsets.ModelViewSet):
             quotation_number=quotation_number
         )
 
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.core.mail import EmailMessage
+from io import BytesIO
+from xhtml2pdf import pisa
+from .models import Quotation
 
-def add_project(request):
-    return render(request, "addproject.html")
-
-
-class EnquiryViewSet(viewsets.ModelViewSet):
-    queryset = Enquiry.objects.all().order_by("-date")
-    serializer_class = EnquirySerializer
-
-def add_enquiry(request):
-    if request.method == "POST":
-        Enquiry.objects.create(
-            name=request.POST.get("name"),
-            email=request.POST.get("email"),
-            phone=request.POST.get("phone"),
-            message=request.POST.get("message"),
-        )
-        return redirect("enquiry")  # redirect to enquiry list page
-
-    return render(request, "addenquiry.html")
-
-
-class ProjectViewSet(viewsets.ModelViewSet):
-    queryset = Project.objects.all().order_by("-id")  # newest first
-    serializer_class = ProjectSerializer
-
-
-
-# ===================
-# Send Renewal Email (Clients)
-# ===================
-@api_view(["POST"])
-def send_renewal_email(request):
-    """
-    Send renewal reminder to a client.
-    Expects JSON: { "to": "email", "subject": "...", "body": "..." }
-    """
-    to_email = request.data.get("to")
-    subject = request.data.get("subject")
-    body = request.data.get("body")
-
-    if not to_email or not subject or not body:
-        return Response({"error": "Missing fields"}, status=400)
-
-    try:
-        send_mail(
-            subject,
-            body,
-            "info@dhenutechnologies.com",  # From email
-            [to_email],
-            fail_silently=False,
-        )
-        return Response({"message": f"Email sent successfully to {to_email}"})
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
-
-
-# ===================
-# Send Renewal Reminder to specific client/service
-# ===================
-@csrf_exempt
-def send_renewal_mail(request, pk):
-    if request.method != "POST":
-        return JsonResponse({"error": "Only POST allowed"}, status=405)
-
-    try:
-        client = Client.objects.get(pk=pk)
-    except Client.DoesNotExist:
-        return JsonResponse({"error": "Client not found"}, status=404)
-
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-        service = data.get("service", "Service")
-
-        expiry_date = "-"
-        if "Domain" in service and client.domain_end_date:
-            expiry_date = client.domain_end_date.strftime("%d/%m/%Y")
-        elif "Server" in service and client.server_end_date:
-            expiry_date = client.server_end_date.strftime("%d/%m/%Y")
-        elif "Maintenance" in service and client.maintenance_end_date:
-            expiry_date = client.maintenance_end_date.strftime("%d/%m/%Y")
-
-        subject = f"⚠ Renewal Reminder: Your {service} Will Expire Soon"
-        body = f"""
-Dear {client.company_name or 'Client'},
-
-This is a friendly reminder that your {service} associated with Dhenu Technologies is set to expire on {expiry_date}.
-
-Please contact us at 📞 +91 96636 88088 to renew your service.
-
-Best regards,
-Dhenu Technologies
-"""
-        send_mail(subject, body, "info@dhenutechnologies.com", [client.email], fail_silently=False)
-
-        return JsonResponse({"success": True, "message": f"Email sent to {client.email}"})
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
-
-# ===================
-# Send Quotation Email
-# ===================
-@csrf_exempt
-def send_quotation_mail(request, pk):
-    if request.method != "POST":
-        return JsonResponse({"error": "Only POST allowed"}, status=405)
-
-    try:
-        quotation = Quotation.objects.get(pk=pk)
-    except Quotation.DoesNotExist:
-        return JsonResponse({"error": "Quotation not found"}, status=404)
-
-    try:
-        subject = f"📄 Quotation for {quotation.description or 'Requested Service'}"
-        body = f"""
-Dear {quotation.person_name or quotation.company_name},
-
-Please find the attached quotation for your requested service.
-
-For any queries, contact us at 📞 +91 96636 88088.
-
-Best regards,
-Dhenu Technologies
-"""
-        send_mail(subject, body, "info@dhenutechnologies.com", [quotation.email], fail_silently=False)
-
-        return JsonResponse({"success": True, "email": quotation.email})
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-    # ===================
-# Send Renewal Reminder to specific client/service
-# ===================
-@csrf_exempt
-def send_renewal_mail(request, pk):
-    if request.method != "POST":
-        return JsonResponse({"error": "Only POST allowed"}, status=405)
-
-    try:
-        client = Client.objects.get(pk=pk)
-    except Client.DoesNotExist:
-        return JsonResponse({"error": "Client not found"}, status=404)
-
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-        service = data.get("service", "Service")
-
-        expiry_date = "-"
-        if "Domain" in service and client.domain_end_date:
-            expiry_date = client.domain_end_date.strftime("%d/%m/%Y")
-        elif "Server" in service and client.server_end_date:
-            expiry_date = client.server_end_date.strftime("%d/%m/%Y")
-        elif "Maintenance" in service and client.maintenance_end_date:
-            expiry_date = client.maintenance_end_date.strftime("%d/%m/%Y")
-
-        # Subject & Body as per requirement
-        subject = f"⚠ Renewal Reminder: Your {service} Will Expire in 30 Days"
-        body = f"""
-Dear {client.company_name or 'Client'},
-
-We hope this message finds you well.
-
-This is a friendly reminder that your {service} associated with Dhenu Technologies is set to expire in 30 days.
-
-To ensure uninterrupted access and avoid any downtime or loss of services, we recommend renewing it before the expiry date.
-
-📅 Expiry Date: {expiry_date}
-🔁 Service: {service}
-
-Please get in touch with us at 📞 +91 96636 88088 to proceed with the renewal or if you have any questions regarding your plan.
-
-Thank you for choosing Dhenu Technologies. We look forward to continuing to serve you.
-
-Best regards,  
-Sathya Shankara P K  
-Dhenu Technologies  
-📞 +91 96636 88088  
-📧 info@dhenutechnologies.com  
-🌐 https://dhenutechnologies.com
-"""
-
-        send_mail(subject, body, "info@dhenutechnologies.com", [client.email], fail_silently=False)
-        return JsonResponse({"success": True, "message": f"Email sent to {client.email}"})
-
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
-
-# ===================
-# Send Quotation Email
-# ===================
 @csrf_exempt
 def send_quotation_mail(request, pk):
     if request.method != "POST":
@@ -308,8 +128,53 @@ def send_quotation_mail(request, pk):
     try:
         service_name = quotation.description or "Requested Service"
         client_name = quotation.person_name or quotation.company_name or "Client"
+        recipient_email = quotation.email
 
-        # Subject & Body as per requirement
+        # ------------------------
+        # 1️⃣ Create HTML for PDF
+        # ------------------------
+        services_html = ""
+        for service in quotation.services:
+            service_type = service.get("type", "")
+            content = service.get("content", "")
+            services_html += f"<h3>{service_type.capitalize()}</h3>{content}<br/>"
+
+        html_content = f"""
+        <html>
+        <head>
+        <style>
+        body {{ font-family: Arial, sans-serif; font-size: 12px; }}
+        h1 {{ color: #333; }}
+        h2 {{ color: #444; margin-bottom: 5px; }}
+        h3 {{ color: #555; margin-bottom: 5px; }}
+        table, th, td {{ border: 1px solid #333; border-collapse: collapse; padding: 5px; }}
+        </style>
+        </head>
+        <body>
+        <h1>Quotation for {service_name}</h1>
+        <p><strong>Client:</strong> {client_name}</p>
+        <p><strong>Company:</strong> {quotation.company_name}</p>
+        <p><strong>Contact:</strong> {quotation.contact}</p>
+        <p><strong>Email:</strong> {quotation.email}</p>
+        <hr/>
+        <h2>Services</h2>
+        {services_html}
+        </body>
+        </html>
+        """
+
+        # ------------------------
+        # 2️⃣ Generate PDF with xhtml2pdf
+        # ------------------------
+        pdf_file = BytesIO()
+        pisa_status = pisa.CreatePDF(html_content, dest=pdf_file)
+        if pisa_status.err:
+            return JsonResponse({"error": "Failed to generate PDF"}, status=500)
+        pdf_file.seek(0)
+
+        # ------------------------
+        # 3️⃣ Send Email with your template
+        # ------------------------
         subject = f"📄 Quotation for {service_name} – As Discussed"
         body = f"""
 Dear {client_name},
@@ -324,6 +189,113 @@ If you have any questions or would like to proceed with the next steps, please f
 
 Looking forward to your confirmation.
 
+Best regards,
+Sathya Shankara P K
+Dhenu Technologies
+📞 +91 96636 88088‬
+📧 info@dhenutechnologies.com
+🌐 https://dhenutechnologies.com
+"""
+        email = EmailMessage(
+            subject=subject,
+            body=body,
+            from_email="info@dhenutechnologies.com",
+            to=[recipient_email],
+        )
+        email.attach(f"Quotation_{quotation.id}.pdf", pdf_file.read(), "application/pdf")
+        email.send(fail_silently=False)
+
+        return JsonResponse({"success": True, "email": recipient_email})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+# ===================
+# Enquiry
+# ===================
+class EnquiryViewSet(viewsets.ModelViewSet):
+    queryset = Enquiry.objects.all().order_by("-date")
+    serializer_class = EnquirySerializer
+
+
+def add_enquiry(request):
+    if request.method == "POST":
+        Enquiry.objects.create(
+            name=request.POST.get("name"),
+            email=request.POST.get("email"),
+            phone=request.POST.get("phone"),
+            message=request.POST.get("message"),
+        )
+        return redirect("enquiry")
+    return render(request, "addenquiry.html")
+
+
+# ===================
+# Project
+# ===================
+class ProjectViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.all().order_by("-id")
+    serializer_class = ProjectSerializer
+
+
+def add_project(request):
+    return render(request, "addproject.html")
+
+
+# ===================
+# Renewal Emails
+# ===================
+@csrf_exempt
+def send_renewal_mail(request, pk):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+
+    try:
+        client = Client.objects.get(pk=pk)
+    except Client.DoesNotExist:
+        return JsonResponse({"error": "Client not found"}, status=404)
+
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        today = date.today()
+        threshold = today + timedelta(days=30)
+
+        # Collect expiring services
+        service_info = []
+        if client.domain_end_date and client.domain_end_date <= threshold:
+            service_info.append(("Domain", client.domain_end_date))
+        if client.server_end_date and client.server_end_date <= threshold:
+            service_info.append(("Server", client.server_end_date))
+        if client.maintenance_end_date and client.maintenance_end_date <= threshold:
+            service_info.append(("Maintenance", client.maintenance_end_date))
+
+        if not service_info:
+            return JsonResponse({"success": False, "message": "No services expiring within 30 days"})
+
+        # Subject line
+        service_names = " and ".join([s[0] for s in service_info])
+        subject = f"⚠ Renewal Reminder: Your {service_names} Will Expire in 30 Days"
+
+        # Body content
+        service_lines = "\n".join(
+            [f"📅 Expiry Date: {d.strftime('%d/%m/%Y')}\n🔁 Service: {s}" for s, d in service_info]
+        )
+
+        body = f"""
+Dear {client.company_name or 'Client'},
+
+We hope this message finds you well.
+
+This is a friendly reminder that your {service_names} associated with {client.company_name or 'your company'} is set to expire in 30 days.
+
+To ensure uninterrupted access and avoid any downtime or loss of services, we recommend renewing it before the expiry date.
+
+{service_lines}
+
+Please get in touch with us at 📞 +91 96636 88088 to proceed with the renewal or if you have any questions regarding your plan.
+
+Thank you for choosing {client.company_name or 'your company'}. We look forward to continuing to serve you.
+
 Best regards,  
 Sathya Shankara P K  
 Dhenu Technologies  
@@ -332,18 +304,21 @@ Dhenu Technologies
 🌐 https://dhenutechnologies.com
 """
 
-        send_mail(subject, body, "info@dhenutechnologies.com", [quotation.email], fail_silently=False)
-        return JsonResponse({"success": True, "email": quotation.email})
+        send_mail(subject, body, "info@dhenutechnologies.com", [client.email], fail_silently=False)
+        return JsonResponse({"success": True, "message": f"Email sent to {client.email}"})
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+
+# ===================
+# Dashboard Views
+# ===================
 def dashboard(request):
     return render(request, "dashboard.html")
 
 def clients(request):
     return render(request, "Clients.html")
-
 
 def projects(request):
     return render(request, "Projects.html")
