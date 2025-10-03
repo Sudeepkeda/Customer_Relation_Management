@@ -45,7 +45,8 @@ INSTALLED_APPS = [
 
     'rest_framework',
     "crm_app",
-    "corsheaders",    
+    "corsheaders",  
+    "rest_framework.authtoken",  
 ]
 
 MIDDLEWARE = [

@@ -12,42 +12,74 @@ from django.core.mail import EmailMessage
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from io import BytesIO
-from xhtml2pdf import pisa
+from rest_framework.authtoken.models import Token
 
+from xhtml2pdf import pisa
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.decorators import login_required
 
 import json
+from functools import wraps
 
 from .models import Client, Quotation, Enquiry, Project
 from .serializers import ClientSerializer, QuotationSerializer, EnquirySerializer, ProjectSerializer
 
-
-# ===================
-# Login
-# ===================
+# ---------------------
+# Login with Token
+# ---------------------
 @csrf_exempt
 def login_view(request):
-    if request.method == "OPTIONS":
-        return JsonResponse({"message": "OK"}, status=200)
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
 
-    if request.method == "POST":
+    try:
+        data = json.loads(request.body)
+        username = data.get("username")
+        password = data.get("password")
+
+        user = authenticate(username=username, password=password)
+        if user:
+            token, created = Token.objects.get_or_create(user=user)
+            return JsonResponse({"success": True, "token": token.key, "message": "Login successful"})
+        else:
+            return JsonResponse({"success": False, "message": "Invalid credentials"}, status=401)
+
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
+
+
+# ---------------------
+# Profile update
+# ---------------------
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+@api_view(['GET', 'PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def user_profile(request):
+    user = request.user
+
+    if request.method == "GET":
+        return JsonResponse({"username": user.username})
+
+    elif request.method == "PUT":
         try:
-            data = json.loads(request.body)
+            data = request.data
             username = data.get("username")
             password = data.get("password")
 
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return JsonResponse({"success": True, "message": "Login successful"})
-            else:
-                return JsonResponse({"success": False, "message": "Invalid credentials"}, status=401)
+            if username:
+                user.username = username
+            if password:
+                user.set_password(password)
+                update_session_auth_hash(request, user)
 
+            user.save()
+            return JsonResponse({"success": True, "message": "Profile updated successfully!"})
         except Exception as e:
-            return JsonResponse({"success": False, "message": str(e)}, status=400)
-
-    return JsonResponse({"error": "Only POST allowed"}, status=405)
-
-
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
 # ===================
 # Client Management
 # ===================

@@ -35,6 +35,12 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("totalProjects").addEventListener("click", () => {
     window.location.href = "Projects.html?filter=all";
   });
+  const profileLogo = document.querySelector(".dashboard-head img");
+  if (profileLogo) {
+    profileLogo.addEventListener("click", () => {
+      window.location.href = "profile.html";
+    });
+  }
 });
 
 

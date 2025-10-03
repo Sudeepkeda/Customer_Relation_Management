@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
-from .views import login_view, ClientViewSet, QuotationViewSet, EnquiryViewSet, ProjectViewSet  # ✅ Added
+from .views import login_view, ClientViewSet, QuotationViewSet, EnquiryViewSet, ProjectViewSet,  user_profile
 from . import views
 from .views import send_renewal_mail
 
@@ -10,13 +10,14 @@ router = routers.DefaultRouter()
 router.register(r'clients', ClientViewSet, basename='client')
 router.register(r'quotations', QuotationViewSet, basename='quotation')
 router.register(r'enquiries', EnquiryViewSet, basename='enquiry')
-router.register(r'projects', ProjectViewSet, basename='project')  # ✅ Added
+router.register(r'projects', ProjectViewSet, basename='project')  
 
 
 
 urlpatterns = [
     # API endpoints
     path('api/login/', login_view, name='login'),
+    path("api/user-profile/", user_profile, name="user_profile"),
     path('api/', include(router.urls)),
     path("api/send-renewal-email/", send_renewal_mail),
     # Frontend views
