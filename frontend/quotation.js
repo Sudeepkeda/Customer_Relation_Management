@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <td>${quotation.description || "-"}</td>
           <td>₹${quotation.price ? Number(quotation.price).toFixed(2) : "0.00"}</td>
           <td>
+            <div class="d-flex flex-nowrap">
             <button class="btn btn-sm me-1 btn-view" data-id="${quotation.id}">
               <img src="images/View.png" alt="View">
             </button>
@@ -48,6 +49,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               <img src="images/send.png" alt="Send">
             </button>
           </td>
+          </div>
         </tr>
       `;
       tableBody.insertAdjacentHTML("beforeend", row);

@@ -61,16 +61,18 @@ document.addEventListener("DOMContentLoaded", async () => {
           <td>${client.email || "-"}</td>
           <td>${client.status || "-"}</td>
           <td>
+          <div class="d-flex flex-nowrap">
             <button class="btn btn-sm me-1 view-btn" data-id="${client.id}">
               <img src="images/View.png" alt="View">
             </button>
-            <button class="btn btn-sm edit-btn" data-id="${client.id}">
+            <button class="btn btn-sm me-1 edit-btn" data-id="${client.id}">
               <img src="images/Edit.png" alt="Edit">
             </button>
             <button class="btn btn-sm delete-btn" data-id="${client.id}">
               <img src="images/Delete.png" alt="Delete">
             </button>
-          </td>
+          </div>
+        </td>
         </tr>
       `;
       tableBody.insertAdjacentHTML("beforeend", row);

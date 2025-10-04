@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
-  background-color: #F7F7F7;
+  background-color: #FFFFFF;
 }
 
 /* Sidebar */
@@ -9,7 +9,6 @@ body {
   width: 265px;
   height: 100vh;
   background: #FFFFFF;
-  border-right: 1px solid #E0E0E0;
   position: fixed;
   top: 0;
   left: -265px; /* hidden by default on mobile */
@@ -87,13 +86,13 @@ body {
   margin-top: 15px;
 }
 
-/* Toggle button */
+/* Toggle button 
 .toggle-btn {
   font-size: 22px;
   border: none;
   background: none;
   cursor: pointer;
-}
+} */
 
 /* Cards */
 .card {
@@ -137,3 +136,4 @@ body {
 .custom-card5 {
     cursor: pointer; 
 }
+

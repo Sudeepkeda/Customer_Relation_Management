@@ -91,7 +91,6 @@ function getExpiryStatus(client) {
   return expiredServices; // Only names like ["Domain", "Maintenance"]
 }
 
-// Returns string like D-10, M-5, S-0 using start date as base
 // Returns string like D-10, M-5, S-0 using start date as base but only for <=60 days
 function getRemainingDays(client) {
   const services = [
@@ -136,12 +135,14 @@ function renderTable(clients) {
         <td>${remainingDays}</td>
         <td>${client.priority || "-"}</td>
         <td>
+          <div class="d-flex flex-nowrap">
           <button class="btn btn-sm me-1 view-btn" data-id="${client.id}">
             <img src="images/View.png" alt="View">
           </button>
           <button class="btn btn-sm btn-send" data-id="${client.id}">
             <img src="images/send.png" alt="Send">
           </button>
+          </div>
         </td>
       </tr>
     `;

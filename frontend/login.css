@@ -1,5 +1,5 @@
 body {
-  background: #FFFFFF;
+  background: #FAFAFA;
   font-family: 'Poppins', sans-serif;
 }
 
@@ -7,6 +7,9 @@ body {
   width: 397px;
   height: 459px;
   border-radius: 12px;
+  background-color: #FFFFFF;
+  border: none;
+  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.05);
 }
 
 .logo-img {
@@ -28,6 +31,7 @@ body {
   font-weight: bold;
   transition: background-color 0.3s;
   display: block;      
-  margin: 0 auto;       
+  margin: 0 auto;   
+  border: none;    
 }
 

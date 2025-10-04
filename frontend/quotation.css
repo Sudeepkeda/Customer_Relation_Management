@@ -9,7 +9,6 @@ body {
   width: 265px;
   height: 100vh;
   background: #FFFFFF;
-  border-right: 1px solid #E0E0E0;
   position: fixed;
   top: 0;
   left: -265px; /* hidden by default on mobile */
@@ -25,7 +24,6 @@ body {
 .content-wrapper {
   margin-left: 0;
   width: 100%;
-  transition: margin-left 0.3s ease;
 }
 
 /* Large screens */
@@ -38,6 +36,8 @@ body {
     width: calc(100% - 265px);
   }
 }
+
+
 
 /* Nav links */
 .nav-list .nav-link {
@@ -91,6 +91,9 @@ body {
   border: none;
   background: none;
   cursor: pointer;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+
 }
 
 /* Main Content */
@@ -109,7 +112,16 @@ body {
   background-color: #008DD2;
   font-size:14px ;
   border-radius: 25px;
+  height: 40px;
+  width: 150px;
 }
+
+.custombtn:hover {
+  background-color: #008DD2 !important;
+  color: #fff !important;
+  border-color: #008DD2 !important;
+}
+
 
 
 .custom-category{
@@ -117,6 +129,8 @@ body {
   font-size: 14px;
   font-weight: 500;
   color: #191C1F;
+  width: 154px;
+  height: 52px;
 }
 
 .custom-search{
@@ -125,6 +139,8 @@ body {
   font-weight: 400;
   border-radius: 5px;
   background-color: #141414;
+  width: 100px;
+  height: 52px;
 }
 
 .custom-reset{
@@ -134,12 +150,17 @@ body {
   background-color:#FFF ;
   border: 2px solid #141414;
   border-radius: 5px;
+  width: 94px;
+  height: 52px;
 }
 
 .table-responsive{
   border-radius: 20px;
   overflow: hidden;
 }
+
+
+
 
 .table th,
 .table td {
@@ -150,6 +171,7 @@ body {
   font-size: 12px;
   font-style: bold;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .table-data{
@@ -191,6 +213,7 @@ body {
 }
 
 
+
 /* Table responsive scroll only on small devices */
 @media (max-width: 576px) {
   .table-responsive {
@@ -202,4 +225,33 @@ body {
   .table {
     min-width: 700px;   /* force wider table so it can scroll */
   }
+}
+
+
+
+.input-group .form-control,
+.input-group .input-group-text {  
+    border: none !important;
+    box-shadow: none !important; /* removes Bootstrap’s focus shadow */
+}
+
+
+.custom-search:hover {
+  background-color: #000000 !important; /* darker black */
+  color: #fff !important;
+}
+
+.custom-reset:hover {
+  background-color: #f0f0f0 !important; /* light gray */
+  border-color: #000 !important; /* darker border */
+  color: #000 !important;
+}
+
+.table td .btn img {
+  width: 16px;
+  height: 16px;
+}
+
+.table td .btn {
+  padding: 2px 4px; /* smaller clickable area */
 }

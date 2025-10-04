@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <td>${project.contact_number || "-"}</td>
           <td>${project.email || "-"}</td>
           <td>
+            <div class="d-flex flex-nowrap">
             <button class="btn btn-sm view-btn me-1" data-id="${project.id}">
               <img src="images/View.png" alt="View">
             </button>
@@ -47,6 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             <button class="btn btn-sm delete-btn" data-id="${project.id}">
               <img src="images/Delete.png" alt="Delete">
             </button>
+            </div>
           </td>
         </tr>
       `;

@@ -17,7 +17,7 @@ document.getElementById("loginBtn").addEventListener("click", async function () 
     const data = await response.json();
 
     if (response.ok && data.success) {
-      // ✅ Save token in localStorage
+      //  Save token in localStorage
       localStorage.setItem("authToken", data.token);
       alert("Login successful!");
       window.location.href = "dashboard.html";
