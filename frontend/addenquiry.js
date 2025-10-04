@@ -5,6 +5,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   const form = document.getElementById("enquiryForm");
   const editId = localStorage.getItem("editEnquiryId");
 
+  // ===================
+// Sidebar Active Menu Highlight
+// ===================
+const currentPage = window.location.pathname.split("/").pop().toLowerCase();
+const navLinks = document.querySelectorAll('.nav-list .nav-link');
+
+navLinks.forEach(link => {
+  const linkPage = link.getAttribute('href').toLowerCase();
+
+  // ✅ Highlight "Projects" also when on addproject.html
+  if (
+    linkPage === currentPage ||
+    (currentPage === "addenquiry.html" && linkPage === "enquiry.html")
+  ) {
+    link.classList.add('active');
+  } else {
+    link.classList.remove('active');
+  }
+});
+
+
+    // Sidebar Toggle
+  const sidebar = document.getElementById("sidebar");
+  const toggleBtn = document.getElementById("sidebarToggle");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", function () {
+      sidebar.classList.toggle("active");
+    });
+  }
   // -------------------
   // If editing, fetch existing data
   // -------------------

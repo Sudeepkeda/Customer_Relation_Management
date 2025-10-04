@@ -114,12 +114,12 @@ body {
   border-radius: 25px;
   height: 40px;
   width: 150px;
+  border: none;
 }
 
 .custombtn:hover {
   background-color: #008DD2 !important;
   color: #fff !important;
-  border-color: #008DD2 !important;
 }
 
 
@@ -242,7 +242,7 @@ body {
 }
 
 .custom-reset:hover {
-  background-color: #f0f0f0 !important; /* light gray */
+  background-color: #FFFFFF !important; /* light gray */
   border-color: #000 !important; /* darker border */
   color: #000 !important;
 }

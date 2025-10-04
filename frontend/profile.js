@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ----------------------------
-  // 1️⃣ Fetch current user info
+  //  Fetch current user info
   // ----------------------------
   try {
     const res = await fetch("http://127.0.0.1:8000/api/user-profile/", {
@@ -62,7 +62,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const data = await res.json();
       if (res.ok && data.success) {
         alert(data.message || "Profile updated successfully!");
-        passwordInput.value = ""; // clear password field
+        passwordInput.value = ""; 
+        window.location.href = "dashboard.html";
       } else {
         alert(data.error || data.message || "Failed to update profile.");
         if (res.status === 401) {

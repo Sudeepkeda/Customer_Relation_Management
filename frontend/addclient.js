@@ -1,18 +1,31 @@
 // ===================
 // Sidebar Active Menu Highlight
 // ===================
+document.addEventListener("DOMContentLoaded", async () => {
 const currentPage = window.location.pathname.split("/").pop().toLowerCase();
 const navLinks = document.querySelectorAll('.nav-list .nav-link');
 navLinks.forEach(link => {
   const linkPage = link.getAttribute('href').toLowerCase();
-  if (linkPage === currentPage) {
+  if (
+    linkPage === currentPage ||
+    (currentPage === "addclient.html" && linkPage === "clients.html")
+  ) {
     link.classList.add('active');
   } else {
     link.classList.remove('active');
   }
 });
 
-document.addEventListener("DOMContentLoaded", async () => {
+
+  // Sidebar Toggle
+  const sidebar = document.getElementById("sidebar");
+  const toggleBtn = document.getElementById("sidebarToggle");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", function () {
+      sidebar.classList.toggle("active");
+    });
+  }
+
   const form = document.querySelector("form");
   const editClientId = localStorage.getItem("editClientId");
 
@@ -106,32 +119,31 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function getFormData() {
-  return {
-    company_name: document.getElementById("companyName").value,
-    industry: document.getElementById("industry").value,
-    person_name: document.getElementById("personName").value,
-    contact_number: document.getElementById("Contact").value,
-    email: document.getElementById("Email").value,
-    website: document.getElementById("Website").value,
-    address: document.getElementById("Address").value,
-    gst: document.getElementById("GST").value,
-    amc: document.getElementById("AMC").value,
-    amc_price: document.getElementById("AMCPrice").value,
-    domain_name: document.getElementById("Domain").value,
-    domain_charges: document.getElementById("DomainCharges").value,
-    domain_start_date: document.getElementById("Domainstdate").value,
-    domain_end_date: document.getElementById("Domainendate").value,
-    server_details: document.getElementById("ServerDetails").value,
-    server_price: document.getElementById("ServerPrice").value,
-    server_start_date: document.getElementById("Serverstdate").value,
-    server_end_date: document.getElementById("Serverendate").value,
-    maintenance_value: document.getElementById("MaintenanceValue").value,
-    maintenance_start_date: document.getElementById("Maintenancestartdate").value,
-    maintenance_end_date: document.getElementById("MaintenanceEnddate").value,
-    comments: document.getElementById("Comments").value,
-    priority: document.getElementById("Priority").value,
-    status: document.getElementById("Status").value,
-
-  };
-}
+    return {
+      company_name: document.getElementById("companyName").value,
+      industry: document.getElementById("industry").value,
+      person_name: document.getElementById("personName").value,
+      contact_number: document.getElementById("Contact").value,
+      email: document.getElementById("Email").value,
+      website: document.getElementById("Website").value,
+      address: document.getElementById("Address").value,
+      gst: document.getElementById("GST").value,
+      amc: document.getElementById("AMC").value,
+      amc_price: document.getElementById("AMCPrice").value,
+      domain_name: document.getElementById("Domain").value,
+      domain_charges: document.getElementById("DomainCharges").value,
+      domain_start_date: document.getElementById("Domainstdate").value,
+      domain_end_date: document.getElementById("Domainendate").value,
+      server_details: document.getElementById("ServerDetails").value,
+      server_price: document.getElementById("ServerPrice").value,
+      server_start_date: document.getElementById("Serverstdate").value,
+      server_end_date: document.getElementById("Serverendate").value,
+      maintenance_value: document.getElementById("MaintenanceValue").value,
+      maintenance_start_date: document.getElementById("Maintenancestartdate").value,
+      maintenance_end_date: document.getElementById("MaintenanceEnddate").value,
+      comments: document.getElementById("Comments").value,
+      priority: document.getElementById("Priority").value,
+      status: document.getElementById("Status").value,
+    };
+  }
 });

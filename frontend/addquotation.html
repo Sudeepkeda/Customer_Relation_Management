@@ -75,13 +75,16 @@
 
   <!-- Content Wrapper -->
   <div class="content-wrapper flex-grow-1">
-      <div class="dashboard-head">
-          <h1 class="dashboard m-0 me-4">Add New Quotation</h1>
-          <div class="d-flex align-items-center flex-shrink-0">
-              <img src="images/logo.png" alt="Profile" class="rounded-circle profile-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-              <div class="rounded-circle profile-img" style="display:none; background: #667eea; align-items: center; justify-content: center; color: white; font-weight: bold;">A</div>
-          </div>
-      </div>
+      <!-- Header -->
+     <div class="dashboard-head d-flex justify-content-between align-items-center px-3 flex-nowrap mb-4">
+  <!-- Toggle button for mobile -->
+  <button class="btn toggle-btn d-lg-none" id="sidebarToggle">☰</button>
+
+  <h1 class="dashboard m-0 flex-grow-1">Add New Quotation</h1>
+  <div class="d-flex align-items-center ms-auto">
+      <img src="images/logo.png" alt="Profile" class="rounded-circle" style="width:40px; height:40px;">
+  </div>
+</div>
 
       <div class="main-content p-3">
         <form id="quotationForm">
