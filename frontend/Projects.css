@@ -76,6 +76,8 @@ body {
   align-items: center;
   flex-wrap: nowrap;
   gap: 10px;
+  padding: 20px 20px;
+
 }
 
 .dashboard {
@@ -138,7 +140,7 @@ body {
   font-size: 16px;
   font-weight: 400;
   border-radius: 5px;
-  background-color: #141414;
+  background-color: #008DD2;
   width: 100px;
   height: 52px;
 }

@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.db import transaction, IntegrityError
 
 
 class Client(models.Model):
@@ -65,15 +66,43 @@ class Quotation(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        if not self.quotation_number:
-            year_now = timezone.now().year
-            next_year = year_now + 1
-            year_format = f"{str(year_now)[-2:]}-{str(next_year)[-2:]}"
-            count = Quotation.objects.filter(
-                quotation_date__year=year_now
-            ).count() + 1
-            self.quotation_number = f"DT/Q/{year_format}-{count:03d}"
+     if not self.quotation_number:
+        year_now = timezone.now().year
+        next_year = year_now + 1
+        year_format = f"{str(year_now)[-2:]}-{str(next_year)[-2:]}"
+        prefix = f"DT/Q/{year_format}-"
+
+        # Use transaction to avoid race conditions
+        with transaction.atomic():
+            last_quotation = (
+                Quotation.objects
+                .select_for_update()
+                .filter(quotation_number__startswith=prefix)
+                .order_by('-id')
+                .first()
+            )
+
+            if last_quotation:
+                try:
+                    last_number = int(last_quotation.quotation_number.split('-')[-1])
+                except (ValueError, IndexError):
+                    last_number = 0
+            else:
+                last_number = 0
+
+            new_number = last_number + 1
+            self.quotation_number = f"{prefix}{new_number:03d}"
+
+            try:
+                super().save(*args, **kwargs)
+            except IntegrityError:
+                # In rare case of collision, retry once
+                transaction.set_rollback(True)
+                return self.save(*args, **kwargs)
+     else:
         super().save(*args, **kwargs)
+
+
 
     def __str__(self):
         return self.quotation_number
