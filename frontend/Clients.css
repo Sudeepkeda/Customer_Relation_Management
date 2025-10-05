@@ -169,14 +169,14 @@ body {
 }
 
 .table-light{
-  font-size: 12px;
+  font-size: 16px;
   font-style: bold;
   font-weight: 700;
   white-space: nowrap;
 }
 
 .table-data{
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   color: #232323;
 }

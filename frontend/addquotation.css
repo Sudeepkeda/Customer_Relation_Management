@@ -53,10 +53,6 @@ body {
   color: #dc3545 !important;
 }
 
-.form-label {
-  font-weight: 400 !important; /* make labels normal instead of bold */
-  color: #000; /* optional: make consistent color */
-}
 
 /* Icons */
 .nav-icon {

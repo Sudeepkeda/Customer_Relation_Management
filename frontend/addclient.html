@@ -129,7 +129,7 @@
 
             <div class="col-lg-6 col-md-6">
                 <label for="AMC" class="form-label">AMC Details</label>
-                <select id="AMC" class="form-control subtext">
+                <select id="AMC" class="form-select subtext">
                   <option value="">Select</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
@@ -197,7 +197,7 @@
 
             <div class="col-lg-6 col-md-6">
                 <label for="Priority" class="form-label">Priority</label>
-                <select class="form-control subtext" id="Priority">
+                <select class="form-select subtext" id="Priority">
                     <option value="">-- Select Priority --</option>
                     <option value="High">High</option>
                     <option value="Medium">Medium</option>
@@ -207,7 +207,7 @@
 
             <div class="col-lg-6 col-md-6">
                 <label for="Status" class="form-label">Status</label>
-                <select class="form-control subtext" id="Status">
+                <select class="form-select subtext" id="Status">
                     <option value="">-- Select Status --</option>
                     <option value="Inprogress">InProgress</option>
                     <option value="Notstarted">Not Yet Started</option>
@@ -217,8 +217,8 @@
 
             <!-- Buttons -->
             <div class="col-12 d-flex justify-content-start mt-3">
-                <button type="submit" class="btn custom-btn1 me-2">Save</button>
-                <button type="reset" class="btn custom-btn2">Cancel</button>
+                <button type="button" class="btn custom-btn1 me-2">Save</button>
+                <button type="button" id="cancelBtn" class="btn custom-btn2">Cancel</button>
             </div>
           </div>
         </form>

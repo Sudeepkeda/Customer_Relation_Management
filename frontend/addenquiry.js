@@ -5,6 +5,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const form = document.getElementById("enquiryForm");
   const editId = localStorage.getItem("editEnquiryId");
 
+  // Cancel Button → Go back to Clients.html
+const cancelBtn = document.getElementById("cancelBtn");
+if (cancelBtn) {
+  cancelBtn.addEventListener("click", () => {
+    window.location.href = "enquiry.html";
+  });
+}
+
+
   // ===================
 // Sidebar Active Menu Highlight
 // ===================

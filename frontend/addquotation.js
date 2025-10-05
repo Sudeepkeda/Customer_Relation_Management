@@ -19,6 +19,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   editId = urlParams.get("id");
 
+  // Cancel Button → Go back to Clients.html
+const cancelBtn = document.getElementById("cancelBtn");
+if (cancelBtn) {
+  cancelBtn.addEventListener("click", () => {
+    window.location.href = "quotation.html";
+  });
+}
+
   if (editId) {
     // ✅ Change button text to "Update"
     const submitBtn = document.querySelector("#quotationForm button[type='submit']");

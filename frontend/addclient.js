@@ -16,6 +16,15 @@ navLinks.forEach(link => {
   }
 });
 
+// Cancel Button → Go back to Clients.html
+const cancelBtn = document.getElementById("cancelBtn");
+if (cancelBtn) {
+  cancelBtn.addEventListener("click", () => {
+    window.location.href = "Clients.html";
+  });
+}
+
+
 
   // Sidebar Toggle
   const sidebar = document.getElementById("sidebar");

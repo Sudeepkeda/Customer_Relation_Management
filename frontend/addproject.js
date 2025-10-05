@@ -6,6 +6,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let personsData = [];
 
+
+    // Cancel Button → Go back to Clients.html
+const cancelBtn = document.getElementById("cancelBtn");
+if (cancelBtn) {
+  cancelBtn.addEventListener("click", () => {
+    window.location.href = "Projects.html";
+  });
+}
+
 // ===================
 // Sidebar Active Menu Highlight
 // ===================
