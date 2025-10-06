@@ -118,17 +118,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           const project = await res.json();
 
-          const modalBody = `
-            <p><strong>Project Name:</strong> ${project.project_name || "-"}</p>
-            <p><strong>Person Name:</strong> ${project.person_name || "-"}</p>
-            <p><strong>Description:</strong> ${project.description || "-"}</p>
-            <p><strong>Server Name:</strong> ${project.server_name || "-"}</p>
-            <p><strong>Contact Number:</strong> ${project.contact_number || "-"}</p>
-            <p><strong>Email:</strong> ${project.email || "-"}</p>
-            <p><strong>Status:</strong> ${project.status || "-"}</p>
+                    const html = `
+            <div class="container-fluid">
+              <div class="row g-3">
+                <div class="col-md-4 text-wrap"><strong>Project Name:</strong> ${project.project_name || "-"}</div>
+                <div class="col-md-4 text-wrap"><strong>Person Name:</strong> ${project.person_name || "-"}</div>
+                <div class="col-md-4 text-wrap"><strong>Server Name:</strong> ${project.server_name || "-"}</div>
+
+                <div class="col-md-4 text-wrap"><strong>Ph.Number:</strong> ${project.contact_number || "-"}</div>
+                <div class="col-md-4 text-wrap"><strong>Email:</strong> <span class="d-inline-block text-break">${project.email || "-"}</span></div>
+                <div class="col-md-4 text-wrap"><strong>Status:</strong> ${project.status || "-"}</div>
+
+                <div class="col-12 text-wrap"><strong>Description:</strong> ${project.description || "-"}</div>
+              </div>
+            </div>
           `;
 
-          document.getElementById("viewProjectBody").innerHTML = modalBody;
+
+          document.getElementById("viewProjectBody").innerHTML = html;
           new bootstrap.Modal(document.getElementById("viewProjectModal")).show();
         } catch (error) {
           console.error(error);

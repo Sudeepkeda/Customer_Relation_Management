@@ -95,15 +95,22 @@ document.addEventListener("DOMContentLoaded", async () => {
           const enquiry = await res.json();
 
           let html = `
-            <p><strong>Date:</strong> ${enquiry.date || "-"}</p>
-            <p><strong>Company:</strong> ${enquiry.company_name || "-"}</p>
-            <p><strong>Person:</strong> ${enquiry.person_name || "-"}</p>
-            <p><strong>Contact:</strong> ${enquiry.contact_number || "-"}</p>
-            <p><strong>Email:</strong> ${enquiry.email || "-"}</p>
-            <p><strong>Website:</strong> ${enquiry.website || "-"}</p>
-            <p><strong>Status:</strong> ${enquiry.status || "-"}</p>
-            <p><strong>Comments:</strong> ${enquiry.comments || "-"}</p>
-          `;
+  <div class="container-fluid">
+    <div class="row g-3">
+      <div class="col-md-4"><strong>Date:</strong> ${enquiry.date || "-"}</div>
+      <div class="col-md-4"><strong>Company Name:</strong> ${enquiry.company_name || "-"}</div>
+      <div class="col-md-4"><strong>Person Name:</strong> ${enquiry.person_name || "-"}</div>
+
+      <div class="col-md-4"><strong>Contact Number:</strong> ${enquiry.contact_number || "-"}</div>
+      <div class="col-md-4 text-break"><strong>Email:</strong> ${enquiry.email || "-"}</div>
+      <div class="col-md-4 text-break"><strong>Website:</strong> ${enquiry.website || "-"}</div>
+
+      <div class="col-md-4"><strong>Status:</strong> ${enquiry.status || "-"}</div>
+      <div class="col-12"><strong>Comments:</strong> ${enquiry.comments || "-"}</div>
+    </div>
+  </div>
+`;
+
 
           document.getElementById("viewClientBody").innerHTML = html;
           new bootstrap.Modal(document.getElementById("viewClientModal")).show();

@@ -111,20 +111,32 @@ document.addEventListener("DOMContentLoaded", async () => {
           });
 
           document.getElementById("viewModalBody").innerHTML = `
-            <p><strong>Quotation Number:</strong> ${q.quotation_number || "-"}</p>
-            <p><strong>Date:</strong> ${q.quotation_date || "-"}</p>
-            <p><strong>Company Name:</strong> ${q.company_name || "-"}</p>
-            <p><strong>Industry:</strong> ${q.industry || "-"}</p>
-            <p><strong>Person Name:</strong> ${q.person_name || "-"}</p>
-            <p><strong>Contact:</strong> ${q.contact || "-"}</p>
-            <p><strong>Email:</strong> ${q.email || "-"}</p>
-            <p><strong>Website:</strong> ${q.website || "-"}</p>
-            <p><strong>Address:</strong> ${q.address || "-"}</p>
-            <p><strong>Description:</strong> ${q.description || "-"}</p>
-            <p><strong>Price:</strong> ₹${q.price ? Number(q.price).toFixed(2) : "0.00"}</p>
-            <p><strong>Services:</strong></p>
-            <div>${servicesHtml}</div>
-          `;
+  <div class="container-fluid">
+    <div class="row g-3">
+      <div class="col-md-4"><strong>Quotation Number:</strong> ${q.quotation_number || "-"}</div>
+      <div class="col-md-4"><strong>Date:</strong> ${q.quotation_date || "-"}</div>
+      <div class="col-md-4"><strong>Company:</strong> ${q.company_name || "-"}</div>
+      <div class="col-md-4"><strong>Industry:</strong> ${q.industry || "-"}</div>
+      <div class="col-md-4"><strong>Person:</strong> ${q.person_name || "-"}</div>
+      <div class="col-md-4"><strong>Contact:</strong> ${q.contact || "-"}</div>
+      <div class="col-md-4 text-break"><strong>Email:</strong> ${q.email || "-"}</div>
+      <div class="col-md-4 text-break"><strong>Website:</strong> ${q.website || "-"}</div>
+      <div class="col-md-4"><strong>Address:</strong> ${q.address || "-"}</div>
+      <div class="col-md-4"><strong>Price:</strong> ₹${q.price ? Number(q.price).toFixed(2) : "0.00"}</div>
+      <div class="col-12"><strong>Description:</strong> ${q.description || "-"}</div>
+    </div>
+
+    <hr class="my-3">
+
+    <div class="row g-3">
+      <div class="col-12">
+        <h6 class="fw-bold mb-2">Services:</h6>
+        <div>${servicesHtml}</div>
+      </div>
+    </div>
+  </div>
+`;
+
 
           // Show modal
           const modalEl = document.getElementById("viewModal");

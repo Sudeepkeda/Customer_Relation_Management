@@ -162,16 +162,23 @@ function initActions() {
       const res = await fetch(`http://127.0.0.1:8000/api/clients/${id}/`, { cache: "no-store" });
       const client = await res.json();
 
-      const details = `
-        <p><strong>Client Name:</strong> ${client.person_name || "-"}</p>
-        <p><strong>Email:</strong> ${client.email || "-"}</p>
-        <p><strong>Contact:</strong> ${client.contact_number || "-"}</p>
-        <p><strong>Domain End:</strong> ${client.domain_end_date || "-"}</p>
-        <p><strong>Server End:</strong> ${client.server_end_date || "-"}</p>
-        <p><strong>Maintenance End:</strong> ${client.maintenance_end_date || "-"}</p>
-        <p><strong>Expired Services:</strong> ${getExpiryStatus(client).join(", ")}</p>
-        <p><strong>Remaining Days:</strong> ${getRemainingDays(client)}</p>
-      `;
+        const details = `
+      <div class="container-fluid">
+        <div class="row g-3">
+          <div class="col-md-4"><strong>Client Name:</strong> ${client.person_name || "-"}</div>
+          <div class="col-md-4 text-break"><strong>Email:</strong> ${client.email || "-"}</div>
+          <div class="col-md-4"><strong>Contact Number:</strong> ${client.contact_number || "-"}</div>
+
+          <div class="col-md-4"><strong>Domain End:</strong> ${client.domain_end_date || "-"}</div>
+          <div class="col-md-4"><strong>Server End:</strong> ${client.server_end_date || "-"}</div>
+          <div class="col-md-4"><strong>Maintenance End:</strong> ${client.maintenance_end_date || "-"}</div>
+
+          <div class="col-md-4"><strong>Expired Services:</strong> ${getExpiryStatus(client).join(", ") || "-"}</div>
+          <div class="col-md-4"><strong>Remaining Days:</strong> ${getRemainingDays(client)}</div>
+        </div>
+      </div>
+    `;
+
       document.getElementById("viewClientBody").innerHTML = details;
       new bootstrap.Modal(document.getElementById("viewClientModal")).show();
     });
