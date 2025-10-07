@@ -22,7 +22,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       sidebar.classList.toggle("active");
     });
   }
-
+  const profileLogo = document.querySelector(".dashboard-head img");
+  if (profileLogo) {
+    profileLogo.addEventListener("click", () => {
+      window.location.href = "profile.html";
+    });
+  }
   // Fetch Clients from API
   const tableBody = document.querySelector(".table-data");
   let allClients = []; // keep full list for filtering

@@ -19,6 +19,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  const profileLogo = document.querySelector(".dashboard-head img");
+  if (profileLogo) {
+    profileLogo.addEventListener("click", () => {
+      window.location.href = "profile.html";
+    });
+  }
   const tableBody = document.querySelector(".table-data");
   let allProjects = [];
 

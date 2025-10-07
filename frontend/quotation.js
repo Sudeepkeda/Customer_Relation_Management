@@ -18,7 +18,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       sidebar.classList.toggle("active");
     });
   }
-
+  
+const profileLogo = document.querySelector(".dashboard-head img");
+  if (profileLogo) {
+    profileLogo.addEventListener("click", () => {
+      window.location.href = "profile.html";
+    });
+  }
   // ===================
   // Table Rendering
   // ===================

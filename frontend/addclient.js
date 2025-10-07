@@ -24,7 +24,12 @@ if (cancelBtn) {
   });
 }
 
-
+const profileLogo = document.querySelector(".dashboard-head img");
+  if (profileLogo) {
+    profileLogo.addEventListener("click", () => {
+      window.location.href = "profile.html";
+    });
+  }
 
   // Sidebar Toggle
   const sidebar = document.getElementById("sidebar");

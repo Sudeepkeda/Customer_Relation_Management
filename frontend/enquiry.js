@@ -22,7 +22,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const tableBody = document.querySelector(".table-data");
   let allEnquiries = []; // full list for filtering
-
+  const profileLogo = document.querySelector(".dashboard-head img");
+    if (profileLogo) {
+      profileLogo.addEventListener("click", () => {
+        window.location.href = "profile.html";
+      });
+    }
   // ===================
   // Fetch Enquiries
   // ===================

@@ -15,6 +15,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     link.classList.toggle("active", linkPage === currentPage);
   });
 
+  const profileLogo = document.querySelector(".dashboard-head img");
+  if (profileLogo) {
+    profileLogo.addEventListener("click", () => {
+      window.location.href = "profile.html";
+    });
+  }
   // Sidebar Toggle (Mobile)
   const sidebar = document.getElementById("sidebar");
   const toggleBtn = document.getElementById("sidebarToggle");

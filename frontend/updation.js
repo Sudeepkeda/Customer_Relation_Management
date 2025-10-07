@@ -242,6 +242,13 @@ document.addEventListener("DOMContentLoaded", () => {
     link.classList.toggle("active", link.getAttribute("href").toLowerCase() === currentPage);
   });
 
+  const profileLogo = document.querySelector(".dashboard-head img");
+  if (profileLogo) {
+    profileLogo.addEventListener("click", () => {
+      window.location.href = "profile.html";
+    });
+  }
+  
   // Sidebar Toggle
   const sidebar = document.getElementById("sidebar");
   const toggleBtn = document.getElementById("sidebarToggle");

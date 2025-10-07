@@ -11,6 +11,13 @@ let servicesArray = [];
 let currentServiceType = null;
 let editId = null; // <-- to detect edit mode
 
+const profileLogo = document.querySelector(".dashboard-head img");
+  if (profileLogo) {
+    profileLogo.addEventListener("click", () => {
+      window.location.href = "profile.html";
+    });
+  }
+  
 // ===================
 // Initialize after DOM loaded
 // ===================

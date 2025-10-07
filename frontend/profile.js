@@ -2,8 +2,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const usernameInput = document.getElementById("username");
   const passwordInput = document.getElementById("password");
   const saveBtn = document.getElementById("saveProfileBtn");
+  const cancelBtn = document.getElementById("cancelProfileBtn"); // ✅ get cancel button
 
-  // ✅ Get the token from localStorage
   const token = localStorage.getItem("authToken");
   if (!token) {
     alert("You are not logged in. Please login first.");
@@ -11,9 +11,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // ----------------------------
-  //  Fetch current user info
-  // ----------------------------
+  // Fetch current profile
   try {
     const res = await fetch("http://127.0.0.1:8000/api/user-profile/", {
       method: "GET",
@@ -30,16 +28,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       alert("Token expired or invalid. Please login again.");
       localStorage.removeItem("authToken");
       window.location.href = "login.html";
-    } else {
-      console.error("Failed to fetch profile:", res.status);
     }
   } catch (err) {
     console.error("Error fetching profile:", err);
   }
 
-  // ----------------------------
-  // 2️⃣ Save updated profile
-  // ----------------------------
+  // Save Button
   saveBtn.addEventListener("click", async () => {
     const username = usernameInput.value.trim();
     const password = passwordInput.value.trim();
@@ -75,5 +69,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("Error updating profile:", err);
       alert("An error occurred. Try again.");
     }
+  });
+
+  // ✅ Cancel Button
+  cancelBtn.addEventListener("click", () => {
+    // Option 1: Go back to dashboard
+    window.location.href = "dashboard.html";
+
+    // Option 2: Reset the form to original values (uncomment if needed)
+    // usernameInput.value = originalUsername;
+    // passwordInput.value = "";
   });
 });

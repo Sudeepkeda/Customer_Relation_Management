@@ -15,6 +15,13 @@ if (cancelBtn) {
   });
 }
 
+const profileLogo = document.querySelector(".dashboard-head img");
+  if (profileLogo) {
+    profileLogo.addEventListener("click", () => {
+      window.location.href = "profile.html";
+    });
+  }
+
 // ===================
 // Sidebar Active Menu Highlight
 // ===================

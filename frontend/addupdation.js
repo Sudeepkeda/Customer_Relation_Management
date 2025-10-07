@@ -1,8 +1,13 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const form = document.getElementById("enquiryForm");
-  const saveBtn = document.querySelector('button[type="submit"]');
+const form = document.getElementById("enquiryForm");
+const saveBtn = document.querySelector('button[type="submit"]');
 
-
+const profileLogo = document.querySelector(".dashboard-head img");
+  if (profileLogo) {
+    profileLogo.addEventListener("click", () => {
+      window.location.href = "profile.html";
+    });
+  }
   
 const currentPage = window.location.pathname.split("/").pop().toLowerCase();
 const navLinks = document.querySelectorAll('.nav-list .nav-link');
