@@ -19,6 +19,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
   
+  const exportBtn = document.getElementById("exportBtn");
+
+exportBtn.addEventListener("click", () => {
+  if (!allQuotations.length) {
+    alert("No clients to export!");
+    return;
+  }
+
+  // Map data for Excel
+  const data = allQuotations.map(c => ({
+    "Company Name": c.company_name || "-",
+    "Industry": c.industry || "-",
+    "Person Name": c.person_name || "-",
+    "Contact Number": c.contact_number || "-",
+    "Email": c.email || "-",
+    "Website": c.website || "-",
+    "Address": c.address || "-",
+    "Price": c.price ? `₹${Number(c.price).toFixed(2)}` : "₹0.00",
+    "Description": c.description || "-",
+    "services": (c.services || []).map(s => s.type).join(", ") || "-"
+  }));
+
+  // Create worksheet
+  const ws = XLSX.utils.json_to_sheet(data);
+
+  // Create workbook and append
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Quotations");
+
+  // Download Excel file
+  XLSX.writeFile(wb, "Quotation_List.xlsx");
+});
+
 const profileLogo = document.querySelector(".dashboard-head img");
   if (profileLogo) {
     profileLogo.addEventListener("click", () => {

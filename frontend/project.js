@@ -66,6 +66,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     initDeleteActions();
   }
 
+
+const exportBtn = document.getElementById("exportBtn");
+
+exportBtn.addEventListener("click", () => {
+  if (!allProjects.length) {
+    alert("No clients to export!");
+    return;
+  }
+
+  // Map data for Excel
+  const data = allProjects.map(c => ({
+    "Project Name": c.project_name || "-",
+    "Person Name": c.person_name || "-",
+    "Server Name": c.server_name || "-",
+    "Ph.Number": c.contact_number || "-",
+    "Email": c.email || "-",
+    "Status": c.status || "-",
+    "Description": c.description || "-"
+  }));
+
+  // Create worksheet
+  const ws = XLSX.utils.json_to_sheet(data);
+
+  // Create workbook and append
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "projects");
+
+  // Download Excel file
+  XLSX.writeFile(wb, "Project_List.xlsx");
+});
+
+
   // ===================
   // Load Projects
   // ===================

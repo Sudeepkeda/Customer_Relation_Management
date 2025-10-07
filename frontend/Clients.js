@@ -32,6 +32,53 @@ document.addEventListener("DOMContentLoaded", async () => {
   const tableBody = document.querySelector(".table-data");
   let allClients = []; // keep full list for filtering
 
+  const exportBtn = document.getElementById("exportBtn");
+
+exportBtn.addEventListener("click", () => {
+  if (!allClients.length) {
+    alert("No clients to export!");
+    return;
+  }
+
+  // Map data for Excel
+  const data = allClients.map(c => ({
+    "Company Name": c.company_name || "-",
+    "Industry": c.industry || "-",
+    "Person Name": c.person_name || "-",
+    "Contact Number": c.contact_number || "-",
+    "Email": c.email || "-",
+    "Status": c.status || "-",
+    "Website": c.website || "-",
+    "Address": c.address || "-",
+    "GST": c.gst || "-",
+    "AMC": c.amc || "-",
+    "AMC Price": c.amc_price || "-",
+    "Domain Name": c.domain_name || "-",
+    "Domain Charges": c.domain_charges || "-",
+    "Domain Start": c.domain_start_date || "-",
+    "Domain End": c.domain_end_date || "-",
+    "Server Details": c.server_details || "-",
+    "Server Price": c.server_price || "-",
+    "Server Start": c.server_start_date || "-",
+    "Server End": c.server_end_date || "-",
+    "Maintenance Value": c.maintenance_value || "-",
+    "Maintenance Start": c.maintenance_start_date || "-",
+    "Maintenance End": c.maintenance_end_date || "-",
+    "Comments": c.comments || "-",
+    "Priority": c.priority || "-"
+  }));
+
+  // Create worksheet
+  const ws = XLSX.utils.json_to_sheet(data);
+
+  // Create workbook and append
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Clients");
+
+  // Download Excel file
+  XLSX.writeFile(wb, "Clients_List.xlsx");
+});
+
   async function loadClients() {
     try {
       const response = await fetch("http://127.0.0.1:8000/api/clients/");

@@ -231,6 +231,35 @@ function initStatusFilter() {
   });
 }
 
+const exportBtn = document.getElementById("exportBtn");
+
+exportBtn.addEventListener("click", () => {
+  if (!allUpdations.length) {
+    alert("No clients to export!");
+    return;
+  }
+
+  // Map data for Excel
+  const data = allUpdations.map(c => ({
+    "Client Name": c.client_name || "-",
+    "Project Name": c.project_name || "-",
+    "Status": c.status || "-",
+    "Description": c.description || "-",
+    "Created At": c.created_at ? new Date(c.created_at).toLocaleString() : "-"
+  }));
+
+  // Create worksheet
+  const ws = XLSX.utils.json_to_sheet(data);
+
+  // Create workbook and append
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Updations");
+
+  // Download Excel file
+  XLSX.writeFile(wb, "Updations_List.xlsx");
+});
+
+
 // ===================
 // INIT ON DOM CONTENT LOADED
 // ===================
@@ -248,7 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = "profile.html";
     });
   }
-  
+
   // Sidebar Toggle
   const sidebar = document.getElementById("sidebar");
   const toggleBtn = document.getElementById("sidebarToggle");

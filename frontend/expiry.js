@@ -238,6 +238,36 @@ function initActions() {
   });
 }
 
+const exportBtn = document.getElementById("exportBtn");
+
+exportBtn.addEventListener("click", () => {
+  if (!allClients.length) {
+    alert("No clients to export!");
+    return;
+  }
+
+  // Map data for Excel
+  const data = allClients.map(c => ({
+    "Client Name": c.person_name || "-",
+    "Email": c.email || "-",
+    "Contact Number": c.contact_number || "-",
+    "Expired Services": getExpiryStatus(c).join(", ") || "-",
+    "Remaining Days": getRemainingDays(c),
+    "Priority": c.priority || "-",
+  }));
+
+  // Create worksheet
+  const ws = XLSX.utils.json_to_sheet(data);
+
+  // Create workbook and append
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Expired_Clients");
+
+  // Download Excel file
+  XLSX.writeFile(wb, "Expired_List.xlsx");
+});
+
+
   // ===================
   // Search + Pagination
   // ===================

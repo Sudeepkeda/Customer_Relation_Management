@@ -89,6 +89,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
       tableBody.insertAdjacentHTML("beforeend", row);
     });
+    
   }
 
   // ===================
@@ -273,4 +274,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Load enquiries on page load
   await loadEnquiries();
+
+const exportBtn = document.getElementById("exportBtn");
+
+exportBtn.addEventListener("click", () => {
+  if (!allEnquiries.length) {
+    alert("No clients to export!");
+    return;
+  }
+
+  // Map data for Excel
+  const data = allEnquiries.map(c => ({
+    "Person Name": c.person_name || "-",
+    "Company Name": c.company_name || "-",
+    "Contact Number": c.contact_number || "-",
+    "Email": c.email || "-",
+    "Status": c.status || "-",
+    "Website": c.website || "-",
+    "Comments": c.comments || "-",
+  }));
+
+  // Create worksheet
+  const ws = XLSX.utils.json_to_sheet(data);
+
+  // Create workbook and append
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Enquiry");
+
+  // Download Excel file
+  XLSX.writeFile(wb, "Enquiry_List.xlsx");
+});
+
 });
