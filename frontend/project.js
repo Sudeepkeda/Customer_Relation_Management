@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // ===================
+   // ===================
   // Search + Pagination
   // ===================
   function initSearchAndPagination() {
@@ -182,90 +182,61 @@ document.addEventListener("DOMContentLoaded", async () => {
     const resetBtn = document.querySelector(".custom-reset");
 
     function searchTable() {
-      const searchTerm = searchInput.value.toLowerCase().trim();
-
-      const filtered = allProjects.filter((p) => {
-        return (
-          (p.project_name && p.project_name.toLowerCase().includes(searchTerm)) ||
-          (p.person_name && p.person_name.toLowerCase().includes(searchTerm)) ||
-          (p.email && p.email.toLowerCase().includes(searchTerm)) ||
-          (p.status && p.status.toLowerCase().includes(searchTerm))
-        );
-      });
+      const term = searchInput.value.toLowerCase().trim();
+      const filtered = allProjects.filter(c =>
+      (c.company_name && c.company_name.toLowerCase().includes(term)) ||
+      (c.person_name && c.person_name.toLowerCase().includes(term)) ||
+      (c.email && c.email.toLowerCase().includes(term)) ||
+      (c.status && c.status.toLowerCase().includes(term))
+      );
 
       renderTable(filtered);
+      initActions();
       paginate(1);
     }
 
-    if (searchBtn) searchBtn.addEventListener("click", searchTable);
-    if (searchInput) {
-      searchInput.addEventListener("keyup", (e) => {
-        if (e.key === "Enter") searchTable();
-      });
-    }
+    searchBtn?.addEventListener("click", searchTable);
+    searchInput?.addEventListener("keyup", (e) => { if (e.key === "Enter") searchTable(); });
+    resetBtn?.addEventListener("click", () => { searchInput.value = ""; renderTable(allProjects); initActions(); paginate(1); });
 
-    if (resetBtn) {
-      resetBtn.addEventListener("click", () => {
-        searchInput.value = "";
-        renderTable(allProjects);
-        paginate(1);
-      });
-    }
-
-    // Pagination --------------------------
-    const pageInput = document.getElementById("pageInput");
-    const paginationLinks = document.querySelectorAll(".pagination .page-link");
-
+    // Pagination
     let rowsPerPage = 10;
-    let currentPageNumber = 1;
+    let currentPage = 1;
 
     function paginate(page) {
-      const rows = Array.from(document.querySelectorAll(".table-data tr"));
+      const rows = document.querySelectorAll(".table-data tr");
       const totalPages = Math.ceil(rows.length / rowsPerPage);
-
       if (page < 1) page = 1;
       if (page > totalPages) page = totalPages;
+      currentPage = page;
 
-      currentPageNumber = page;
-
-      rows.forEach((row, index) => {
-        row.style.display =
-          index >= (page - 1) * rowsPerPage && index < page * rowsPerPage ? "" : "none";
+      rows.forEach((row, i) => {
+        const start = (page - 1) * rowsPerPage;
+        const end = page * rowsPerPage;
+        row.style.display = i >= start && i < end ? "" : "none";
       });
     }
 
-    paginate(1);
+    const pageInput = document.getElementById("pageInput");
+    pageInput?.addEventListener("input", () => {
+      const val = parseInt(pageInput.value, 10);
+      if (!isNaN(val) && val > 0) {
+        rowsPerPage = val;
+        paginate(1);
+      }
+    });
 
-    if (pageInput) {
-      pageInput.addEventListener("change", () => {
-        const val = parseInt(pageInput.value, 10);
-        if (!isNaN(val) && val > 0) {
-          rowsPerPage = val;
-          currentPageNumber = 1;
-          paginate(currentPageNumber);
-        }
-      });
-    }
-
-    paginationLinks.forEach((link) => {
-      link.addEventListener("click", (e) => {
+    document.querySelectorAll(".pagination .page-link").forEach(link => {
+      link.addEventListener("click", e => {
         e.preventDefault();
-        const text = link.innerText.toLowerCase();
-
-        if (text === "previous") {
-          paginate(currentPageNumber - 1);
-        } else if (text === "next") {
-          paginate(currentPageNumber + 1);
-        } else {
-          const pageNum = parseInt(text, 10);
-          if (!isNaN(pageNum)) {
-            paginate(pageNum);
-          }
-        }
+        const txt = link.innerText.toLowerCase();
+        if (txt === "previous") paginate(currentPage - 1);
+        else if (txt === "next") paginate(currentPage + 1);
+        else if (!isNaN(parseInt(txt))) paginate(parseInt(txt));
       });
     });
 
-    // make paginate available to search/reset
+    // Expose paginate for other functions
     window.paginate = paginate;
   }
 

@@ -149,8 +149,10 @@ function renderTable(clients) {
     tableBody.insertAdjacentHTML("beforeend", row);
   });
 
-  paginate(1); // reset pagination
+  
+  if (window.paginate) window.paginate(1);
 }
+
 
 // ===================
 // Actions (View and Send Mail)
@@ -219,7 +221,7 @@ function initActions() {
 
         alert(`✅ Renewal reminder sent for ${nearest.name} to ${client.email}`);
 
-        // 🔄 Refresh data after sending mail
+        //  Refresh data after sending mail
         await loadExpiryClients();
 
       } catch (err) {
@@ -230,75 +232,73 @@ function initActions() {
   });
 }
 
-// ===================
-// Search + Pagination
-// ===================
-let rowsPerPage = 10;
-let currentPageNumber = 1;
+  // ===================
+  // Search + Pagination
+  // ===================
+  function initSearchAndPagination() {
+    const searchInput = document.querySelector(".search-div input");
+    const searchBtn = document.querySelector(".custom-search");
+    const resetBtn = document.querySelector(".custom-reset");
 
-function paginate(page) {
-  const rows = Array.from(document.querySelectorAll(".table-data tr"));
-  const totalPages = Math.ceil(rows.length / rowsPerPage);
-
-  if (page < 1) page = 1;
-  if (page > totalPages) page = totalPages;
-
-  currentPageNumber = page;
-
-  rows.forEach((row, index) => {
-    row.style.display =
-      index >= (page - 1) * rowsPerPage && index < page * rowsPerPage ? "" : "none";
-  });
-}
-
-function initSearchAndPagination() {
-  const searchInput = document.querySelector(".search-div input");
-  const searchBtn = document.querySelector(".custom-search");
-  const resetBtn = document.querySelector(".custom-reset");
-  const pageInput = document.getElementById("pageInput");
-  const paginationLinks = document.querySelectorAll(".pagination .page-link");
-
-  function searchTable() {
-    const term = searchInput.value.toLowerCase().trim();
-    const filtered = allClients
-      .filter(c => getExpiryStatus(c).length > 0)
-      .filter(c =>
-        (c.company_name && c.company_name.toLowerCase().includes(term)) ||
-        (c.email && c.email.toLowerCase().includes(term))
+    function searchTable() {
+      const term = searchInput.value.toLowerCase().trim();
+      const filtered = allClients.filter(c =>
+      (c.company_name && c.company_name.toLowerCase().includes(term)) ||
+      (c.person_name && c.person_name.toLowerCase().includes(term)) ||
+      (c.email && c.email.toLowerCase().includes(term)) ||
+      (c.status && c.status.toLowerCase().includes(term))
       );
-    renderTable(filtered);
-    initActions();
-  }
 
-  if (searchBtn) searchBtn.addEventListener("click", searchTable);
-  if (searchInput) searchInput.addEventListener("keyup", e => { if (e.key === "Enter") searchTable(); });
-  if (resetBtn) resetBtn.addEventListener("click", () => {
-    searchInput.value = "";
-    renderTable(allClients.filter(c => getExpiryStatus(c).length > 0));
-    initActions();
-  });
-
-  if (pageInput) pageInput.addEventListener("change", () => {
-    const val = parseInt(pageInput.value, 10);
-    if (!isNaN(val) && val > 0) {
-      rowsPerPage = val;
+      renderTable(filtered);
+      initActions();
       paginate(1);
     }
-  });
 
-  paginationLinks.forEach(link => {
-    link.addEventListener("click", e => {
-      e.preventDefault();
-      const text = link.innerText.toLowerCase();
-      if (text === "previous") paginate(currentPageNumber - 1);
-      else if (text === "next") paginate(currentPageNumber + 1);
-      else {
-        const pageNum = parseInt(text, 10);
-        if (!isNaN(pageNum)) paginate(pageNum);
+    searchBtn?.addEventListener("click", searchTable);
+    searchInput?.addEventListener("keyup", (e) => { if (e.key === "Enter") searchTable(); });
+    resetBtn?.addEventListener("click", () => { searchInput.value = ""; renderTable(allClients); initActions(); paginate(1); });
+
+    // Pagination
+    let rowsPerPage = 10;
+    let currentPage = 1;
+
+    function paginate(page) {
+      const rows = document.querySelectorAll(".table-data tr");
+      const totalPages = Math.ceil(rows.length / rowsPerPage);
+      if (page < 1) page = 1;
+      if (page > totalPages) page = totalPages;
+      currentPage = page;
+
+      rows.forEach((row, i) => {
+        const start = (page - 1) * rowsPerPage;
+        const end = page * rowsPerPage;
+        row.style.display = i >= start && i < end ? "" : "none";
+      });
+    }
+
+    const pageInput = document.getElementById("pageInput");
+    pageInput?.addEventListener("input", () => {
+      const val = parseInt(pageInput.value, 10);
+      if (!isNaN(val) && val > 0) {
+        rowsPerPage = val;
+        paginate(1);
       }
     });
-  });
-}
+
+    document.querySelectorAll(".pagination .page-link").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        const txt = link.innerText.toLowerCase();
+        if (txt === "previous") paginate(currentPage - 1);
+        else if (txt === "next") paginate(currentPage + 1);
+        else if (!isNaN(parseInt(txt))) paginate(parseInt(txt));
+      });
+    });
+
+    // Expose paginate for other functions
+    window.paginate = paginate;
+  }
+
 
 // ===================
 // Category Filter

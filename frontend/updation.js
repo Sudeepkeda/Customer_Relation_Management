@@ -1,14 +1,27 @@
 // ===================
+// Global Variables
+// ===================
+let allUpdations = []; // store all records globally
+let rowsPerPage = 10;
+let currentPage = 1;
+
+// ===================
 // Load and Render Updations
 // ===================
 async function loadProjects() {
   try {
     const res = await fetch("http://127.0.0.1:8000/api/updations/");
     if (!res.ok) throw new Error("Failed to load updations");
-    const updations = await res.json();
-    renderTable(updations);
+
+    allUpdations = await res.json();
+    renderTable(allUpdations);
+    paginate(1);
+    initStatusFilter();
+    initSearch();
   } catch (error) {
     console.error("Load error:", error);
+    const tableBody = document.querySelector(".table-data");
+    tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Failed to load records</td></tr>`;
   }
 }
 
@@ -49,29 +62,33 @@ function renderTable(data) {
     tableBody.insertAdjacentHTML("beforeend", row);
   });
 
-  // Attach event listeners for buttons
+  attachRowEvents();
+}
+
+// ===================
+// Attach Action Events
+// ===================
+function attachRowEvents() {
   document.querySelectorAll(".view-btn").forEach(btn =>
-    btn.addEventListener("click", e => handleView(e.target.closest("button").dataset.id))
+    btn.addEventListener("click", () => handleView(btn.dataset.id))
   );
   document.querySelectorAll(".edit-btn").forEach(btn =>
-    btn.addEventListener("click", e => handleEdit(e.target.closest("button").dataset.id))
+    btn.addEventListener("click", () => handleEdit(btn.dataset.id))
   );
   document.querySelectorAll(".delete-btn").forEach(btn =>
-    btn.addEventListener("click", e => handleDelete(e.target.closest("button").dataset.id))
+    btn.addEventListener("click", () => handleDelete(btn.dataset.id))
   );
 }
 
 // ===================
-// VIEW FUNCTION (Show Modal)
+// VIEW FUNCTION
 // ===================
 async function handleView(id) {
   try {
     const res = await fetch(`http://127.0.0.1:8000/api/updations/${id}/`);
     if (!res.ok) throw new Error("Failed to fetch record");
-
     const upd = await res.json();
 
-    // Populate modal body
     const modalBody = document.getElementById("viewClientBody");
     modalBody.innerHTML = `
       <div class="container-fluid">
@@ -84,10 +101,7 @@ async function handleView(id) {
         </div>
       </div>
     `;
-
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById("viewClientModal"));
-    modal.show();
+    new bootstrap.Modal(document.getElementById("viewClientModal")).show();
   } catch (error) {
     console.error("View error:", error);
     alert("Failed to load record details");
@@ -95,10 +109,9 @@ async function handleView(id) {
 }
 
 // ===================
-// EDIT FUNCTION (Redirect with ID)
+// EDIT FUNCTION
 // ===================
 function handleEdit(id) {
-  // Redirect to addupdation.html with edit query param
   window.location.href = `addupdation.html?edit=${id}`;
 }
 
@@ -107,15 +120,13 @@ function handleEdit(id) {
 // ===================
 async function handleDelete(id) {
   if (!confirm("Are you sure you want to delete this record?")) return;
-
   try {
     const res = await fetch(`http://127.0.0.1:8000/api/updations/${id}/`, {
       method: "DELETE",
     });
-
     if (res.status === 204 || res.ok) {
       alert("Record deleted successfully!");
-      loadProjects(); // refresh table
+      loadProjects();
     } else {
       alert("Error deleting record.");
     }
@@ -126,28 +137,137 @@ async function handleDelete(id) {
 }
 
 // ===================
-// Initialize
+// PAGINATION SYSTEM
 // ===================
-document.addEventListener("DOMContentLoaded", loadProjects);
+function paginate(page) {
+  const rows = document.querySelectorAll(".table-data tr");
+  const totalPages = Math.ceil(rows.length / rowsPerPage);
+  if (page < 1) page = 1;
+  if (page > totalPages) page = totalPages;
+  currentPage = page;
 
+  rows.forEach((row, i) => {
+    const start = (page - 1) * rowsPerPage;
+    const end = page * rowsPerPage;
+    row.style.display = i >= start && i < end ? "" : "none";
+  });
+}
 
- // Sidebar Active Menu Highlight
-  const currentPage = window.location.pathname.split("/").pop().toLowerCase();
-  const navLinks = document.querySelectorAll(".nav-list .nav-link");
-  navLinks.forEach((link) => {
-    const linkPage = link.getAttribute("href").toLowerCase();
-    if (linkPage === currentPage) {
-      link.classList.add("active");
+// ===================
+// SEARCH FUNCTION
+// ===================
+function initSearch() {
+  const searchInput = document.querySelector(".search-div input");
+  const searchBtn = document.querySelector(".custom-search");
+  const resetBtn = document.querySelector(".custom-reset");
+
+  function searchTable() {
+    const term = searchInput.value.toLowerCase().trim();
+    const filtered = allUpdations.filter(u =>
+      (u.client_name && u.client_name.toLowerCase().includes(term)) ||
+      (u.project_name && u.project_name.toLowerCase().includes(term)) ||
+      (u.status && u.status.toLowerCase().includes(term)) ||
+      (u.description && u.description.toLowerCase().includes(term))
+    );
+    renderTable(filtered);
+    attachRowEvents();
+    paginate(1);
+  }
+
+  searchBtn?.addEventListener("click", searchTable);
+  searchInput?.addEventListener("keyup", (e) => { if (e.key === "Enter") searchTable(); });
+  resetBtn?.addEventListener("click", () => {
+    searchInput.value = "";
+    renderTable(allUpdations);
+    attachRowEvents();
+    paginate(1);
+  });
+}
+
+// ===================
+// STATUS FILTER
+// ===================
+function initStatusFilter() {
+  const statusBtn = document.querySelector(".custom-category");
+  if (!statusBtn) return;
+
+  const statuses = [...new Set(allUpdations.map(u => u.status).filter(Boolean))];
+  let dropdownHtml = `
+    <ul class="dropdown-menu show" style="position:absolute; z-index:1000;">
+      <li><a class="dropdown-item status-option" data-status="all">All Status</a></li>
+      ${statuses.map(st => `<li><a class="dropdown-item status-option" data-status="${st}">${st}</a></li>`).join("")}
+    </ul>
+  `;
+
+  let dropdown = null;
+  statusBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (dropdown) {
+      dropdown.remove();
+      dropdown = null;
     } else {
-      link.classList.remove("active");
+      statusBtn.insertAdjacentHTML("afterend", dropdownHtml);
+      dropdown = statusBtn.nextElementSibling;
+
+      dropdown.querySelectorAll(".status-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+          const status = opt.dataset.status;
+          const filtered = status === "all" ? allUpdations : allUpdations.filter(u => u.status === status);
+          renderTable(filtered);
+          attachRowEvents();
+          paginate(1);
+          dropdown.remove();
+          dropdown = null;
+        });
+      });
     }
   });
 
-  // Sidebar Toggle (Mobile)
+  document.addEventListener("click", () => {
+    if (dropdown) {
+      dropdown.remove();
+      dropdown = null;
+    }
+  });
+}
+
+// ===================
+// INIT ON DOM CONTENT LOADED
+// ===================
+document.addEventListener("DOMContentLoaded", () => {
+  // Sidebar Active Menu Highlight
+  const currentPage = window.location.pathname.split("/").pop().toLowerCase();
+  const navLinks = document.querySelectorAll(".nav-list .nav-link");
+  navLinks.forEach((link) => {
+    link.classList.toggle("active", link.getAttribute("href").toLowerCase() === currentPage);
+  });
+
+  // Sidebar Toggle
   const sidebar = document.getElementById("sidebar");
   const toggleBtn = document.getElementById("sidebarToggle");
-  if (toggleBtn) {
-    toggleBtn.addEventListener("click", () => {
-      sidebar.classList.toggle("active");
+  if (toggleBtn) toggleBtn.addEventListener("click", () => sidebar.classList.toggle("active"));
+
+  // Load data
+  loadProjects();
+
+  // Pagination inputs
+  const pageInput = document.getElementById("pageInput");
+  pageInput?.addEventListener("input", () => {
+    const val = parseInt(pageInput.value.trim(), 10);
+    if (!isNaN(val) && val > 0) {
+      rowsPerPage = val;
+      paginate(1);
+    }
+  });
+
+  // Pagination links
+  document.querySelectorAll(".pagination .page-link").forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const text = link.innerText.toLowerCase();
+      if (text === "previous") paginate(currentPage - 1);
+      else if (text === "next") paginate(currentPage + 1);
+      else if (!isNaN(parseInt(text))) paginate(parseInt(text));
     });
-  }
+  });
+});
