@@ -13,16 +13,19 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from io import BytesIO
 from rest_framework.authtoken.models import Token
-
+from .models import Updation
+from .serializers import UpdationSerializer
 from xhtml2pdf import pisa
+from rest_framework import status
+
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 
 import json
 from functools import wraps
 
-from .models import Client, Quotation, Enquiry, Project
-from .serializers import ClientSerializer, QuotationSerializer, EnquirySerializer, ProjectSerializer
+from .models import Client, Quotation, Enquiry, Project, Updation
+from .serializers import ClientSerializer, QuotationSerializer, EnquirySerializer, ProjectSerializer, UpdationSerializer
 
 # ---------------------
 # Login with Token
@@ -343,6 +346,47 @@ Dhenu Technologies
         return JsonResponse({"error": str(e)}, status=500)
 
 
+class UpdationViewSet(viewsets.ModelViewSet):
+    queryset = Updation.objects.all().order_by('-id')
+    serializer_class = UpdationSerializer
+
+@api_view(['GET', 'POST'])
+def updations_api(request):
+    if request.method == 'GET':
+        updations = Updation.objects.all().order_by('-created_at')
+        serializer = UpdationSerializer(updations, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = UpdationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def updation_detail(request, pk):
+    try:
+        updation = Updation.objects.get(pk=pk)
+    except Updation.DoesNotExist:
+        return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = UpdationSerializer(updation)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = UpdationSerializer(updation, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        updation.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 # ===================
 # Dashboard Views
 # ===================
@@ -366,3 +410,6 @@ def enquiry(request):
 
 def expiry(request):
     return render(request, "expiry.html")
+
+def updation(request):
+    return render(request, "updation.html")

@@ -10,9 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <link rel="stylesheet" href="quotation.css">
+  <link rel="stylesheet" href="updation.css">
 </head>
- 
+
 <body>  
 
 <div class="d-flex">  
@@ -85,9 +85,9 @@
       <!-- Header -->
       <div class="dashboard-head d-flex justify-content-between align-items-center px-3 flex-nowrap mb-4">
           <!-- Toggle button for mobile -->
-          <button class="btn toggle-btn d-lg-none me-2" id="sidebarToggle">☰</button>
+          <button class="btn toggle-btn d-lg-none " id="sidebarToggle">☰</button>
 
-          <h1 class="dashboard m-0 flex-grow-1 text-start">Quotation</h1>
+          <h1 class="dashboard m-0 flex-grow-1 text-start">Updation</h1>
           <div class="d-flex align-items-center ms-auto">
               <img src="images/logo.png" alt="Profile" class="rounded-circle" style="width:40px; height:40px;">
           </div>
@@ -96,8 +96,8 @@
       <!-- Main Content -->
       <div class="main-content p-3">
           <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
-             <p class="mb-2 sub-main">List of Quotation</p>
-             <button class="btn custombtn btn-primary" onclick="window.location.href='addquotation.html'">+ Add Quotation</button>
+             <p class="mb-2 sub-main">List of Updation</p>
+             <button class="btn custombtn btn-primary" onclick="window.location.href='addupdation.html'">+ Add Updation</button>
           </div>
 
           <!-- Search Section -->
@@ -111,11 +111,12 @@
             </div>
             </div>
 
-                    <div class="col-lg-2 col-md-4 col-6">
+              <div class="col-lg-2 col-md-4 col-6">
   <button class="btn custom-category dropdown-toggle w-100" type="button">
     All Category
   </button>
 </div>
+
               <div class="col-lg-2 col-md-4 col-6">
                   <button class="btn custom-search custom-search w-100">Search</button>
               </div>
@@ -130,58 +131,56 @@
                   <thead class="table-light">
                       <tr>
                           <th>SL No</th>
-                          <th>Date</th>
-                          <th>Quotation Number</th>
-                          <th>Company Name</th>
+                          <th>Client Name</th>
+                          <th>Project Name </th>
+                          <th>Status</th>
                           <th>Description</th>
-                          <th>Price</th>
                           <th>Action</th>
                       </tr>
                   </thead>
                   <tbody class="table-data">
-                      <!--data will be displyed dynamically from the quotation.js-->
+                      <!-- Rows will be inserted dynamically from Clients.js -->
                   </tbody>
               </table>
           </div>
 
           <!-- Pagination -->
          <div class="d-flex justify-content-end align-items-center flex-wrap mt-3">
-  <nav>
-    <ul class="pagination mb-0">
-      <li class="page-item">
-        <input type="number" id="pageInput" class="page-input" min="1" value="1">
-      </li>
-      <li class="page-item"><a class="page-link prev-next" href="#">Previous</a></li>
-      <li class="page-item"><a class="page-link" href="#">1</a></li>
-      <li class="page-item"><a class="page-link" href="#">2</a></li>
-      <li class="page-item"><a class="page-link" href="#">3</a></li>
-      <li class="page-item"><a class="page-link prev-next" href="#">Next</a></li>
-    </ul>
-  </nav>
-</div>
+            <nav>
+              <ul class="pagination mb-0">
+                <li class="page-item">
+                  <input type="number" id="pageInput" class="page-input" min="1" value="1">
+                </li>
+                <li class="page-item"><a class="page-link prev-next" href="#">Previous</a></li>
+                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link prev-next" href="#">Next</a></li>
+              </ul>
+            </nav>
+         </div>
       </div>
   </div>
 </div>
-<!-- View Modal -->
-<div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+<!-- View Client Modal -->
+<div class="modal fade" id="viewClientModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="viewModalLabel">Quotation Details</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title">Updation Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body" id="viewModalBody">
-        Loading...
+      <div class="modal-body" id="viewClientBody">
+        <!-- Client details will be injected here -->
       </div>
-      <div class="modal-footer">
+       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
 </div>
 
-
-<script src="quotation.js"></script>
+<script src="updation.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

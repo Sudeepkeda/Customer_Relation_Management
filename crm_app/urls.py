@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
-from .views import login_view, ClientViewSet, QuotationViewSet, EnquiryViewSet, ProjectViewSet,  user_profile
+from .views import login_view, ClientViewSet, QuotationViewSet, EnquiryViewSet, ProjectViewSet,  user_profile, UpdationViewSet
 from . import views
 from .views import send_renewal_mail
 
@@ -11,6 +11,7 @@ router.register(r'clients', ClientViewSet, basename='client')
 router.register(r'quotations', QuotationViewSet, basename='quotation')
 router.register(r'enquiries', EnquiryViewSet, basename='enquiry')
 router.register(r'projects', ProjectViewSet, basename='project')  
+router.register(r'updations', UpdationViewSet, basename='updation')
 
 
 
@@ -33,5 +34,7 @@ urlpatterns = [
     path("expiry/", views.expiry, name="expiry"),
     path("api/send-renewal-mail/<int:pk>/", views.send_renewal_mail, name="send_renewal_mail"),
     path("api/send-quotation-mail/<int:pk>/", views.send_quotation_mail, name="send_quotation_mail"),
+    path('api/updations/', views.updations_api, name='updations_api'),
+    path('api/updations/<int:pk>/', views.updation_detail, name='updation_detail'),
 
 ]

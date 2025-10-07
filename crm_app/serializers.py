@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Client, Quotation, Enquiry, Project
+from .models import Client, Quotation, Enquiry, Project, Updation
 
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -74,3 +74,9 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = "__all__"
+
+
+class UpdationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Updation
+        fields = '__all__'

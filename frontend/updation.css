@@ -1,0 +1,266 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: #F7F7F7;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 265px;
+  height: 100vh;
+  background: #FFFFFF;
+  position: fixed;
+  top: 0;
+  left: -265px; /* hidden by default on mobile */
+  transition: left 0.3s ease;
+  z-index: 1050;
+}
+
+.sidebar.active {
+  left: 0; /* slide in on mobile */
+}
+
+/* Content */
+.content-wrapper {
+  margin-left: 0;
+  width: 100%;
+}
+
+/* Large screens */
+@media (min-width: 992px) {
+  .sidebar {
+    left: 0;
+  }
+  .content-wrapper {
+    margin-left: 265px;
+    width: calc(100% - 265px);
+  }
+}
+
+
+
+/* Nav links */
+.nav-list .nav-link {
+  font-weight: 500;
+  color: #333 !important;
+  padding: 10px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.nav-list .nav-link:hover,
+.nav-list .active {
+  background: rgba(0, 141, 210, 0.2);
+  color: #000 !important;
+}
+.logout .nav-link:hover {
+  color: #dc3545 !important;
+}
+
+/* Sidebar Icons */
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+/* Header */
+.dashboard-head {
+  height: auto;
+  background-color: #FFF;
+  border-radius: 10px;
+  margin: 20px 10px 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+  padding: 20px 20px;
+
+}
+
+.dashboard {
+  font-size: 20px;
+  font-weight: 600;
+  color: #000;
+  white-space: nowrap;
+  margin-top: 15px;
+}
+
+.toggle-btn {
+  font-size: 22px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+
+}
+
+/* Main Content */
+.main-content {
+  border-radius: 20px;
+  background-color: #FFFFFF;
+  margin: 20px 10px 20px 24px;
+}
+
+.sub-main {
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.custombtn{
+  background-color: #008DD2;
+  font-size:14px ;
+  border-radius: 25px;
+  height: 40px;
+  width: 150px;
+}
+
+.custombtn:hover {
+  background-color: #008DD2 !important;
+  color: #fff !important;
+  border-color: #008DD2 !important;
+}
+
+
+
+.custom-category{
+  background-color: #F2F4F5;
+  font-size: 14px;
+  font-weight: 500;
+  color: #191C1F;
+  width: 154px;
+  height: 52px;
+}
+
+.custom-search{
+  color:#FFFFFF;
+  font-size: 16px;
+  font-weight: 400;
+  border-radius: 5px;
+  background-color: #008DD2;
+  width: 100px;
+  height: 52px;
+}
+
+.custom-reset{
+  font-size: 16px;
+  font-weight: 700;
+  color:  #141414;
+  background-color:#FFF ;
+  border: 2px solid #141414;
+  border-radius: 5px;
+  width: 94px;
+  height: 52px;
+}
+
+.table-responsive{
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+
+
+
+.table th,
+.table td {
+  border: none !important; /* removes all borders */
+}
+
+.table-light{
+  font-size: 16px;
+  font-style: bold;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.table-data{
+  font-size: 14px;
+  font-weight: 400;
+  color: #232323;
+}
+
+.table td:nth-child(2) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+
+/* Pagination */
+.page-input {
+  width: 60px;
+  padding: 6px 8px;
+  border-radius: 5px;
+  text-align: center;
+  border: 2px solid #e0dddd;
+  outline: none;
+  margin-right: 8px; /* spacing before "Previous" */
+}
+
+
+.page-link{
+  border: none;
+  color: #000;
+}
+
+.page-link:not(.prev-next):hover {
+  background-color: #9FD3E8;
+  color: #000;
+  border-radius: 7px;
+}
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .dashboard-head,
+  .main-content {
+    margin-left: 10px !important;  /* reduce left space */
+    margin-right: 10px !important; /* keep it even */
+  }
+}
+
+
+
+/* Table responsive scroll only on small devices */
+@media (max-width: 576px) {
+  .table-responsive {
+    overflow-x: auto;   /* allow horizontal scroll */
+    overflow-y: hidden; /* prevent vertical scroll */
+    -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+  }
+
+  .table {
+    min-width: 700px;   /* force wider table so it can scroll */
+  }
+}
+
+
+
+.input-group .form-control,
+.input-group .input-group-text {  
+    border: none !important;
+    box-shadow: none !important; /* removes Bootstrap’s focus shadow */
+}
+
+
+.custom-search:hover {
+  background-color: #000000 !important; /* darker black */
+  color: #fff !important;
+}
+
+.custom-reset:hover {
+  background-color: #f0f0f0 !important; /* light gray */
+  border-color: #000 !important; /* darker border */
+  color: #000 !important;
+}
+
+.table td .btn img {
+  width: 16px;
+  height: 16px;
+}
+
+.table td .btn {
+  padding: 2px 4px; /* smaller clickable area */
+}
