@@ -17,6 +17,8 @@ from .models import Updation
 from .serializers import UpdationSerializer
 from xhtml2pdf import pisa
 from rest_framework import status
+import json
+import traceback
 
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -149,6 +151,12 @@ from django.core.mail import EmailMessage
 from io import BytesIO
 from xhtml2pdf import pisa
 from .models import Quotation
+from django.conf import settings
+import os
+import base64
+import traceback
+from datetime import date
+import json
 
 @csrf_exempt
 def send_quotation_mail(request, pk):
@@ -161,74 +169,306 @@ def send_quotation_mail(request, pk):
         return JsonResponse({"error": "Quotation not found"}, status=404)
 
     try:
-        service_name = quotation.description or "Requested Service"
         client_name = quotation.person_name or quotation.company_name or "Client"
+        company_name = quotation.company_name or "-"
         recipient_email = quotation.email
+        quotation_date = date.today().strftime("%d-%m-%Y")
 
         # ------------------------
-        # 1️⃣ Create HTML for PDF
+        # Parse Services Data
         # ------------------------
+        services_data = quotation.services
+        if isinstance(services_data, str):
+            try:
+                services_data = json.loads(services_data)
+            except Exception:
+                services_data = []
+        elif not isinstance(services_data, list):
+            services_data = []
+
+        # Section builder
+        def get_service_html(title, html):
+            return f"""
+            <div style="page-break-before: always;">
+                <h2 style="color:#2e2e2e; border-bottom:1px solid #ccc; padding-bottom:5px;">{title}</h2>
+                <div>{html}</div>
+            </div>
+            """
+
+        section_map = {
+            "about_us": "About Us",
+            "technical": "Technical Details",
+            "scope": "Scope of Work",
+            "pricing": "Pricing",
+        }
+
         services_html = ""
-        for service in quotation.services:
-            service_type = service.get("type", "")
-            content = service.get("content", "")
-            services_html += f"<h3>{service_type.capitalize()}</h3>{content}<br/>"
-
-        html_content = f"""
-        <html>
-        <head>
-        <style>
-        body {{ font-family: Arial, sans-serif; font-size: 12px; }}
-        h1 {{ color: #333; }}
-        h2 {{ color: #444; margin-bottom: 5px; }}
-        h3 {{ color: #555; margin-bottom: 5px; }}
-        table, th, td {{ border: 1px solid #333; border-collapse: collapse; padding: 5px; }}
-        </style>
-        </head>
-        <body>
-        <h1>Quotation for {service_name}</h1>
-        <p><strong>Client:</strong> {client_name}</p>
-        <p><strong>Company:</strong> {quotation.company_name}</p>
-        <p><strong>Contact:</strong> {quotation.contact}</p>
-        <p><strong>Email:</strong> {quotation.email}</p>
-        <hr/>
-        <h2>Services</h2>
-        {services_html}
-        </body>
-        </html>
-        """
+        for s in services_data:
+            if not isinstance(s, dict):
+                continue
+            s_type = s.get("type", "").lower()
+            s_title = section_map.get(s_type, s_type.title())
+            s_content = s.get("content", "")
+            services_html += get_service_html(s_title, s_content)
 
         # ------------------------
-        # 2️⃣ Generate PDF with xhtml2pdf
+        # Handle Logo - Use Base64 Encoding
+        # ------------------------
+        logo_html = """
+        <div style="width:180px; height:80px; background:linear-gradient(135deg, #008DD2, #0056b3); display:flex; align-items:center; justify-content:center; border-radius:8px; border:2px solid #008DD2;">
+            <span style="color:white; font-size:16px; font-weight:bold; text-align:center;">DHENU<br>TECHNOLOGIES</span>
+        </div>
+        """
+        
+        # Try to load and encode the actual logo
+        logo_paths_to_try = [
+            os.path.join(settings.BASE_DIR, "frontend", "static", "frontend", "images", "dhenu.png"),
+            os.path.join(settings.BASE_DIR, "frontend", "static", "images", "dhenu.png"),
+            os.path.join(settings.BASE_DIR, "static", "frontend", "images", "dhenu.png"),
+            os.path.join(settings.BASE_DIR, "frontend", "images", "dhenu.png"),
+        ]
+        
+        logo_loaded = False
+        for logo_path in logo_paths_to_try:
+            if os.path.exists(logo_path):
+                try:
+                    with open(logo_path, "rb") as image_file:
+                        encoded_logo = base64.b64encode(image_file.read()).decode()
+                        logo_html = f'<img src="data:image/png;base64,{encoded_logo}" style="max-width:180px; max-height:80px;" alt="Dhenu Technologies Logo" />'
+                        print("✅ Logo loaded successfully from:", logo_path)
+                        logo_loaded = True
+                        break
+                except Exception as e:
+                    print(f"⚠️ Failed to encode logo from {logo_path}: {e}")
+                    continue
+        
+        if not logo_loaded:
+            print("⚠️ No logo file found, using placeholder")
+
+        # ------------------------
+        # Compose full HTML - FIXED VERSION
+        # ------------------------
+        html_content = f"""
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+  @page {{
+    size: A4;
+    margin: 0;
+    
+    @frame header_frame {{
+      -pdf-frame-content: header_content;
+      left: 40pt;
+      top: 0pt;
+      width: 515pt;
+      height: 120pt;
+    }}
+    
+    @frame footer_frame {{
+      -pdf-frame-content: footer_content;
+      left: 40pt;
+      bottom: 0pt;
+      width: 515pt;
+      height: 60pt;
+    }}
+    
+    @frame content_frame {{
+      left: 40pt;
+      top: 120pt;
+      right: 40pt;
+      bottom: 60pt;
+    }}
+  }}
+  
+  body {{
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #222;
+    margin: 0;
+    padding: 0;
+  }}
+  h1, h2, h3 {{
+    color: #333;
+    margin: 5px 0;
+  }}
+  table, th, td {{
+    border-collapse: collapse;
+    padding: 4px;
+  }}
+  .company-box {{
+      display: inline-block;
+      border: 1px solid #000;
+      padding: 10px 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #333;
+      line-height: 1.3;
+      border-radius: 4px;
+      background-color: #fff;
+  }}
+  .notice {{
+      margin-top: 60px;
+      font-size: 14px;
+      text-align: center;
+  }}
+  .page-break {{
+      page-break-before: always;
+  }}
+  .footer-table {{
+      width: 100%;
+      font-size: 12px;
+      color: gray;
+      border-top: 1px solid #ccc;
+      padding-top: 4px;
+      line-height: 1.3;
+  }}
+  .logo-container {{
+      width: 200px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+  }}
+  .logo-img {{
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+  }}
+</style>
+</head>
+
+<body>
+
+<!-- ========================= -->
+<!-- COVER PAGE -->
+<!-- ========================= -->
+<div style="text-align:center; margin-top:0;">
+  <h1 style="font-size:16px;margin-top:80px;">Proposal for<br/>{quotation.description or 'Requested Service'}</h1>
+  <h3 style="margin-top:25px; font-size:14px;">Client: {client_name}</h3>
+  <p style="font-size:13px;"><b>Company:</b> {company_name}</p>
+  <p style="font-size:13px;"><b>Date:</b> {quotation_date}</p>
+
+  <!-- Company Box -->
+  <div style="margin-top:25px;">
+    <div class="company-box">
+      <b style="color:#008DD2;">Dhenu</b><b style="color:#000;"> Technologies</b><br/>
+      <span style="color:grey;">
+        Kamadhenu, #1069, Ground Floor,<br/>
+        10th Cross, 3rd Main, Nandanavana Layout,<br/>
+        West Sector, Bukkasagara, Jigani,<br/>
+        Bengaluru - 560083<br/>
+        Contact: +91 9663688088 / +91 9480181899
+      </span>
+    </div>
+  </div>
+
+  <!-- NOTICE -->
+  <div class="notice">
+    <h3 style="font-size:16px; margin-top:48px;">NOTICE</h3>
+    <p>
+      This document contains proprietary information, which is protected by ownership.<br/>
+      No part of this document may be photocopied, reproduced or translated into another
+      programming language without prior written consent of DHENU TECHNOLOGIES.
+    </p>
+    <p>
+      Dissemination of the information and/or concepts contained herein to parties other
+      than employees and clients is prohibited without the written consent of
+      DHENU TECHNOLOGIES.
+    </p>
+    <p>
+      Copyright © {date.today().year} by DHENU TECHNOLOGIES, all rights reserved.
+    </p>
+  </div>
+</div>
+
+<!-- ========================= -->
+<!-- SERVICES CONTENT (Next Pages) -->
+<!-- ========================= -->
+<div class="page-break">
+  {services_html}
+</div>
+
+<!-- ========================= -->
+<!-- HEADER (All Pages) - Moved to end for better rendering -->
+<!-- ========================= -->
+<div id="header_content">
+  <table width="100%" style="font-size:9px; line-height:1.2;">
+    <tr valign="middle">
+      <td width="25%" align="left">
+        <div class="logo-container">
+          {logo_html}
+        </div>
+      </td>
+      <td width="75%" align="right" style="padding:0;">
+        <div style="font-size:16px; font-weight:bold;">
+          <span style="color:#008DD2;">DHENU </span><span style="color:grey;">TECHNOLOGIES</span>
+        </div>
+        <div style="margin-top:2px; color:grey; font-size:14px;">
+          Kamadhenu, #1069, GF, 10th Cross, 3rd Main,<br/>
+          Nandanavana Layout West Sector,<br/>
+          Bukkasagara, Jigani, Bengaluru – 560083
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" align="center" style="font-size:12px; padding-top:2px;color:grey;">
+        Mobile: 9663688088 / 9480181899 – Email: contact@dhenutechnologies.com – Web: www.dhenutechnologies.com
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" style="border-top:1px solid #888; margin-top:5px;"></td>
+    </tr>
+  </table>
+</div>
+
+<!-- ========================= -->
+<!-- FOOTER (All Pages) - Moved to end for better rendering -->
+<!-- ========================= -->
+<div id="footer_content">
+  <table class="footer-table">
+    <tr>
+      <td align="center">
+        Domain Registration | Web Hosting Server | Website Designing and Development | 
+        Visual Designing | Mobile Application Design | Branding | Packaging Designing | 
+        Corporate Identity | Photography
+      </td>
+    </tr>
+  </table>
+</div>
+
+</body>
+</html>
+"""
+
+        # ------------------------
+        # Generate PDF
         # ------------------------
         pdf_file = BytesIO()
         pisa_status = pisa.CreatePDF(html_content, dest=pdf_file)
         if pisa_status.err:
+            print("❌ PDF generation error:", pisa_status.err)
             return JsonResponse({"error": "Failed to generate PDF"}, status=500)
         pdf_file.seek(0)
 
         # ------------------------
-        # 3️⃣ Send Email with your template
+        # Send Email
         # ------------------------
-        subject = f"📄 Quotation for {service_name} – As Discussed"
+        subject = f"Proposal for {quotation.description or 'Requested Service'}"
         body = f"""
 Dear {client_name},
 
-Greetings from Dhenu Technologies!
+Please find attached the detailed proposal for your requested project.
 
-As discussed, please find attached the quotation for the required services based on your current needs and requirements. The proposal includes details of the scope of work, deliverables, and pricing for your review.
+We appreciate your interest in Dhenu Technologies and look forward to working with you.
 
-We are confident that our solution will help you achieve your goals efficiently and effectively.
-
-If you have any questions or would like to proceed with the next steps, please feel free to contact us at 📞 +91 96636 88088‬.
-
-Looking forward to your confirmation.
-
-Best regards,
-Sathya Shankara P K
-Dhenu Technologies
-📞 +91 96636 88088‬
-📧 info@dhenutechnologies.com
+Best regards,  
+Sathya Shankara P K  
+Dhenu Technologies  
+📞 +91 96636 88088  
+📧 info@dhenutechnologies.com  
 🌐 https://dhenutechnologies.com
 """
         email = EmailMessage(
@@ -243,8 +483,10 @@ Dhenu Technologies
         return JsonResponse({"success": True, "email": recipient_email})
 
     except Exception as e:
+        print("\n=== SEND QUOTATION MAIL ERROR ===")
+        traceback.print_exc()
+        print("=== END ERROR ===\n")
         return JsonResponse({"error": str(e)}, status=500)
-
 # ===================
 # Enquiry
 # ===================
