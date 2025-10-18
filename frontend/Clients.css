@@ -256,3 +256,17 @@ body {
 .table td .btn {
   padding: 2px 4px; /* smaller clickable area */
 }
+
+
+
+.btn-success{
+  background-color: #565656 !important;
+  border: none !important;
+}
+
+.btn-success{
+  font-size:14px ;
+  border-radius: 25px;
+  height: 40px;
+  width: 150px;
+}
