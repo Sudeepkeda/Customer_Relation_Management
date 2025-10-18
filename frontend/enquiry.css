@@ -264,3 +264,9 @@ body {
 .table td .btn {
   padding: 2px 4px; /* smaller clickable area */
 }
+
+
+.btn-success{
+  background-color: #565656 !important;
+  border: none !important;
+}

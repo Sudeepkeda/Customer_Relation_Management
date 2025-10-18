@@ -22,12 +22,68 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const tableBody = document.querySelector(".table-data");
   let allEnquiries = []; // full list for filtering
+  let currentFiltered = []; // current filtered data for export
+  let currentStatus = 'all'; // current status filter
+  
+  //profile redirection
   const profileLogo = document.querySelector(".dashboard-head img");
     if (profileLogo) {
       profileLogo.addEventListener("click", () => {
         window.location.href = "profile.html";
       });
     }
+
+  // ===================
+  // Apply Filters Function
+  // ===================
+  function applyFilters() {
+    const searchInput = document.querySelector(".search-div input");
+    const term = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    let filtered = [...allEnquiries];
+
+    // Term filter
+    if (term) {
+      filtered = filtered.filter(c =>
+        (c.company_name && c.company_name.toLowerCase().includes(term)) ||
+        (c.person_name && c.person_name.toLowerCase().includes(term)) ||
+        (c.email && c.email.toLowerCase().includes(term)) ||
+        (c.status && c.status.toLowerCase().includes(term))
+      );
+    }
+
+    // Date filter
+    const fromDateInput = document.getElementById('fromDate');
+    const toDateInput = document.getElementById('toDate');
+    const fromDate = fromDateInput ? fromDateInput.value : '';
+    const toDate = toDateInput ? toDateInput.value : '';
+
+    if (fromDate) {
+      const fromD = new Date(fromDate);
+      filtered = filtered.filter(c => {
+        if (!c.date) return false;
+        return new Date(c.date) >= fromD;
+      });
+    }
+
+    if (toDate) {
+      const toD = new Date(toDate + 'T23:59:59');
+      filtered = filtered.filter(c => {
+        if (!c.date) return false;
+        return new Date(c.date) <= toD;
+      });
+    }
+
+    // Status filter
+    if (currentStatus !== 'all') {
+      filtered = filtered.filter(c => c.status === currentStatus);
+    }
+
+    currentFiltered = filtered;
+    renderTable(filtered);
+    initActions();
+    paginate(1);
+  }
+
   // ===================
   // Fetch Enquiries
   // ===================
@@ -37,12 +93,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!response.ok) throw new Error("Failed to fetch enquiries");
 
       allEnquiries = await response.json();
-      renderTable(allEnquiries);
-
-      initActions();
+      currentFiltered = [...allEnquiries];
       initSearchAndPagination();
-      paginate(1);
       initStatusFilter();
+      applyFilters();
 
     } catch (err) {
       console.error("Error loading enquiries:", err);
@@ -164,22 +218,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     const searchBtn = document.querySelector(".custom-search");
     const resetBtn = document.querySelector(".custom-reset");
 
-    function searchTable() {
-      const term = searchInput.value.toLowerCase().trim();
-      const filtered = allEnquiries.filter(c =>
-        (c.company_name && c.company_name.toLowerCase().includes(term)) ||
-        (c.person_name && c.person_name.toLowerCase().includes(term)) ||
-        (c.email && c.email.toLowerCase().includes(term)) ||
-        (c.status && c.status.toLowerCase().includes(term))
-      );
-      renderTable(filtered);
-      initActions();
-      paginate(1);
-    }
-
-    searchBtn?.addEventListener("click", searchTable);
-    searchInput?.addEventListener("keyup", (e) => { if (e.key === "Enter") searchTable(); });
-    resetBtn?.addEventListener("click", () => { searchInput.value = ""; renderTable(allEnquiries); initActions(); paginate(1); });
+    searchBtn?.addEventListener("click", applyFilters);
+    searchInput?.addEventListener("keyup", (e) => { if (e.key === "Enter") applyFilters(); });
+    resetBtn?.addEventListener("click", () => { 
+      if (searchInput) searchInput.value = "";
+      const fromDateInput = document.getElementById('fromDate');
+      const toDateInput = document.getElementById('toDate');
+      if (fromDateInput) fromDateInput.value = "";
+      if (toDateInput) toDateInput.value = "";
+      currentStatus = 'all';
+      const statusBtn = document.querySelector(".custom-category");
+      if (statusBtn) statusBtn.innerText = 'All Status';
+      applyFilters();
+    });
 
     // Pagination
     let rowsPerPage = 10;
@@ -249,11 +300,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         dropdown.querySelectorAll(".status-option").forEach(opt => {
           opt.addEventListener("click", () => {
-            const status = opt.dataset.status;
-            const filtered = status === "all" ? allEnquiries : allEnquiries.filter(c => c.status === status);
-            renderTable(filtered);
-            initActions();
-            window.paginate(1);
+            currentStatus = opt.dataset.status;
+            statusBtn.innerText = opt.innerText;
+            applyFilters();
             dropdown.remove();
             dropdown = null;
           });
@@ -275,34 +324,62 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Load enquiries on page load
   await loadEnquiries();
 
+  
 const exportBtn = document.getElementById("exportBtn");
 
 exportBtn.addEventListener("click", () => {
-  if (!allEnquiries.length) {
-    alert("No clients to export!");
+  if (!currentFiltered.length) {
+    alert("No enquiries to export!");
+    return;
+  }
+
+  // Pagination filter — include only currently visible rows
+  const rowsPerPage = parseInt(document.getElementById("pageInput")?.value || "10", 10);
+  const tableRows = Array.from(document.querySelectorAll(".table-data tr"));
+  const visibleRows = tableRows.filter(row => row.style.display !== "none");
+
+  // Get visible enquiry indexes (based on the first <td> column index)
+  const visibleIndexes = visibleRows.map(row => {
+    const idxCell = row.querySelector("td:first-child");
+    return idxCell ? parseInt(idxCell.textContent, 10) - 1 : -1;
+  }).filter(i => i >= 0);
+
+  // Filter only the visible (paginated) enquiries
+  const exportData = visibleIndexes.map(i => currentFiltered[i]);
+
+  if (!exportData.length) {
+    alert("No visible enquiries to export!");
     return;
   }
 
   // Map data for Excel
-  const data = allEnquiries.map(c => ({
+  const data = exportData.map(c => ({
+    "Date": c.date || "-",
     "Person Name": c.person_name || "-",
     "Company Name": c.company_name || "-",
     "Contact Number": c.contact_number || "-",
     "Email": c.email || "-",
-    "Status": c.status || "-",
     "Website": c.website || "-",
+    "Status": c.status || "-",
     "Comments": c.comments || "-",
   }));
 
   // Create worksheet
   const ws = XLSX.utils.json_to_sheet(data);
 
+  // Auto-size columns
+  const colWidths = Object.keys(data[0]).map(key => ({
+    wch: Math.max(key.length + 2, ...data.map(r => (r[key]?.length || 0) + 2))
+  }));
+  ws["!cols"] = colWidths;
+
   // Create workbook and append
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Enquiry");
+  XLSX.utils.book_append_sheet(wb, ws, "Filtered_Enquiries");
 
   // Download Excel file
-  XLSX.writeFile(wb, "Enquiry_List.xlsx");
+  XLSX.writeFile(wb, "Filtered_Enquiries.xlsx");
 });
+
 
 });

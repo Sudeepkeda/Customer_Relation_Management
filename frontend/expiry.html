@@ -96,26 +96,42 @@
           </div>
 
 
+          <!-- Date Filter Section -->
+          <div class="row g-2 align-items-end mb-3">
+              <div class="col-lg-1 col-md-4">
+                  <label for="fromDate" class="form-label">From Date</label>
+                  <input type="date" id="fromDate" class="form-control">
+              </div>
+              <div class="col-lg-1 col-md-4">
+                  <label for="toDate" class="form-label">To Date</label>
+                  <input type="date" id="toDate" class="form-control">
+              </div>
+        
           <!-- Search Section -->
-          <div class="row g-2 align-items-center search-div">
-            <div class="col-lg-6 col-md-12">
-               <div class="input-group border rounded">
+            <div class="col-lg-4 col-md-12 search-div">
+                <div class="input-group border rounded">
                 <input type="text" class="form-control border-0" placeholder="Search for anything...">
                     <span class="input-group-text bg-white border-0">
                         <i class="bi bi-search"></i>
                     </span>
             </div>
             </div>
-            <div class="col-lg-2 col-md-4 col-6">
-              <button class="btn custom-category dropdown-toggle w-100" type="button">All Category</button>
-            </div>
-            <div class="col-lg-2 col-md-4 col-6">
-              <button class="btn custom-search w-100">Search</button>
-            </div>
-            <div class="col-lg-2 col-md-4 col-12">
-              <button class="btn custom-reset w-100">Reset</button>
-            </div>
-          </div>
+
+                            <div class="col-lg-2 col-md-4 col-6">
+                <button class="btn custom-category dropdown-toggle w-100" type="button">
+                    All Status
+                </button>
+                </div>
+
+              <div class="col-lg-2 col-md-4 col-6">
+                  <button class="btn custom-search custom-search w-100">Search</button>
+              </div>
+              <div class="col-lg-2 col-md-4 col-12">
+                  <button class="btn custom-reset  w-100">Reset</button>
+              </div>
+          
+        </div>
+
 
           <!-- Responsive Table -->
           <div class="table-responsive mt-3">
