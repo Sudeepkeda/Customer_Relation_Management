@@ -223,7 +223,7 @@ def send_quotation_mail(request, pk):
             services_html += get_service_html(s_title, s_content)
 
         # Handle Logo
-        logo_html = """<div style="width:180px; height:80px; background:linear-gradient(135deg, #008DD2, #0056b3); display:table-cell; vertical-align:middle; text-align:center; border-radius:8px; border:2px solid #008DD2;"><span style="color:white; font-size:16px; font-weight:bold;">DHENU<br/>TECHNOLOGIES</span></div>"""
+        logo_html = """<div style="width:150px; height:60px; background:linear-gradient(135deg, #008DD2, #0056b3); display:table-cell; vertical-align:middle; text-align:center; border-radius:6px; border:2px solid #008DD2;"><span style="color:white; font-size:14px; font-weight:bold;">DHENU<br/>TECHNOLOGIES</span></div>"""
         
         logo_paths_to_try = [
             os.path.join(settings.BASE_DIR, "frontend", "static", "frontend", "images", "dhenu.png"),
@@ -238,7 +238,7 @@ def send_quotation_mail(request, pk):
                 try:
                     with open(logo_path, "rb") as image_file:
                         encoded_logo = base64.b64encode(image_file.read()).decode()
-                        logo_html = f'<img src="data:image/png;base64,{encoded_logo}" style="max-width:180px; max-height:80px;" alt="Dhenu Technologies Logo" />'
+                        logo_html = f'<img src="data:image/png;base64,{encoded_logo}" style="max-width:150px; max-height:60px;" alt="Dhenu Technologies Logo" />'
                         print("✅ Logo loaded successfully from:", logo_path)
                         logo_loaded = True
                         break
@@ -249,49 +249,48 @@ def send_quotation_mail(request, pk):
         if not logo_loaded:
             print("⚠️ No logo file found, using placeholder")
 
-        # Create reusable header HTML
+        # Create reusable header HTML - Optimized for space
         header_html = f"""
-  <table width="100%" style="font-size:9px; line-height:1.2; border:none; margin-:10px;">
-    <tr>
-      <td width="25%" align="left" style="border:none;">
-        {logo_html}
-      </td>
-      <td width="75%" align="right" style="border:none; padding:0;">
-        <div style="font-size:14px; font-weight:bold;">
-          <span style="color:#008DD2;">DHENU </span><span style="color:grey;">TECHNOLOGIES</span>
-        </div>
-        <div style="margin-top:2px; color:grey; font-size:11px;">
-          Kamadhenu, #1069, GF, 10th Cross, 3rd Main,<br/>
-          Nandanavana Layout West Sector,<br/>
-          Bukkasagara, Jigani, Bengaluru – 560083
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" align="center" style="font-size:10px; padding-top:2px; color:grey; border:none;">
-        Mobile: 9663688088 / 9480181899 – Email: contact@dhenutechnologies.com – Web: www.dhenutechnologies.com
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" style="border:none; border-top:1px solid #888; padding:0; height:1px;"></td>
-    </tr>
-  </table>
+<table width="100%" style="font-size:9px; line-height:1.1; border:none; margin:0; padding:0;">
+  <tr>
+    <td width="20%" align="left" style="border:none; padding:0; vertical-align:top;">
+      {logo_html}
+    </td>
+    <td width="80%" align="right" style="border:none; padding:0; vertical-align:top;">
+      <div style="font-size:13px; font-weight:bold; margin-bottom:1px;">
+        <span style="color:#008DD2;">DHENU </span><span style="color:grey;">TECHNOLOGIES</span>
+      </div>
+      <div style="font-size:8.5px; color:grey; line-height:1.2;">
+        Kamadhenu, #1069, GF, 10th Cross, 3rd Main,<br/>
+        Nandanavana Layout West Sector, Bukkasagara,<br/>
+        Jigani, Bengaluru – 560083
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" style="font-size:8px; padding-top:1px; color:grey; border:none;">
+      Mobile: 9663688088 / 9480181899 | Email: contact@dhenutechnologies.com | Web: www.dhenutechnologies.com
+    </td>
+  </tr>
+</table>
+<div style="border-top:1px solid #888; margin-top:2px;"></div>
 """
 
         # Create reusable footer HTML
         footer_html = """
-  <table width="100%" style="font-size:10px; color:gray; border:none; margin-top:10px;">
-    <tr>
-      <td align="center" style="border:none; border-top:1px solid #ccc; padding-top:4px;">
-        Domain Registration | Web Hosting Server | Website Designing and Development | 
-        Visual Designing | Mobile Application Design | Branding | Packaging Designing | 
-        Corporate Identity | Photography
-      </td>
-    </tr>
-  </table>
+<div style="border-top:1px solid #ccc; margin-bottom:2px;"></div>
+<table width="100%" style="font-size:8.5px; color:gray; border:none; margin:0; padding:0;">
+  <tr>
+    <td align="center" style="border:none; padding-top:2px; line-height:1.3;">
+      Domain Registration | Web Hosting Server | Website Designing and Development | 
+      Visual Designing | Mobile Application Design | Branding | Packaging Designing | 
+      Corporate Identity | Photography
+    </td>
+  </tr>
+</table>
 """
 
-        # Compose full HTML with static header on each page
+        # Compose full HTML with proper header/footer using xhtml2pdf frame syntax
         html_content = f"""
 <!DOCTYPE html>
 <html>
@@ -300,7 +299,23 @@ def send_quotation_mail(request, pk):
 <style>
   @page {{
     size: A4;
-    margin: 1cm 1cm 1cm 1cm;
+    margin: 3.2cm 1cm 2.5cm 1cm;
+    
+    @frame header {{
+      -pdf-frame-content: headerContent;
+      top: 0.5cm;
+      margin-left: 1cm;
+      margin-right: 1cm;
+      height: 2.5cm;
+    }}
+    
+    @frame footer {{
+      -pdf-frame-content: footerContent;
+      bottom: 0.5cm;
+      margin-left: 1cm;
+      margin-right: 1cm;
+      height: 1.8cm;
+    }}
   }}
   
   body {{
@@ -395,24 +410,26 @@ def send_quotation_mail(request, pk):
     page-break-inside: avoid;
   }}
   
-  .page-header {{
-    margin-bottom: 10px;
-  }}
-  
-  .page-footer {{
-    margin-top: 10px;
+  .cover-page {{
+    page-break-after: always;
   }}
 </style>
 </head>
 
 <body>
 
-<!-- COVER PAGE WITH HEADER -->
-<div class="page-header">
+<!-- Header content (appears on every page) -->
+<div id="headerContent">
 {header_html}
 </div>
 
-<div style="text-align:center; margin-top:20px; page-break-after: always;">
+<!-- Footer content (appears on every page) -->
+<div id="footerContent">
+{footer_html}
+</div>
+
+<!-- COVER PAGE -->
+<div class="cover-page" style="text-align:center; margin-top:20px;">
   <h1 style="font-size:16px;">Proposal for<br/>{quotation.description or 'Requested Service'}</h1>
   <h3 style="margin-top:25px; font-size:14px;">Client: {client_name}</h3>
   <p style="font-size:13px;"><b>Company:</b> {company_name}</p>
@@ -449,21 +466,8 @@ def send_quotation_mail(request, pk):
   </div>
 </div>
 
-<div class="page-footer">
-{footer_html}
-</div>
-
-<!-- CONTENT PAGES WITH HEADER -->
-<div class="page-header">
-{header_html}
-</div>
-
-<!-- SERVICES CONTENT (flows naturally across pages) -->
+<!-- SERVICES CONTENT -->
 {services_html}
-
-<div class="page-footer">
-{footer_html}
-</div>
 
 </body>
 </html>
