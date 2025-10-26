@@ -271,3 +271,19 @@ body {
   height: 40px;
   width: 150px;
 }
+
+.table-like-grid .col-md-4,
+.table-like-grid .col-12 {
+  border: 1px solid #dee2e6;
+  border-top: none; /* Avoid double top border on first row */
+}
+.table-like-grid .col-md-4:not(:last-child) {
+  border-right: 1px solid #dee2e6; /* Vertical lines */
+}
+.table-like-grid .row {
+  margin: 0;
+}
+.table-like-grid .col-md-4,
+.table-like-grid .col-12 {
+  padding: 0.75rem; /* Equivalent to p-3 */
+}

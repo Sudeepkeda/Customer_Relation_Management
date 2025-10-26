@@ -161,14 +161,26 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (!res.ok) throw new Error("Failed to fetch details");
           const q = await res.json();
 
-          let servicesHtml = "";
+            let servicesHtml = "";
+          const sectionMap = {
+            about_us: "About Us",
+            about: "About Us",
+            technical: "Technical Details of Design Services",
+            tech: "Technical Details of Design Services",
+            scope: "Out of Scope",
+            pricing: "Pricing"
+          };
+
           (q.services || []).forEach(s => {
+            const key = (s.type || "").toLowerCase();
+            const title = sectionMap[key] || key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
             servicesHtml += `
               <div style="margin-bottom: 15px;">
-                <h6 style="margin-bottom:5px; font-size: 14px; font-weight: bold;">${s.type}</h6>
+                <h6 style="margin-bottom:5px; font-size: 14px; font-weight: bold;">${title}</h6>
                 <div>${s.content}</div>
               </div>`;
           });
+
 
           document.getElementById("viewModalBody").innerHTML = `
             <div class="container-fluid">

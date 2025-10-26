@@ -157,7 +157,6 @@ import base64
 import traceback
 from datetime import date
 import json
-
 @csrf_exempt
 def send_quotation_mail(request, pk):
     if request.method != "POST":
@@ -174,9 +173,7 @@ def send_quotation_mail(request, pk):
         recipient_email = quotation.email
         quotation_date = date.today().strftime("%d-%m-%Y")
 
-        # ------------------------
         # Parse Services Data
-        # ------------------------
         services_data = quotation.services
         if isinstance(services_data, str):
             try:
@@ -189,38 +186,45 @@ def send_quotation_mail(request, pk):
         # Section builder
         def get_service_html(title, html):
             return f"""
-            <div style="page-break-before: always;">
-                <h2 style="color:#2e2e2e; border-bottom:1px solid #ccc; padding-bottom:5px;">{title}</h2>
-                <div>{html}</div>
-            </div>
-            """
+        <div class="service-section">
+            <h2 class="section-title">{title}</h2>
+            <div class="section-content">{html}</div>
+        </div>
+        """
 
         section_map = {
             "about_us": "About Us",
-            "technical": "Technical Details",
-            "scope": "Scope of Work",
+            "about": "About Us",
+            "technical": "Technical Details of Design Services",
+            "tech": "Technical Details of Design Services",
+            "scope": "Out of Scope",
             "pricing": "Pricing",
         }
 
-        services_html = ""
+        order = ["about", "about_us", "tech", "technical", "scope", "pricing"]
+
+        services_to_show = []
         for s in services_data:
             if not isinstance(s, dict):
                 continue
-            s_type = s.get("type", "").lower()
+            s_type = s.get("type", "").lower().strip()
+            if s_type in section_map:
+                matching_key = next((k for k in order if k == s_type), None)
+                if matching_key:
+                    services_to_show.append((matching_key, s))
+
+        services_to_show.sort(key=lambda x: order.index(x[0]))
+
+        services_html = ""
+        for _, s in services_to_show:
+            s_type = s.get("type", "").lower().strip()
             s_title = section_map.get(s_type, s_type.title())
             s_content = s.get("content", "")
             services_html += get_service_html(s_title, s_content)
 
-        # ------------------------
-        # Handle Logo - Use Base64 Encoding
-        # ------------------------
-        logo_html = """
-        <div style="width:180px; height:80px; background:linear-gradient(135deg, #008DD2, #0056b3); display:flex; align-items:center; justify-content:center; border-radius:8px; border:2px solid #008DD2;">
-            <span style="color:white; font-size:16px; font-weight:bold; text-align:center;">DHENU<br>TECHNOLOGIES</span>
-        </div>
-        """
+        # Handle Logo
+        logo_html = """<div style="width:180px; height:80px; background:linear-gradient(135deg, #008DD2, #0056b3); display:table-cell; vertical-align:middle; text-align:center; border-radius:8px; border:2px solid #008DD2;"><span style="color:white; font-size:16px; font-weight:bold;">DHENU<br/>TECHNOLOGIES</span></div>"""
         
-        # Try to load and encode the actual logo
         logo_paths_to_try = [
             os.path.join(settings.BASE_DIR, "frontend", "static", "frontend", "images", "dhenu.png"),
             os.path.join(settings.BASE_DIR, "frontend", "static", "images", "dhenu.png"),
@@ -245,113 +249,175 @@ def send_quotation_mail(request, pk):
         if not logo_loaded:
             print("⚠️ No logo file found, using placeholder")
 
-        # ------------------------
-        # Compose full HTML - FIXED VERSION
-        # ------------------------
+        # Create reusable header HTML
+        header_html = f"""
+  <table width="100%" style="font-size:9px; line-height:1.2; border:none; margin-:10px;">
+    <tr>
+      <td width="25%" align="left" style="border:none;">
+        {logo_html}
+      </td>
+      <td width="75%" align="right" style="border:none; padding:0;">
+        <div style="font-size:14px; font-weight:bold;">
+          <span style="color:#008DD2;">DHENU </span><span style="color:grey;">TECHNOLOGIES</span>
+        </div>
+        <div style="margin-top:2px; color:grey; font-size:11px;">
+          Kamadhenu, #1069, GF, 10th Cross, 3rd Main,<br/>
+          Nandanavana Layout West Sector,<br/>
+          Bukkasagara, Jigani, Bengaluru – 560083
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" align="center" style="font-size:10px; padding-top:2px; color:grey; border:none;">
+        Mobile: 9663688088 / 9480181899 – Email: contact@dhenutechnologies.com – Web: www.dhenutechnologies.com
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" style="border:none; border-top:1px solid #888; padding:0; height:1px;"></td>
+    </tr>
+  </table>
+"""
+
+        # Create reusable footer HTML
+        footer_html = """
+  <table width="100%" style="font-size:10px; color:gray; border:none; margin-top:10px;">
+    <tr>
+      <td align="center" style="border:none; border-top:1px solid #ccc; padding-top:4px;">
+        Domain Registration | Web Hosting Server | Website Designing and Development | 
+        Visual Designing | Mobile Application Design | Branding | Packaging Designing | 
+        Corporate Identity | Photography
+      </td>
+    </tr>
+  </table>
+"""
+
+        # Compose full HTML with static header on each page
         html_content = f"""
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8"/>
 <style>
   @page {{
     size: A4;
-    margin: 0;
-    
-    @frame header_frame {{
-      -pdf-frame-content: header_content;
-      left: 40pt;
-      top: 0pt;
-      width: 515pt;
-      height: 120pt;
-    }}
-    
-    @frame footer_frame {{
-      -pdf-frame-content: footer_content;
-      left: 40pt;
-      bottom: 0pt;
-      width: 515pt;
-      height: 60pt;
-    }}
-    
-    @frame content_frame {{
-      left: 40pt;
-      top: 120pt;
-      right: 40pt;
-      bottom: 60pt;
-    }}
+    margin: 1cm 1cm 1cm 1cm;
   }}
   
   body {{
     font-family: Arial, sans-serif;
     font-size: 11px;
-    line-height: 1.5;
+    line-height: 1.4;
     color: #222;
     margin: 0;
     padding: 0;
   }}
+  
   h1, h2, h3 {{
     color: #333;
     margin: 5px 0;
+    page-break-after: avoid;
   }}
-  table, th, td {{
+  
+  .section-title {{  
+    page-break-after: avoid;
+  }}
+  
+  table {{
     border-collapse: collapse;
     padding: 4px;
+    page-break-inside: auto;
+    width: 100%;
+    table-layout: auto;
   }}
+  
+  th, td {{
+    border: 1px solid #ccc;
+    padding: 4px;
+    word-wrap: break-word;
+    page-break-inside: avoid;
+  }}
+  
+  tr {{  
+    page-break-inside: avoid;
+  }}
+  
   .company-box {{
-      display: inline-block;
-      border: 1px solid #000;
-      padding: 10px 20px;
-      text-align: center;
-      font-size: 12px;
-      color: #333;
-      line-height: 1.3;
-      border-radius: 4px;
-      background-color: #fff;
+    display: inline-block;
+    border: 1px solid #000;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 12px;
+    color: #333;
+    line-height: 1.3;
+    border-radius: 4px;
+    background-color: #fff;
   }}
+  
   .notice {{
-      margin-top: 60px;
-      font-size: 14px;
-      text-align: center;
+    margin-top: 60px;
+    font-size: 14px;
+    text-align: center;
   }}
-  .page-break {{
-      page-break-before: always;
+  
+  .service-section {{
+    page-break-inside: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ccc;
   }}
-  .footer-table {{
-      width: 100%;
-      font-size: 12px;
-      color: gray;
-      border-top: 1px solid #ccc;
-      padding-top: 4px;
-      line-height: 1.3;
+  
+  .section-content {{  
+    page-break-inside: auto;
+    word-wrap: break-word;
+    white-space: normal;
   }}
-  .logo-container {{
-      width: 200px;
-      height: 100px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
+  
+  .service-section p {{  
+    page-break-inside: auto;
+    margin-bottom: 1em;
+    word-wrap: break-word;
   }}
-  .logo-img {{
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
+  
+  .service-section table {{  
+    page-break-inside: auto;
+  }}
+  
+  .service-section div {{  
+    page-break-inside: auto;
+    word-wrap: break-word;
+    margin-bottom: 1em;
+  }}
+  
+  img {{
+    max-width: 100%;
+    height: auto;
+    page-break-inside: avoid;
+  }}
+  
+  .page-header {{
+    margin-bottom: 10px;
+  }}
+  
+  .page-footer {{
+    margin-top: 10px;
   }}
 </style>
 </head>
 
 <body>
 
-<!-- ========================= -->
-<!-- COVER PAGE -->
-<!-- ========================= -->
-<div style="text-align:center; margin-top:0;">
-  <h1 style="font-size:16px;margin-top:80px;">Proposal for<br/>{quotation.description or 'Requested Service'}</h1>
+<!-- COVER PAGE WITH HEADER -->
+<div class="page-header">
+{header_html}
+</div>
+
+<div style="text-align:center; margin-top:20px; page-break-after: always;">
+  <h1 style="font-size:16px;">Proposal for<br/>{quotation.description or 'Requested Service'}</h1>
   <h3 style="margin-top:25px; font-size:14px;">Client: {client_name}</h3>
   <p style="font-size:13px;"><b>Company:</b> {company_name}</p>
   <p style="font-size:13px;"><b>Date:</b> {quotation_date}</p>
 
-  <!-- Company Box -->
   <div style="margin-top:25px;">
     <div class="company-box">
       <b style="color:#008DD2;">Dhenu</b><b style="color:#000;"> Technologies</b><br/>
@@ -365,7 +431,6 @@ def send_quotation_mail(request, pk):
     </div>
   </div>
 
-  <!-- NOTICE -->
   <div class="notice">
     <h3 style="font-size:16px; margin-top:48px;">NOTICE</h3>
     <p>
@@ -384,78 +449,36 @@ def send_quotation_mail(request, pk):
   </div>
 </div>
 
-<!-- ========================= -->
-<!-- SERVICES CONTENT (Next Pages) -->
-<!-- ========================= -->
-<div class="page-break">
-  {services_html}
+<div class="page-footer">
+{footer_html}
 </div>
 
-<!-- ========================= -->
-<!-- HEADER (All Pages) - Moved to end for better rendering -->
-<!-- ========================= -->
-<div id="header_content">
-  <table width="100%" style="font-size:9px; line-height:1.2;">
-    <tr valign="middle">
-      <td width="25%" align="left">
-        <div class="logo-container">
-          {logo_html}
-        </div>
-      </td>
-      <td width="75%" align="right" style="padding:0;">
-        <div style="font-size:16px; font-weight:bold;">
-          <span style="color:#008DD2;">DHENU </span><span style="color:grey;">TECHNOLOGIES</span>
-        </div>
-        <div style="margin-top:2px; color:grey; font-size:14px;">
-          Kamadhenu, #1069, GF, 10th Cross, 3rd Main,<br/>
-          Nandanavana Layout West Sector,<br/>
-          Bukkasagara, Jigani, Bengaluru – 560083
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" align="center" style="font-size:12px; padding-top:2px;color:grey;">
-        Mobile: 9663688088 / 9480181899 – Email: contact@dhenutechnologies.com – Web: www.dhenutechnologies.com
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" style="border-top:1px solid #888; margin-top:5px;"></td>
-    </tr>
-  </table>
+<!-- CONTENT PAGES WITH HEADER -->
+<div class="page-header">
+{header_html}
 </div>
 
-<!-- ========================= -->
-<!-- FOOTER (All Pages) - Moved to end for better rendering -->
-<!-- ========================= -->
-<div id="footer_content">
-  <table class="footer-table">
-    <tr>
-      <td align="center">
-        Domain Registration | Web Hosting Server | Website Designing and Development | 
-        Visual Designing | Mobile Application Design | Branding | Packaging Designing | 
-        Corporate Identity | Photography
-      </td>
-    </tr>
-  </table>
+<!-- SERVICES CONTENT (flows naturally across pages) -->
+{services_html}
+
+<div class="page-footer">
+{footer_html}
 </div>
 
 </body>
 </html>
 """
 
-        # ------------------------
         # Generate PDF
-        # ------------------------
         pdf_file = BytesIO()
-        pisa_status = pisa.CreatePDF(html_content, dest=pdf_file)
+        html_bytes = BytesIO(html_content.encode("UTF-8"))
+        pisa_status = pisa.CreatePDF(html_bytes, dest=pdf_file)
         if pisa_status.err:
             print("❌ PDF generation error:", pisa_status.err)
             return JsonResponse({"error": "Failed to generate PDF"}, status=500)
         pdf_file.seek(0)
 
-        # ------------------------
         # Send Email
-        # ------------------------
         subject = f"Proposal for {quotation.description or 'Requested Service'}"
         body = f"""
 Dear {client_name},
