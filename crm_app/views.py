@@ -251,7 +251,7 @@ def send_quotation_mail(request, pk):
 
         # Create reusable header HTML - Optimized for space
         header_html = f"""
-<table width="100%" style="font-size:12px; line-height:1.1; border:none; margin:0; padding:0;">
+<table width="100%" style="font-size:9px; line-height:1.1; border:none; margin:0; padding:0;">
   <tr>
     <td width="20%" align="left" style="border:none; padding:0; vertical-align:top;">
       {logo_html}
@@ -260,7 +260,7 @@ def send_quotation_mail(request, pk):
       <div style="font-size:13px; font-weight:bold; margin-bottom:1px;">
         <span style="color:#008DD2;">DHENU </span><span style="color:grey;">TECHNOLOGIES</span>
       </div>
-      <div style="font-size:10px; color:grey; line-height:1.2;">
+      <div style="font-size:8.5px; color:grey; line-height:1.2;">
         Kamadhenu, #1069, GF, 10th Cross, 3rd Main,<br/>
         Nandanavana Layout West Sector, Bukkasagara,<br/>
         Jigani, Bengaluru – 560083
@@ -279,9 +279,9 @@ def send_quotation_mail(request, pk):
         # Create reusable footer HTML
         footer_html = """
 <div style="border-top:1px solid #ccc; margin-bottom:2px;"></div>
-<table width="100%" style="font-size:12px; color:gray; border:none; margin:0; padding:0;">
+<table width="100%" style="border:none; margin:0; padding:0;">
   <tr>
-    <td align="center" style="border:none; padding-top:2px; line-height:1.3;">
+    <td align="center" style="font-size:12px; color:gray; border:none; padding-top:2px; line-height:1.3;">
       Domain Registration | Web Hosting Server | Website Designing and Development | 
       Visual Designing | Mobile Application Design | Branding | Packaging Designing | 
       Corporate Identity | Photography
@@ -307,7 +307,6 @@ def send_quotation_mail(request, pk):
       margin-left: 1cm;
       margin-right: 1cm;
       height: 2.5cm;
-      font-size: 12px;
     }}
     
     @frame footer {{
@@ -380,7 +379,6 @@ def send_quotation_mail(request, pk):
     margin-top: 20px;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #ccc;
   }}
   
   .section-content {{  
@@ -431,7 +429,7 @@ def send_quotation_mail(request, pk):
 
 <!-- COVER PAGE -->
 <div class="cover-page" style="text-align:center; margin-top:20px;">
-  <h1 style="font-size:14px;">Proposal for<br/>{quotation.description or 'Requested Service'}</h1>
+  <h1 style="font-size:16px;">Proposal for<br/>{quotation.description or 'Requested Service'}</h1>
   <h3 style="margin-top:25px; font-size:14px;">Client: {client_name}</h3>
   <p style="font-size:13px;"><b>Company:</b> {company_name}</p>
   <p style="font-size:13px;"><b>Date:</b> {quotation_date}</p>
