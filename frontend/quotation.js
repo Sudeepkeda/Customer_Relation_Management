@@ -190,12 +190,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <div class="col-md-4"><strong>Company:</strong> ${q.company_name || "-"}</div>
                 <div class="col-md-4"><strong>Industry:</strong> ${q.industry || "-"}</div>
                 <div class="col-md-4"><strong>Person:</strong> ${q.person_name || "-"}</div>
-                <div class="col-md-4"><strong>Contact:</strong> ${q.contact_number || "-"}</div>
-                <div class="col-md-4"><strong>Email:</strong> ${q.email || "-"}</div>
-                <div class="col-md-4"><strong>Website:</strong> ${q.website || "-"}</div>
-                <div class="col-md-4"><strong>Address:</strong> ${q.address || "-"}</div>
-                <div class="col-md-4"><strong>Price:</strong> ₹${q.price ? Number(q.price).toFixed(2) : "0.00"}</div>
-                <div class="col-12"><strong>Description:</strong> ${q.description || "-"}</div>
+                <div class="col-md-4"><strong>Contact:</strong> ${q.contact || "-"}</div>
+                <div class="col-md-6"><strong>Email:</strong> ${q.email || "-"}</div>
+                <div class="col-md-6"><strong>Website:</strong> ${q.website || "-"}</div>
+                <div class="col-md-6"><strong>Address:</strong> ${q.address || "-"}</div>
+                <div class="col-md-6"><strong>Price:</strong> ₹${q.price ? Number(q.price).toFixed(2) : "0.00"}</div>
+                <div class="col-6"><strong>Description:</strong> ${q.description || "-"}</div>
               </div>
               <hr>
               <h6 class="fw-bold mb-2">Services:</h6>
