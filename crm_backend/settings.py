@@ -133,7 +133,6 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend')]
 
 
 # Default primary key field type
@@ -141,7 +140,8 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend')]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
+CSRF_TRUSTED_ORIGINS = ['https://crm.design-bharat.com', 'https://www.crm.design-bharat.com']
+# REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -151,7 +151,7 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5500",   # if running HTML via Live Server
+    "https://crm.design-bharat.com",
 ]
 
 
