@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">    
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Fonts + Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/addupdation.css">
+</head>
+
+<body>  
+<div class="d-flex flex-nowrap">  
+  <!-- Sidebar -->
+  <div class="sidebar d-flex flex-column p-3" id="sidebar">
+      <!-- Logo -->
+      <div class="logo mb-4 text-center">
+          <img src="/static/images/logo.png" alt="Logo" class="img-fluid" style="max-height:54px;">
+      </div>
+
+      <!-- Navigation -->
+      <ul class="nav flex-column nav-list">
+          <li class="nav-item mb-2">
+              <a class="nav-link d-flex align-items-center" href="/dashboard">
+                  <img src="/static/images/dashboard.png" alt="dashboard" class="nav-icon"> 
+                  <span>Dashboard</span>
+              </a>
+          </li>
+           <li class="nav-item mb-2">
+              <a class="nav-link d-flex align-items-center" href="/enquiry">
+                  <img src="/static/images/enquiry.png" alt="Enquiry" class="nav-icon"> 
+                  <span>Enquiry</span>
+              </a>
+          </li>
+           <li class="nav-item mb-2">
+              <a class="nav-link d-flex align-items-center" href="/updation">
+                  <img src="/static/images/updation.png" alt="Updation" class="nav-icon"> 
+                  <span>Updation</span>
+              </a>
+          </li>
+          <li class="nav-item mb-2">
+              <a class="nav-link d-flex align-items-center" href="/clients">
+                  <img src="/static/images/clients.png" alt="clients" class="nav-icon"> 
+                  <span>Clients</span>
+              </a>
+          </li>
+          <li class="nav-item mb-2">
+              <a class="nav-link d-flex align-items-center" href="/quotation">
+                  <img src="/static/images/quotation.png" alt="Quotation" class="nav-icon"> 
+                  <span>Quotation</span>
+              </a>
+          </li>
+          <li class="nav-item mb-2">
+              <a class="nav-link d-flex align-items-center" href="/projects">
+                  <img src="/static/images/projects.png" alt="projects" class="nav-icon"> 
+                  <span>Projects</span>
+              </a>
+          </li>
+          
+         
+          <li class="nav-item mb-2">
+              <a class="nav-link d-flex align-items-center" href="/expiry">
+                  <img src="/static/images/expiry.png" alt="Expiry" class="nav-icon"> 
+                  <span>Expiry</span>
+              </a>
+          </li>
+      </ul>
+
+      <!-- Logout at bottom -->
+      <div class="logout mt-auto">
+          <a href="#" class="nav-link d-flex align-items-center">
+              <img src="/static/images/logout.png" alt="Logout" class="nav-icon"> 
+              <span>Logout</span>
+          </a>
+      </div>
+  </div>
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper flex-grow-1">
+      <!-- Header -->
+     <div class="dashboard-head d-flex justify-content-between align-items-center px-3 flex-nowrap mb-4">
+  <!-- Toggle button for mobile -->
+  <button class="btn toggle-btn d-lg-none" id="sidebarToggle">☰</button>
+
+  <h1 class="dashboard m-0 flex-grow-1">Add New Updation</h1>
+  <div class="d-flex align-items-center ms-auto">
+      <img src="/static/images/logo.png" alt="Profile" class="rounded-circle" style="width:40px; height:40px;">
+  </div>
+</div>
+
+      <!-- Main Content -->
+      <div class="main-content p-3 bg-white shadow-sm rounded-3">
+        <form id="updationForm">
+          <div class="row g-3">
+            <!-- Row 1 -->
+           
+            
+            <div class="col-lg-4 col-md-6">
+                <label for="clientName" class="form-label">Client Name</label>
+                <input type="text" class="form-control subtext" id="clientName" placeholder="Enter client name">
+            </div>
+
+             <div class="col-lg-4 col-md-6">
+                <label for="projectName" class="form-label">Name of the Project</label>
+                <input type="text" class="form-control subtext" id="projectName" placeholder="Enter project name" required>
+            </div>
+         
+            <div class="col-lg-4 col-md-6">
+                <label for="Status" class="form-label">Status</label>
+                <select class="form-select subtext" id="Status">
+                    <option value="">-- Select Status --</option>
+                    <option value="Inprogress">InProgress</option>
+                    <option value="Notstarted">Not Yet Started</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+
+             <div class="col-lg-4 col-md-6">
+                <label for="description" class="form-label">Description</label>
+            <textarea class="form-control subtext" id="description" placeholder="Enter  description" rows="4"></textarea>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <label for="date" class="form-label">Date</label>
+                <input type="date" class="form-control subtext" id="date" placeholder="Enter date" >
+            </div>
+         
+
+            <!-- Buttons -->
+            <div class="col-12 d-flex justify-content-start mt-3">
+                <button type="submit" class="btn custom-btn1 me-2">Save</button>
+                <button type="reset" id="cancelBtn" class="btn custom-btn2">Cancel</button>
+            </div>
+          </div>
+        </form>
+      </div>
+  </div>
+</div>
+
+<!-- External JS -->
+<script src="/static/addupdation.js"></script>
+
+</body>
+</html>

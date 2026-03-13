@@ -1,0 +1,157 @@
+from django.db import models
+from django.utils import timezone
+from django.db import transaction, IntegrityError
+
+
+class Client(models.Model):
+    company_name = models.CharField(max_length=255)
+    industry = models.CharField(max_length=255, blank=True, null=True)
+    person_name = models.CharField(max_length=255, blank=True, null=True)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    email = models.CharField(max_length=255)
+    website = models.CharField(max_length=255, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    gst = models.CharField(max_length=50, blank=True, null=True)
+    amc = models.CharField(max_length=10, blank=True, null=True)
+    amc_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    domain_name = models.CharField(max_length=255, blank=True, null=True)
+    domain_charges = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    domain_start_date = models.DateField(blank=True, null=True)
+    domain_end_date = models.DateField(blank=True, null=True)
+    server_details = models.TextField(blank=True, null=True)
+    server_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    server_start_date = models.DateField(blank=True, null=True)
+    server_end_date = models.DateField(blank=True, null=True)
+    maintenance_value = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    maintenance_start_date = models.DateField(blank=True, null=True)
+    maintenance_end_date = models.DateField(blank=True, null=True)
+    comments = models.TextField(blank=True, null=True)
+    PRIORITY_CHOICES = [
+        ("High", "High"),
+        ("Medium", "Medium"),
+        ("Low", "Low"),
+    ]
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, blank=True, null=True)
+   
+    STATUS_CHOICES = [
+    ("Active", "Active"),
+    ("InActive", "InActive"),
+    ]
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="InActive")
+
+
+    def __str__(self):
+        return self.company_name
+
+
+class Quotation(models.Model):
+    quotation_number = models.CharField(max_length=50, unique=True, editable=False)
+    quotation_date = models.DateField(auto_now_add=True)
+
+    # Enforce that every quotation must belong to a client
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=False, blank=False, related_name="quotations")
+
+    # snapshot fields (copied from Client at creation time)
+    company_name = models.CharField(max_length=200)
+    industry = models.CharField(max_length=200, blank=True, null=True)
+    person_name = models.CharField(max_length=200, blank=True, null=True)
+    contact = models.CharField(max_length=50, blank=True, null=True)
+    email = models.CharField(max_length=255)
+    website = models.CharField(max_length=255, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+
+    description = models.TextField(blank=True, null=True)
+    services = models.JSONField(blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+     if not self.quotation_number:
+        year_now = timezone.now().year
+        next_year = year_now + 1
+        year_format = f"{str(year_now)[-2:]}-{str(next_year)[-2:]}"
+        prefix = f"DT/Q/{year_format}-"
+
+        # Use transaction to avoid race conditions
+        with transaction.atomic():
+            last_quotation = (
+                Quotation.objects
+                .select_for_update()
+                .filter(quotation_number__startswith=prefix)
+                .order_by('-id')
+                .first()
+            )
+
+            if last_quotation:
+                try:
+                    last_number = int(last_quotation.quotation_number.split('-')[-1])
+                except (ValueError, IndexError):
+                    last_number = 0
+            else:
+                last_number = 0
+
+            new_number = last_number + 1
+            self.quotation_number = f"{prefix}{new_number:03d}"
+
+            try:
+                super().save(*args, **kwargs)
+            except IntegrityError:
+                # In rare case of collision, retry once
+                transaction.set_rollback(True)
+                return self.save(*args, **kwargs)
+     else:
+        super().save(*args, **kwargs)
+
+
+
+    def __str__(self):
+        return self.quotation_number
+
+    
+class Enquiry(models.Model):
+    company_name = models.CharField(max_length=255)
+    person_name = models.CharField(max_length=255, blank=True, null=True)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    email = models.CharField(max_length=255)
+    website = models.CharField(max_length=255, blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("Inprogress", "In Progress"),
+            ("Notstarted", "Not Yet Started"),
+            ("Completed", "Completed"),
+        ],
+        default="Notstarted",
+    )
+    comments = models.TextField(blank=True, null=True)
+
+    # Auto add date
+    date = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.company_name
+
+STATUS_CHOICES = [
+    ("Active", "Active"),
+    ("InActive", "InActive"),
+    ]
+
+
+class Project(models.Model):
+    project_name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    server_name = models.CharField(max_length=255, blank=True, null=True)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    email = models.CharField(max_length=255)
+    person_name = models.CharField(max_length=255)  # store free-text or existing
+    status = models.CharField(max_length=50, choices=[("Active", "Active"),("InActive", "InActive")], default="InActive")
+
+class Updation(models.Model):
+    client_name = models.CharField(max_length=200)
+    project_name = models.CharField(max_length=200)
+    status = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.project_name

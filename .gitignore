@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Environment
+venv/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+logs/
+
+# Gunicorn
+gunicorn.log
+gunicorn.pid
+
+# Server temp files
+nohup.out
+restart.txt
+
+# Static collected files
+staticfiles/
+
+# Zip backups
+*.zip
+
+# VS Code settings
+.vscode/
+
+# Git files
+.git/

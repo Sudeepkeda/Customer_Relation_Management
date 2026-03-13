@@ -1,0 +1,37 @@
+body {
+  background: #FAFAFA;
+  font-family: 'Poppins', sans-serif;
+}
+
+.login-card {
+  width: 397px;
+  height: 459px;
+  border-radius: 12px;
+  background-color: #FFFFFF;
+  border: none;
+  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.05);
+}
+
+.logo-img {
+  max-height: 54px;
+}
+
+.input-box {
+  height: 60px;
+  border-radius: 8px;
+  padding-left: 12px;
+}
+
+.login-btn {
+  width: 150px;
+  height: 45px;
+  border-radius: 10px;
+  background-color: #008DD2;
+  color: white;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  display: block;      
+  margin: 0 auto;   
+  border: none;    
+}
+

@@ -1,0 +1,153 @@
+// ===================
+// Add/Edit Enquiry
+// ===================
+document.addEventListener("DOMContentLoaded", async () => {
+  const form = document.getElementById("enquiryForm");
+  const editId = localStorage.getItem("editEnquiryId");
+  const token = localStorage.getItem("authToken");
+
+  // Redirect to login if not authenticated
+  if (!token) {
+    alert("Session expired. Please log in again.");
+    window.location.href = "/";
+    return;
+  }
+
+  // Cancel Button → Go back to Enquiry page
+  const cancelBtn = document.getElementById("cancelBtn");
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      window.location.href = "/enquiry";
+    });
+  }
+
+  // Profile logo redirect
+  const profileLogo = document.querySelector(".dashboard-head img");
+  if (profileLogo) {
+    profileLogo.addEventListener("click", () => {
+      window.location.href = "/user-profile/";
+    });
+  }
+
+  // Sidebar Active Menu Highlight
+  const currentPath = window.location.pathname.toLowerCase().replace(/\/$/, "");
+  const normalizedCurrent = currentPath.replace(/\.html$/, "");
+
+  document.querySelectorAll(".nav-list .nav-link").forEach(link => {
+    const linkHref = link.getAttribute("href").toLowerCase().replace(/\/$/, "");
+    const normalizedHref = linkHref.replace(/\.html$/, "");
+
+    if (
+      normalizedCurrent === normalizedHref ||
+      normalizedCurrent.startsWith(normalizedHref + "/")
+    ) {
+      link.classList.add("active");
+    } else {
+      link.classList.remove("active");
+    }
+  });
+
+  // Sidebar Toggle
+  const sidebar = document.getElementById("sidebar");
+  const toggleBtn = document.getElementById("sidebarToggle");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", function () {
+      sidebar.classList.toggle("active");
+    });
+  }
+
+  // -------------------
+  // If editing, fetch existing data
+  // -------------------
+  if (editId) {
+    try {
+      console.log("Trying to load enquiry ID:", editId);
+      const response = await fetch(`https://crm.design-bharat.com/api/enquiries/${editId}/`, {
+        headers: {
+          "Authorization": `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Status:", response.status);
+
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error("Error Response:", errText);
+        alert(`Failed to load enquiry for editing. (${response.status})`);
+        return;
+      }
+
+      const enquiry = await response.json();
+      console.log("Loaded Enquiry:", enquiry);
+
+      // Fill form fields
+      document.getElementById("companyName").value = enquiry.company_name || "";
+      document.getElementById("personName").value = enquiry.person_name || "";
+      document.getElementById("Contact").value = enquiry.contact_number || "";
+      document.getElementById("Email").value = enquiry.email || "";
+      document.getElementById("Website").value = enquiry.website || "";
+      document.getElementById("Status").value = enquiry.status || "";
+      document.getElementById("Comments").value = enquiry.comments || "";
+    } catch (err) {
+      console.error("Error loading enquiry:", err);
+      alert("Failed to load enquiry details.");
+    }
+  }
+
+  // -------------------
+  // Form submission
+  // -------------------
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = getFormData();
+
+    try {
+      let url = "https://crm.design-bharat.com/api/enquiries/";
+      let method = "POST";
+
+      if (editId) {
+        url += `${editId}/`;
+        method = "PUT";
+      }
+
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Token ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        alert(editId ? "Enquiry updated successfully!" : "Enquiry saved successfully!");
+        localStorage.removeItem("editEnquiryId");
+        window.location.href = "/enquiry";
+      } else {
+        const errorText = await response.text();
+        console.error("API Error:", errorText);
+        alert("Error saving enquiry. Please check console for details.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Server error. Please try again later.");
+    }
+  });
+
+  // -------------------
+  // Collect form data
+  // -------------------
+  function getFormData() {
+    const today = new Date().toISOString().split("T")[0];
+    return {
+      company_name: document.getElementById("companyName").value,
+      person_name: document.getElementById("personName").value,
+      contact_number: document.getElementById("Contact").value,
+      email: document.getElementById("Email").value,
+      website: document.getElementById("Website").value,
+      status: document.getElementById("Status").value,
+      comments: document.getElementById("Comments").value,
+      date: today
+    };
+  }
+}); // Properly closes the event listener

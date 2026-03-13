@@ -1,0 +1,85 @@
+/* ===== Body ===== */
+body {
+  font-family: 'Poppins', sans-serif;
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ===== Card ===== */
+.profile-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 30px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== Logo ===== */
+.profile-card .logo-img {
+  width: 80px;
+  border-radius: 50%;
+  border: 3px solid #2575fc;
+  transition: transform 0.3s ease;
+}
+
+.profile-card .logo-img:hover {
+  transform: rotate(10deg);
+}
+
+/* ===== Heading ===== */
+.profile-card p {
+  font-size: 1.3rem;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+/* ===== Form Inputs ===== */
+.input-box {
+  border-radius: 10px;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-box:focus {
+  border-color: #2575fc;
+  box-shadow: 0 0 8px rgba(37, 117, 252, 0.4);
+  outline: none;
+}
+
+/* ===== Save Button ===== */
+#saveProfileBtn {
+  background: #2575fc;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 12px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#saveProfileBtn:hover {
+  background: #6a11cb;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  .profile-card {
+    padding: 30px 20px;
+  }
+
+  .profile-card p {
+    font-size: 1.1rem;
+  }
+}
