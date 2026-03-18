@@ -102,13 +102,18 @@ body {
   padding: 20px;
 }
 
-.custom-card1 { background-color: #EDEEFC; }
-.custom-card2 { background-color: #E6F1FD; }
-.custom-card3 { background-color: #EDEEFC; }
-.custom-card4 { background-color: #daecfb; }
-.custom-card5 { background-color: #EDEEFC; }
-.custom-card6 { background-color: #e5e7f8; }
-.custom-card7 { background-color: #dfdff8; }
+.custom-card1 {  background-color: #31b0f0; }
+.custom-card2 {  background-color: #31b0f0; }
+.custom-card3 {  background-color: #71c7f2; }
+.custom-card4 {  background-color: #71c7f2; }
+.custom-card5 {  background-color: #71c7f2; }
+.custom-card6 {  background-color: #71c7f2; }
+.custom-card7 { background-color: #a1d8f3 ;}
+.custom-card8 { background-color: #31b0f0 ;}
+.custom-card9 { background-color: #31b0f0 ;}
+.custom-card10 { background-color: #a1d8f3 ; }
+.custom-card11 { background-color: #a1d8f3 ; }
+.custom-card12 { background-color: #a1d8f3 ; }
 
 
 .custom-title {

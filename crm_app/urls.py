@@ -3,6 +3,8 @@ from rest_framework import routers
 from django.conf import settings
 from django.conf.urls.static import static
 
+from django.contrib import admin
+
 from .views import (
     login_view, ClientViewSet, QuotationViewSet, EnquiryViewSet, ProjectViewSet,
     user_profile, UpdationViewSet, send_renewal_mail,ckeditor_upload,
@@ -19,18 +21,21 @@ router.register(r'quotations', QuotationViewSet, basename='quotation')
 router.register(r'enquiries', EnquiryViewSet, basename='enquiry')
 router.register(r'projects', ProjectViewSet, basename='project')
 router.register(r'updations', UpdationViewSet, basename='updation')
+router.register(r'todos', views.TodoViewSet, basename='todo')
 
 # ------------------------
 # URL Patterns
 # ------------------------
 urlpatterns = [
     # API Endpoints
+     path("admin/", admin.site.urls),
     path('api/login/', login_view, name='login'),
     path('api/user-profile/', user_profile, name='user_profile'),
     path('api/', include(router.urls)),
     path('api/send-renewal-email/', send_renewal_mail),
     path('api/send-renewal-mail/<int:pk>/', views.send_renewal_mail, name='send_renewal_mail'),
     path('api/send-quotation-mail/<int:pk>/', views.send_quotation_mail, name='send_quotation_mail'),
+    path("api/download-quotation/<int:pk>/", views.download_quotation_pdf),
     path('api/ckeditor-upload/', ckeditor_upload, name='ckeditor_upload'),
     
     # Frontend Views
@@ -48,6 +53,8 @@ urlpatterns = [
     path('expiry/', views.expiry, name='expiry'),
     path('updation/', views.updation, name='updation'),
     path('updation/add/', views.add_updations, name='add_updation'),
+    path('todo/', views.todo, name='todo'),
+    path('todo/add/', views.add_todo, name='add_todo'),
     path('user-profile/', views.user_profile_view, name='user_profile_page'),
 ]
 

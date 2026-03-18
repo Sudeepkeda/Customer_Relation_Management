@@ -7,16 +7,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   const personDropdown = document.getElementById("PersonName");
   const contactInput = document.getElementById("Contact");
   const emailInput = document.getElementById("Email");
+  const descriptionTextarea = document.getElementById("description");
 
   const token = localStorage.getItem("authToken");
 
   let personsData = [];
+  let descriptionEditor = null;
 
   // Redirect if not authenticated
   if (!token) {
-    alert("Session expired. Please log in again.");
+    //alert("Session expired. Please log in again.");
     window.location.href = "/";
     return;
+  }
+
+  // -----------------------------
+  // CKEditor for Project Description
+  // -----------------------------
+  if (window.CKEDITOR && descriptionTextarea) {
+    descriptionEditor = CKEDITOR.replace("description", {
+      height: 350,
+      extraPlugins: "uploadimage,colorbutton,font,justify,tableresize,tableselection",
+      removePlugins: "image2,exportpdf",
+      filebrowserUploadUrl: "/api/ckeditor-upload/",
+      filebrowserUploadMethod: "form",
+      uploadUrl: "/api/ckeditor-upload/",
+      allowedContent: true,
+      removeDialogTabs: "image:advanced;image:Link",
+    });
   }
 
   // -----------------------------
@@ -75,35 +93,47 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ==============================
   async function loadPersons(selectedPerson = null) {
     try {
-      const res = await fetch("https://crm.design-bharat.com/api/quotations/", {
+      const res = await fetch("https://crm.design-bharat.com/api/quotations/", { //https://crm.design-bharat.com
         headers: {
           "Authorization": token.startsWith("Token") ? token : "Token " + token,
           "Content-Type": "application/json",
         },
       });
 
-      personsData = await res.json();
+      const quotations = await res.json();
 
-      personDropdown.innerHTML = '<option value="">-- Select Person --</option>';
-
-      personsData.forEach((p) => {
-        const option = document.createElement("option");
-        option.value = p.person_name;
-        option.text = p.person_name;
-        option.dataset.contact = p.contact || "";
-        option.dataset.email = p.email || "";
-        personDropdown.appendChild(option);
-      });
-
-      if (selectedPerson) {
-        personDropdown.value = selectedPerson;
-        handlePersonChange();
+      // Build unique persons by name 
+    const uniquePersonsMap = new Map();
+    quotations.forEach((q) => {
+      const name = (q.person_name || "").trim();
+      if (!name) return; 
+      if (!uniquePersonsMap.has(name)) {
+        uniquePersonsMap.set(name, {
+          person_name: name,
+          contact: q.contact || "",
+          email: q.email || "",
+        });
       }
-    } catch (err) {
-      console.error("Failed to load persons:", err);
-      alert("Failed to load persons list.");
+    });
+    const uniquePersons = Array.from(uniquePersonsMap.values());
+    personDropdown.innerHTML = '<option value="">-- Select Person --</option>';
+    uniquePersons.forEach((p) => {
+      const option = document.createElement("option");
+      option.value = p.person_name;
+      option.text = p.person_name;
+      option.dataset.contact = p.contact || "";
+      option.dataset.email = p.email || "";
+      personDropdown.appendChild(option);
+    });
+    if (selectedPerson) {
+      personDropdown.value = selectedPerson;
+      handlePersonChange();
     }
+  } catch (err) {
+    console.error("Failed to load persons:", err);
+    //alert("Failed to load persons list.");
   }
+}
 
   function handlePersonChange() {
     const selected = personDropdown.options[personDropdown.selectedIndex];
@@ -120,7 +150,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (editProject) {
     document.getElementById("ProjectName").value = editProject.project_name || "";
-    document.getElementById("description").value = editProject.description || "";
+    if (descriptionEditor) {
+      descriptionEditor.setData(editProject.description || "");
+    } else {
+      document.getElementById("description").value = editProject.description || "";
+    }
     document.getElementById("ServerName").value = editProject.server_name || "";
     document.getElementById("projectstatus").value = editProject.status || "";
 
@@ -144,7 +178,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const data = {
       project_name: document.getElementById("ProjectName").value,
-      description: document.getElementById("description").value,
+      description: descriptionEditor ? descriptionEditor.getData() : document.getElementById("description").value,
       server_name: document.getElementById("ServerName").value,
       contact_number: contactInput.value,
       email: emailInput.value,
@@ -169,16 +203,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       if (res.ok) {
-        alert(editProject ? "Project updated successfully!" : "Project saved successfully!");
+       // alert(editProject ? "Project updated successfully!" : "Project saved successfully!");
         window.location.href = "/projects";
       } else {
         const errText = await res.text();
         console.error("API Error:", errText);
-        alert("Error saving project: " + errText);
+        //alert("Error saving project: " + errText);
       }
     } catch (err) {
       console.error(err);
-      alert("Server error. Please try again later.");
+      //alert("Server error. Please try again later.");
     }
   });
 

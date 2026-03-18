@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Client, Quotation, Enquiry, Project, Updation
+from .models import Client, Quotation, Enquiry, Project, Updation, Todo
 from datetime import date
 
 class ClientSerializer(serializers.ModelSerializer):
@@ -151,3 +151,31 @@ class UpdationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Updation
         fields = '__all__'
+
+
+class TodoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Todo
+        fields = "__all__"
+
+    def validate(self, attrs):
+        status = attrs.get("status", getattr(self.instance, "status", None))
+        task_date = attrs.get("task_date", getattr(self.instance, "task_date", None))
+        postpone_to = attrs.get("postpone_to", getattr(self.instance, "postpone_to", None))
+        start_time = attrs.get("start_time", getattr(self.instance, "start_time", None))
+        end_time = attrs.get("end_time", getattr(self.instance, "end_time", None))
+
+        if status == Todo.STATUS_POSTPONED and not postpone_to:
+            raise serializers.ValidationError({"postpone_to": "Postpone date is required when status is Postponed."})
+
+        if status != Todo.STATUS_POSTPONED and postpone_to:
+            # keep data clean (UI can still set it accidentally)
+            attrs["postpone_to"] = None
+
+        if task_date and postpone_to and postpone_to < task_date:
+            raise serializers.ValidationError({"postpone_to": "Postpone date cannot be before task date."})
+
+        if start_time and end_time and end_time < start_time:
+            raise serializers.ValidationError({"end_time": "End time cannot be before start time."})
+
+        return attrs

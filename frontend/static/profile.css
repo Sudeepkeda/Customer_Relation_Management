@@ -19,10 +19,6 @@ body {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.profile-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-}
 
 /* ===== Logo ===== */
 .profile-card .logo-img {
@@ -32,9 +28,6 @@ body {
   transition: transform 0.3s ease;
 }
 
-.profile-card .logo-img:hover {
-  transform: rotate(10deg);
-}
 
 /* ===== Heading ===== */
 .profile-card p {
@@ -68,7 +61,7 @@ body {
 }
 
 #saveProfileBtn:hover {
-  background: #6a11cb;
+  background: #2575fc;
   transform: translateY(-2px);
   box-shadow: 0 8px 15px rgba(0,0,0,0.2);
 }

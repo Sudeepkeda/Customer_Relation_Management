@@ -1,3 +1,5 @@
+const BASE_URL = "https://crm.design-bharat.com";
+
 document.getElementById("loginBtn").addEventListener("click", async function () {
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
@@ -8,7 +10,7 @@ document.getElementById("loginBtn").addEventListener("click", async function () 
   }
 
   try {
-    const response = await fetch("https://crm.design-bharat.com/api/login/", {
+    const response = await fetch(`${BASE_URL}/api/login/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -20,21 +22,21 @@ document.getElementById("loginBtn").addEventListener("click", async function () 
 
    if (response.ok && data.token)
  {
-      // ✅ Save token securely
+      // Save token securely
       localStorage.setItem("authToken", data.token);
 
-      // ✅ Optional: store username for display in dashboard/profile
+      // Optional: store username for display in dashboard/profile
       localStorage.setItem("username", username);
 
       alert("Login successful!");
 
-      // ✅ Redirect to dashboard (always without .html)
+      // Redirect to dashboard (always without .html)
       window.location.href = "/dashboard/";
     } else {
       alert(data.message || "Login failed. Please check your credentials.");
     }
   } catch (error) {
     console.error("Error during login:", error);
-    alert("Server error. Please try again later.");
+    //alert("Server error. Please try again later.");
   }
 });

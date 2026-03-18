@@ -45,6 +45,7 @@
                   <span>Updation</span>
               </a>
           </li>
+         
           <li class="nav-item mb-2">
               <a class="nav-link d-flex align-items-center" href="/clients">
                   <img src="/static/images/clients.png" alt="clients" class="nav-icon"> 
@@ -69,6 +70,13 @@
               <a class="nav-link d-flex align-items-center" href="/expiry">
                   <img src="/static/images/expiry.png" alt="Expiry" class="nav-icon"> 
                   <span>Expiry</span>
+              </a>
+          </li>
+
+          <li class="nav-item mb-2">
+              <a class="nav-link d-flex align-items-center" href="/todo">
+                  <img src="/static/images/todo.png" alt="Todo" class="nav-icon"> 
+                  <span>Todo</span>
               </a>
           </li>
       </ul>
@@ -145,15 +153,9 @@
 
             <!-- Services -->
             <div class="row text mb-3">
-              <div class="col-md-4">
+              <div class="col-md-12">
                 <label for="services" class="form-label">Services</label>
-                <select id="services" class="form-select subtext">
-                  <option value="">-- Select Service --</option>
-                  <option value="about">About Us</option>
-                  <option value="tech">Technical Details of Design Services</option>
-                  <option value="scope">Out of Scope</option>
-                  <option value="pricing">Pricing</option>
-                </select>
+                <div id="servicesContainer"></div>
               </div>
             </div>
 

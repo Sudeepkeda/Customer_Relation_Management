@@ -1,11 +1,14 @@
 // ===============================
-// EXPIRY PAGE 
+// EXPIRY PGE 
 // ===============================
 (function () {
+
+const BASE_URL = "https://crm.design-bharat.com";
 
 let EXP_allClients = [];
 let EXP_currentFiltered = [];
 let EXP_currentService = "all";
+let EXP_maxDays = 60; // default (existing behavior)
 
 // -------------------------------------
 // HELPERS
@@ -14,6 +17,7 @@ function EXP_daysBetween(startDateStr, endDateStr) {
   if (!startDateStr || !endDateStr) return 9999;
   const d1 = new Date(startDateStr);
   const d2 = new Date(endDateStr);
+  // Can be negative if already expired
   return Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
 }
 
@@ -25,7 +29,7 @@ function EXP_getExpiringServices(client) {
   ];
 
   return services
-    .filter(s => s.start && s.end && EXP_daysBetween(s.start, s.end) <= 60)
+    .filter(s => s.start && s.end && EXP_daysBetween(s.start, s.end) <= EXP_maxDays)
     .map(s => s.name);
 }
 
@@ -39,8 +43,12 @@ function EXP_getRemainingDays(client) {
   return list
     .filter(s => s.start && s.end)
     .map(s => ({ short: s.short, days: EXP_daysBetween(s.start, s.end) }))
-    .filter(s => s.days <= 60)
-    .map(s => `${s.short}-${s.days}`)
+    .filter(s => s.days <= EXP_maxDays)
+    .map(s => {
+      // If <= 0 days, show as Expired (avoid negative like D--20)
+      if (s.days <= 0) return `${s.short}-Expired`;
+      return `${s.short}-${s.days}`;
+    })
     .join(", ") || "-";
 }
 
@@ -92,6 +100,18 @@ function EXP_applyFilters() {
 
   let filtered = [...EXP_allClients];
 
+  // Days filter (from dashboard: /expiry/?days=5|15|30|60)
+  // Keep a client if ANY service has remaining days <= EXP_maxDays
+  filtered = filtered.filter(c => {
+    const daysList = [
+      EXP_daysBetween(c.domain_start_date, c.domain_end_date),
+      EXP_daysBetween(c.server_start_date, c.server_end_date),
+      EXP_daysBetween(c.maintenance_start_date, c.maintenance_end_date),
+    ].filter(d => Number.isFinite(d));
+
+    return daysList.some(d => d <= EXP_maxDays);
+  });
+
   // Search
   if (search) {
     filtered = filtered.filter(c =>
@@ -134,6 +154,19 @@ function EXP_applyFilters() {
 }
 
 // -------------------------------------
+// Read query params (days) on load
+// -------------------------------------
+function EXP_initFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const daysParam = params.get("days");
+  if (!daysParam) return;
+  const n = parseInt(daysParam, 10);
+  if (!isNaN(n) && n > 0) {
+    EXP_maxDays = n;
+  }
+}
+
+// -------------------------------------
 // ACTION BUTTONS
 // -------------------------------------
 function EXP_initActions() {
@@ -143,21 +176,21 @@ function EXP_initActions() {
       const id = btn.dataset.id;
       const token = localStorage.getItem("authToken");
 
-      const res = await fetch(`https://crm.design-bharat.com/api/clients/${id}/`, {
+      const res = await fetch(`${BASE_URL}/api/clients/${id}/`, {
         headers: { "Authorization": `Token ${token}` }
       });
 
       const client = await res.json();
       const html = `
         <div class="row g-3">
-          <div class="col-md-4">Name: ${client.person_name}</div>
-          <div class="col-md-4">Email: ${client.email}</div>
-          <div class="col-md-4">Contact: ${client.contact_number}</div>
-          <div class="col-md-4">Domain End: ${client.domain_end_date}</div>
-          <div class="col-md-4">Server End: ${client.server_end_date}</div>
-          <div class="col-md-4">Maintenance End: ${client.maintenance_end_date}</div>
-          <div class="col-md-4">Expiring: ${EXP_getExpiringServices(client).join(", ")}</div>
-          <div class="col-md-4">Remaining: ${EXP_getRemainingDays(client)}</div>
+          <div class="col-md-4"><strong>Name:</strong> ${client.person_name}</div>
+          <div class="col-md-4"><strong>Email: </strong>${client.email}</div>
+          <div class="col-md-4"><strong>Contact:</strong> ${client.contact_number}</div>
+          <div class="col-md-4"><strong>Domain End:</strong> ${client.domain_end_date}</div>
+          <div class="col-md-4"><strong>Server End:</strong> ${client.server_end_date}</div>
+          <div class="col-md-4"><strong>Maintenance End:</strong> ${client.maintenance_end_date}</div>
+          <div class="col-md-4"><strong>Expiring:</strong> ${EXP_getExpiringServices(client).join(", ")}</div>
+          <div class="col-md-4"><strong>Remaining:</strong> ${EXP_getRemainingDays(client)}</div>
         </div>
       `;
       document.getElementById("viewClientBody").innerHTML = html;
@@ -172,7 +205,7 @@ function EXP_initActions() {
       const id = btn.dataset.id;
       const token = localStorage.getItem("authToken");
 
-      const res = await fetch(`https://crm.design-bharat.com/api/clients/${id}/`, {
+      const res = await fetch(`${BASE_URL}/api/clients/${id}/`, {
         headers: { "Authorization": `Token ${token}` }
       });
       const client = await res.json();
@@ -181,7 +214,7 @@ function EXP_initActions() {
       if (!expiring.length) return alert("No expiring service found");
 
       const sendRes = await fetch(
-        `https://crm.design-bharat.com/api/send-renewal-mail/${id}/`,
+        `${BASE_URL}/api/send-renewal-mail/${id}/`,
         {
           method: "POST",
           headers: {
@@ -288,7 +321,7 @@ document.getElementById("exportBtn")?.addEventListener("click", () => {
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Expiry");
-  XLSX.writeFile(wb, "Expiry_List.xlsx");
+  XLSX.writeFile(wb, "Expiry.xlsx");
 });
 
 // -------------------------------------
@@ -298,7 +331,7 @@ async function EXP_loadClients() {
   try {
     const token = localStorage.getItem("authToken");
 
-    const res = await fetch("https://crm.design-bharat.com/api/clients/", {
+    const res = await fetch(`${BASE_URL}/api/clients/`, {
       headers: { "Authorization": `Token ${token}` }
     });
 
@@ -370,6 +403,11 @@ document.addEventListener("DOMContentLoaded", () => {
       link.classList.remove("active");
     }
   });
+
+  // -------------------------------------
+  // Read dashboard filter (?days=5/15/30/60)
+  // -------------------------------------
+  EXP_initFromQuery();
 
   // -------------------------------------
   // LOAD EXPIRY DATA

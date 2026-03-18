@@ -2,6 +2,7 @@
 // Sidebar + Table + API Integration for Updations
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
+  const BASE_URL = "https://crm.design-bharat.com";
   // -------------------
   // Sidebar Active Highlight
   // -------------------
@@ -28,6 +29,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   let allUpdations = [];
   let currentFiltered = [];
   let currentStatus = "all";
+
+  // If dashboard sends /updation/?filter=Completed|New|Inprogress|Notstarted
+  const urlFilter = new URLSearchParams(window.location.search).get("filter");
+  if (urlFilter) {
+    const f = urlFilter.toLowerCase();
+    if (f === "all") currentStatus = "all";
+    else if (f === "onhold" || f === "on-hold" || f === "hold") currentStatus = "Notstarted";
+    else if (f === "inprogress" || f === "in-progress" || f === "in progress") currentStatus = "Inprogress";
+    else if (f === "new") currentStatus = "New";
+    else if (f === "completed" || f === "complete") currentStatus = "Completed";
+    else currentStatus = urlFilter; // fallback: exact value
+  }
 
   //profile redirection
   const profileLogo = document.querySelector(".dashboard-head img");
@@ -98,7 +111,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function loadUpdations() {
     try {
       const token = localStorage.getItem("authToken");
-      const response=await fetch("https://crm.design-bharat.com/api/updations/",{
+      const response=await fetch(`${BASE_URL}/api/updations/`,{
            headers: {
                 "Authorization": "Token " + token,
                 "Content-Type": "application/json",
@@ -172,7 +185,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.addEventListener("click", async () => {
         const updationsId =  btn.dataset.id;
         try {
-          const res = await fetch(`https://crm.design-bharat.com/api/updations/${updationsId}/`, {
+          const res = await fetch(`${BASE_URL}/api/updations/${updationsId}/`, {
             headers: { "Authorization": "Token " + localStorage.getItem("authToken") },
           });
           if (!res.ok) throw new Error("Failed to fetch updation details");
@@ -185,18 +198,18 @@ document.addEventListener("DOMContentLoaded", async () => {
           const html = `
             <div class="container-fluid">
               <div class="row g-3">
-                <div class="col-md-4">Client Name: ${upd.client_name || "-"}</div>
-                <div class="col-md-4">Project Name: ${upd.project_name || "-"}</div>
-                <div class="col-md-4">Status: ${upd.status || "-"}</div>
-                <div class="col-md-4">Date: ${displayDate}</div>
-                <div class="col-12">Description: ${upd.description || "-"}</div>
+                <div class="col-md-4"><strong>Client Name:</strong> ${upd.client_name || "-"}</div>
+                <div class="col-md-4"><strong>Project Name:</strong> ${upd.project_name || "-"}</div>
+                <div class="col-md-4"><strong>Status:</strong> ${upd.status || "-"}</div>
+                <div class="col-md-4"><strong>Date:</strong> ${displayDate}</div>
+                <div class="col-12"><strong>Description:</strong> ${upd.description || "-"}</div>
               </div>
             </div>`;
           document.getElementById("viewClientBody").innerHTML = html;
           new bootstrap.Modal(document.getElementById("viewClientModal")).show();
         } catch (err) {
           console.error(err);
-          alert("Failed to load updation details.");
+          //alert("Failed to load updation details.");
         }
       });
     });
@@ -212,20 +225,20 @@ document.querySelectorAll(".edit-btn").forEach(btn => {
     // Delete
     document.querySelectorAll(".delete-btn").forEach(btn => {
       btn.addEventListener("click", async () => {
-        if (!confirm("Are you sure you want to delete this updation?")) return;
+        //if (!confirm("Are you sure you want to delete this updation?")) return;
         try {
-          const res = await fetch(`https://crm.design-bharat.com/api/updations/${btn.dataset.id}/`, {
+          const res = await fetch(`${BASE_URL}/api/updations/${btn.dataset.id}/`, {
               method: "DELETE",
               headers: { "Authorization": "Token " + localStorage.getItem("authToken") },
             });
 
           if (res.ok) {
-            alert("Updation deleted successfully!");
+            //alert("Updation deleted successfully!");
             await loadUpdations();
-          } else alert("Failed to delete updation.");
+          }
         } catch (err) {
           console.error(err);
-          alert("Something went wrong while deleting.");
+          //alert("Something went wrong while deleting.");
         }
       });
     });
@@ -300,6 +313,10 @@ document.querySelectorAll(".edit-btn").forEach(btn => {
     const statusBtn = document.querySelector(".custom-category");
     if (!statusBtn) return;
 
+    // If opened with ?filter=..., reflect it in the button label
+    if (currentStatus && currentStatus !== "all") statusBtn.innerText = currentStatus;
+    else statusBtn.innerText = "All Status";
+
     const statuses = [...new Set(allUpdations.map(u => u.status).filter(Boolean))];
     const dropdownHtml = `
       <ul class="dropdown-menu show" style="position:absolute; z-index:1000;">
@@ -348,7 +365,7 @@ document.querySelectorAll(".edit-btn").forEach(btn => {
   const exportBtn = document.getElementById("exportBtn");
   exportBtn?.addEventListener("click", () => {
     if (!currentFiltered.length) {
-      alert("No updations to export!");
+     // alert("No updations to export!");
       return;
     }
 
@@ -376,7 +393,7 @@ document.querySelectorAll(".edit-btn").forEach(btn => {
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Filtered_Updations");
-    XLSX.writeFile(wb, "Filtered_Updations.xlsx");
+    XLSX.writeFile(wb, "Updation.xlsx");
   });
   // ===================
   // Load on Page Load

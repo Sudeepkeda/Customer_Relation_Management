@@ -4,6 +4,8 @@
 (function () {
   "use strict";
 
+  const BASE_URL = "https://crm.design-bharat.com";
+
   // Local module state (isolated)
   let DB_allClients = [];
   let DB_allEnquiries = [];
@@ -57,10 +59,10 @@
       const headers = { "Authorization": authHeader, "Content-Type": "application/json" };
 
       const [clientsRes, projectsRes, enquiriesRes, updationsRes] = await Promise.all([
-        fetch("/api/clients/", { headers }),
-        fetch("/api/projects/", { headers }),
-        fetch("/api/enquiries/", { headers }),
-        fetch("/api/updations/", { headers })
+        fetch(`${BASE_URL}/api/clients/`, { headers }),
+        fetch(`${BASE_URL}/api/projects/`, { headers }),
+        fetch(`${BASE_URL}/api/enquiries/`, { headers }),
+        fetch(`${BASE_URL}/api/updations/`, { headers })
       ]);
 
       if (!clientsRes.ok) {
@@ -75,27 +77,49 @@
       DB_allUpdations = updationsRes.ok ? (await updationsRes.json() || []) : [];
 
       // Calculate expiry counts
+      let expiry5=0;
+      let expiry15=0;
       let expiry30 = 0;
       let expiry60 = 0;
 
+      // Count CLIENTS (not services):
+      // a client is counted once if ANY of their services expires within N days.
       DB_allClients.forEach(c => {
-        const checks = [
+        const daysList = [
           DB_daysBetween(c.domain_start_date, c.domain_end_date),
           DB_daysBetween(c.server_start_date, c.server_end_date),
           DB_daysBetween(c.maintenance_start_date, c.maintenance_end_date)
-        ].filter(v => v !== null);
+        ]
+          .filter(v => v !== null)
+          .map(v => Number(v))
+          .filter(v => Number.isFinite(v));
 
-        checks.forEach(days => {
-          if (days <= 30) expiry30++;
-          else if (days <= 60) expiry60++;
-        });
+        if (!daysList.length) return;
+
+        const has5 = daysList.some(d => d <= 5);
+        const has15 = daysList.some(d => d <= 15);
+        const has30 = daysList.some(d => d <= 30);
+        const has60 = daysList.some(d => d <= 60);
+
+        if (has5) expiry5++;
+        if (has15) expiry15++;
+        if (has30) expiry30++;
+        if (has60) expiry60++;
       });
 
       // Enquiry & Updation stats
       const notStartedEnquiries = (DB_allEnquiries || []).filter(e => (e.status || "").toLowerCase() === "notstarted").length;
-      const notStartedUpdations = (DB_allUpdations || []).filter(u => (u.status || "").toLowerCase() === "notstarted").length;
+      const updationsCompleted = (DB_allUpdations || []).filter(u => (u.status || "").toLowerCase() === "completed").length;
+      const updationsNew = (DB_allUpdations || []).filter(u => (u.status || "").toLowerCase() === "new").length;
+      const updationsInprogress = (DB_allUpdations || []).filter(u => {
+        const s = (u.status || "").toLowerCase();
+        return s === "inprogress" || s === "in-progress" || s === "in progress";
+      }).length;
+      const updationsOnhold = (DB_allUpdations || []).filter(u => (u.status || "").toLowerCase() === "notstarted").length;
 
       // Update UI safely (check elements exist)
+      if (el("expiry5")) el("expiry5").textContent = expiry5;
+      if (el("expiry15")) el("expiry15").textContent = expiry15;
       if (el("expiry30")) el("expiry30").textContent = expiry30;
       if (el("expiry60")) el("expiry60").textContent = expiry60;
       if (el("totalClients")) el("totalClients").textContent = DB_allClients.length;
@@ -109,13 +133,22 @@
         }
 
       if (el("Enquiry")) el("Enquiry").textContent = notStartedEnquiries;
-      if (el("Updatation")) el("Updatation").textContent = notStartedUpdations;
+      // Dashboard cards for Updations by status
+      // - Updatation card shows Completed (as requested)
+      if (el("Updatation")) el("Updatation").textContent = updationsCompleted;
+      if (el("newupdation")) el("newupdation").textContent = updationsNew;
+      if (el("inprogress")) el("inprogress").textContent = updationsInprogress;
+      if (el("onhold")) el("onhold").textContent = updationsOnhold;
 
     } catch (err) {
       console.error("Error loading dashboard data:", err);
       // Do not crash UI — show zeros if elements present
       if (el("expiry30")) el("expiry30").textContent = "0";
       if (el("expiry60")) el("expiry60").textContent = "0";
+      if (el("Updatation")) el("Updatation").textContent = "0";
+      if (el("newupdation")) el("newupdation").textContent = "0";
+      if (el("inprogress")) el("inprogress").textContent = "0";
+      if (el("onhold")) el("onhold").textContent = "0";
     }
   }
 
@@ -136,8 +169,10 @@
         { client: c.person_name || c.company_name || "-", service: "Server", days: DB_daysBetween(c.server_start_date, c.server_end_date) },
         { client: c.person_name || c.company_name || "-", service: "Maintenance", days: DB_daysBetween(c.maintenance_start_date, c.maintenance_end_date) }
       ];
-      return list.filter(s => s.days !== null).filter(s => {
-        if (limit === 30) return s.days <= 30;
+        return list.filter(s => s.days !== null).filter(s => {
+        if (limit === 5) return s.days <= 5;
+        if (limit === 15) return s.days > 5 && s.days <= 15;
+        if (limit === 30) return s.days > 15 && s.days <= 30;
         if (limit === 60) return s.days > 30 && s.days <= 60;
         return false;
       });
@@ -155,8 +190,7 @@
       }
     }
 
-    if (el("expiryModalTitle")) el("expiryModalTitle").textContent = `Clients Expiring in ≤ ${limit} Days`;
-    const modalEl = el("expiryModal");
+    if (el("expiryModalTitle")) el("expiryModalTitle").textContent = `Clients Expiring in ≤ ${limit} Days`;    const modalEl = el("expiryModal");
     if (modalEl) new bootstrap.Modal(modalEl).show();
   }
 
@@ -189,18 +223,30 @@
       });
     }
 
-    // Expiry card clicks — guard for missing elements
-    const expiry30Card = el("expiry30")?.parentElement;
-    if (expiry30Card) expiry30Card.addEventListener("click", () => showExpiryClients(30));
-    const expiry60Card = el("expiry60")?.parentElement;
-    if (expiry60Card) expiry60Card.addEventListener("click", () => showExpiryClients(60));
+    // Expiry cards: open Expiry page with pre-filter
+    const expiry5Card = el("expiry5")?.parentElement;
+    if (expiry5Card) expiry5Card.addEventListener("click", () => window.location.href = "/expiry/?days=5");
 
+    const expiry15Card = el("expiry15")?.parentElement;
+    if (expiry15Card) expiry15Card.addEventListener("click", () => window.location.href = "/expiry/?days=15");
+
+    const expiry30Card = el("expiry30")?.parentElement;
+    if (expiry30Card) expiry30Card.addEventListener("click", () => window.location.href = "/expiry/?days=30");
+
+    const expiry60Card = el("expiry60")?.parentElement;
+    if (expiry60Card) expiry60Card.addEventListener("click", () => window.location.href = "/expiry/?days=60");
+    
     // Cards navigation (if elements exist)
-    el("totalClients")?.addEventListener("click", () => window.location.href = "/clients/");
-    el("currentProjects")?.addEventListener("click", () => window.location.href = "/projects/?filter=active");
-    el("totalProjects")?.addEventListener("click", () => window.location.href = "/projects/?filter=all");
-    el("Enquiry")?.addEventListener("click", () => window.location.href = "/enquiry/?filter=notstarted");
-    el("Updatation")?.addEventListener("click", () => window.location.href = "/updation/?filter=notstarted");
+    el("totalClients")?.parentElement?.addEventListener("click", () => window.location.href = "/clients/");
+    el("currentProjects")?.parentElement?.addEventListener("click", () => window.location.href = "/projects/?filter=active");
+    el("totalProjects")?.parentElement?.addEventListener("click", () => window.location.href = "/projects/?filter=all");
+    // Enquiry card: click anywhere on the card (not just the number)
+    el("Enquiry")?.parentElement?.addEventListener("click", () => window.location.href = "/enquiry/?filter=notstarted");
+    // Updation cards (click anywhere on the card via parentElement)
+    el("Updatation")?.parentElement?.addEventListener("click", () => window.location.href = "/updation/?filter=Completed");
+    el("newupdation")?.parentElement?.addEventListener("click", () => window.location.href = "/updation/?filter=New");
+    el("inprogress")?.parentElement?.addEventListener("click", () => window.location.href = "/updation/?filter=Inprogress");
+    el("onhold")?.parentElement?.addEventListener("click", () => window.location.href = "/updation/?filter=Notstarted");
 
     // Profile logo
     const profileLogo = document.querySelector(".dashboard-head img");

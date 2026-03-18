@@ -3,6 +3,8 @@
 // ===============================
 (function () {
 
+const BASE_URL = "https://crm.design-bharat.com";
+
 document.addEventListener("DOMContentLoaded", async () => {
 
   const usernameInput = document.getElementById("username");
@@ -16,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // AUTH CHECK
   // -------------------------------------
   if (!token) {
-    alert("You are not logged in. Please login first.");
+    //alert("You are not logged in. Please login first.");
     window.location.href = "/";
     return;
   }
@@ -25,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // LOAD CURRENT PROFILE
   // -------------------------------------
   try {
-    const res = await fetch("https://crm.design-bharat.com/api/user-profile/", {
+      const res = await fetch(`${BASE_URL}/api/user-profile/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -44,7 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   } catch (err) {
     console.error("Error fetching profile:", err);
-    alert("Failed to fetch profile data.");
+   // alert("Failed to fetch profile data.");
   }
 
   // -------------------------------------
@@ -60,7 +62,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
-      const res = await fetch("https://crm.design-bharat.com/api/user-profile/", {
+      const res = await fetch(`${BASE_URL}/api/user-profile/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -72,7 +74,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        alert(data.message || "Profile updated successfully!");
+        //alert(data.message || "Profile updated successfully!");
 
         // Reset password field
         passwordInput.value = "";

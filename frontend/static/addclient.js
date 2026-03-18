@@ -6,9 +6,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const editId = localStorage.getItem("editClientId");
   const token = localStorage.getItem("authToken");
 
-  // ✅ Redirect to login if not authenticated
+  // Redirect to login if not authenticated
   if (!token) {
-    alert("Session expired. Please log in again.");
+   // alert("Session expired. Please log in again.");
     window.location.href = "/";
     return;
   }
@@ -56,10 +56,42 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // AMC Price → allow numbers only
+const amcPriceInput = document.getElementById("AMCPrice");
+if (amcPriceInput) {
+  amcPriceInput.addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "");
+  });
+}
+
+  // Domain charges → allow numbers only
+const domainPriceInput = document.getElementById("DomainCharges");
+if (domainPriceInput) {
+  domainPriceInput.addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "");
+  });
+}
+
+//For server price
+const serverPriceInput = document.getElementById("ServerPrice");
+if (serverPriceInput) {
+  serverPriceInput.addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "");
+  });
+}
+
+//For maitenance
+const maitenancePriceInput = document.getElementById("MaintenanceValue");
+if (maitenancePriceInput) {
+  maitenancePriceInput.addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "");
+  });
+}
+
   if (editId) {
     // Editing existing client 
     try {
-      console.log("Trying to load Client ID:", editId);
+      console.log("Trying to load Client ID:", editId);//https://crm.design-bharat.com
       const res = await fetch(`https://crm.design-bharat.com/api/clients/${editId}/`,{
            headers: {
           "Authorization": `Token ${token}`,
@@ -70,7 +102,7 @@ document.addEventListener("DOMContentLoaded", async () => {
          if (!res.ok) {
                 const errText = await res.text();
                 console.error("Error Response:", errText);
-                alert(`Failed to load client for editing. (${res.status})`);
+               // alert(`Failed to load client for editing. (${res.status})`);
                 return;
               }
         
@@ -107,7 +139,7 @@ document.addEventListener("DOMContentLoaded", async () => {
        
         } catch (err) {
               console.error("Error loading clients:", err);
-              alert("Failed to load clients details.");
+             // alert("Failed to load clients details.");
             }
           }
 
@@ -137,17 +169,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
          if (response.ok) {
-        alert(editId ? "Client updated successfully!" : "Client saved successfully!");
+       // alert(editId ? "Client updated successfully!" : "Client saved successfully!");
         localStorage.removeItem("editClientId");
         window.location.href = "/clients";
       } else {
         const errorText = await response.text();
         console.error("API Error:", errorText);
-        alert("Error saving clients.");
+       // alert("Error saving clients.");
       }
     } catch (err) {
       console.error(err);
-      alert("Server error. Please try again later.");
+      //alert("Server error. Please try again later.");
     }
   });
 

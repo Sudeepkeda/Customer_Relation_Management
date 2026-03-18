@@ -8,7 +8,7 @@ class Client(models.Model):
     industry = models.CharField(max_length=255, blank=True, null=True)
     person_name = models.CharField(max_length=255, blank=True, null=True)
     contact_number = models.CharField(max_length=20, blank=True, null=True)
-    email = models.CharField(max_length=255)
+    email = models.CharField(max_length=255, blank=True, null=True)
     website = models.CharField(max_length=255, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     gst = models.CharField(max_length=50, blank=True, null=True)
@@ -57,7 +57,7 @@ class Quotation(models.Model):
     industry = models.CharField(max_length=200, blank=True, null=True)
     person_name = models.CharField(max_length=200, blank=True, null=True)
     contact = models.CharField(max_length=50, blank=True, null=True)
-    email = models.CharField(max_length=255)
+    email = models.CharField(max_length=255, blank=True, null=True)
     website = models.CharField(max_length=255, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
 
@@ -112,7 +112,7 @@ class Enquiry(models.Model):
     company_name = models.CharField(max_length=255)
     person_name = models.CharField(max_length=255, blank=True, null=True)
     contact_number = models.CharField(max_length=20, blank=True, null=True)
-    email = models.CharField(max_length=255)
+    email = models.CharField(max_length=255, blank=True, null=True)
     website = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(
         max_length=20,
@@ -142,7 +142,8 @@ class Project(models.Model):
     description = models.TextField(blank=True, null=True)
     server_name = models.CharField(max_length=255, blank=True, null=True)
     contact_number = models.CharField(max_length=20, blank=True, null=True)
-    email = models.CharField(max_length=255)
+    email = models.CharField(max_length=255, blank=True, null=True)
+
     person_name = models.CharField(max_length=255)  # store free-text or existing
     status = models.CharField(max_length=50, choices=[("Active", "Active"),("InActive", "InActive")], default="InActive")
 
@@ -155,3 +156,31 @@ class Updation(models.Model):
 
     def __str__(self):
         return self.project_name
+
+
+class Todo(models.Model):
+    STATUS_NOT_YET = "NotYet"
+    STATUS_DONE = "Done"
+    STATUS_POSTPONED = "Postponed"
+
+    STATUS_CHOICES = [
+        (STATUS_DONE, "Done"),
+        (STATUS_POSTPONED, "Postpone"),
+        (STATUS_NOT_YET, "Not yet"),
+    ]
+
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    task_date = models.DateField()
+    start_time = models.TimeField(blank=True, null=True)
+    end_time = models.TimeField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_NOT_YET)
+    postpone_to = models.DateField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["task_date", "start_time", "-id"]
+
+    def __str__(self):
+        return f"{self.title} ({self.task_date})"

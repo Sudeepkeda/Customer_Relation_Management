@@ -3,11 +3,13 @@
 // =====================================
 document.addEventListener("DOMContentLoaded", async () => {
 
+  const BASE_URL = "https://crm.design-bharat.com";
+
   const token = localStorage.getItem("authToken");
 
   // Redirect if no token
   if (!token) {
-    alert("Session expired. Please log in again.");
+   // alert("Session expired. Please log in again.");
     window.location.href = "/";
     return;
   }
@@ -60,13 +62,31 @@ document.addEventListener("DOMContentLoaded", async () => {
   let allProjects = [];
   let currentFiltered = [];
   let currentStatus = "all";
+  
+
+  const urlFilter = new URLSearchParams(window.location.search).get("filter");
+
+let lockedStatus = null;
+
+if (urlFilter) {
+  const f = urlFilter.toLowerCase().replace(/\s+/g, "");
+
+  if (f === "active") currentStatus = "Active";
+  else if (f === "inactive") currentStatus = "Inactive";
+  else if (f === "all") currentStatus = "all";
+  else currentStatus = urlFilter;
+
+  if (currentStatus !== "all") {
+    lockedStatus = currentStatus;
+  }
+}
 
   // =================================================
   // Fetch Projects
   // =================================================
   async function loadProjects() {
     try {
-      const res = await fetch("https://crm.design-bharat.com/api/projects/", {
+      const res = await fetch(`${BASE_URL}/api/projects/`, {
         headers: {
           "Authorization": token.startsWith("Token") ? token : "Token " + token,
           "Content-Type": "application/json",
@@ -163,9 +183,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Status Filter
-    if (currentStatus !== "all") {
-      filtered = filtered.filter((p) => p.status === currentStatus);
-    }
+    const normalize = (s) => (s || "").toLowerCase().replace(/\s+/g, "");
+
+    const statusToApply = lockedStatus || currentStatus;
+
+    if (statusToApply !== "all") {
+    filtered = filtered.filter(
+    (p) => normalize(p.status) === normalize(statusToApply)
+    );
+   }
 
     currentFiltered = filtered;
     renderTable(filtered);
@@ -182,7 +208,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const id = btn.dataset.id;
 
         try {
-          const res = await fetch(`https://crm.design-bharat.com/api/projects/${id}/`, {
+          const res = await fetch(`${BASE_URL}/api/projects/${id}/`, {
             headers: {
               "Authorization": token.startsWith("Token") ? token : "Token " + token
             }
@@ -194,13 +220,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           document.getElementById("viewProjectBody").innerHTML = `
             <div class="container-fluid">
               <div class="row g-3">
-                <div class="col-md-4">Project Name: ${p.project_name || "-"}</div>
-                <div class="col-md-4">Person Name: ${p.person_name || "-"}</div>
-                <div class="col-md-4">Server Name: ${p.server_name || "-"}</div>
-                <div class="col-md-4">Contact: ${p.contact_number || "-"}</div>
-                <div class="col-md-4 text-break">Email: ${p.email || "-"}</div>
-                <div class="col-md-4">Status: ${p.status || "-"}</div>
-                <div class="col-12">Description: ${p.description || "-"}</div>
+                <div class="col-md-4"><strong>Project Name:</strong> ${p.project_name || "-"}</div>
+                <div class="col-md-4"><strong>Person Name:</strong> ${p.person_name || "-"}</div>
+                <div class="col-md-4"><strong>Server Name:</strong> ${p.server_name || "-"}</div>
+                <div class="col-md-4"><strong>Contact:</strong> ${p.contact_number || "-"}</div>
+                <div class="col-md-4 text-break"><strong>Email:</strong> ${p.email || "-"}</div>
+                <div class="col-md-4"><strong>Status: </strong>${p.status || "-"}</div>
+                <div class="col-12"><strong>Description:</strong> ${p.description || "-"}</div>
               </div>
             </div>
           `;
@@ -208,7 +234,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         } catch (err) {
           console.error(err);
-          alert("Failed to load project details.");
+          //alert("Failed to load project details.");
         }
       });
     });
@@ -218,7 +244,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
 
-        const res = await fetch(`https://crm.design-bharat.com/api/projects/${id}/`, {
+        const res = await fetch(`${BASE_URL}/api/projects/${id}/`, {
           headers: {
             "Authorization": token.startsWith("Token") ? token : "Token " + token
           }
@@ -236,7 +262,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!confirm("Are you sure you want to delete this project?")) return;
 
         try {
-          const res = await fetch(`https://crm.design-bharat.com/api/projects/${btn.dataset.id}/`, {
+        const res = await fetch(`${BASE_URL}/api/projects/${btn.dataset.id}/`, {
             method: "DELETE",
             headers: {
               "Authorization": token.startsWith("Token") ? token : "Token " + token
@@ -244,14 +270,14 @@ document.addEventListener("DOMContentLoaded", async () => {
           });
 
           if (res.ok) {
-            alert("Project deleted successfully!");
+            //alert("Project deleted successfully!");
             await loadProjects();
           } else {
-            alert("Failed to delete project.");
+           // alert("Failed to delete project.");
           }
         } catch (err) {
           console.error(err);
-          alert("Server error while deleting.");
+          //alert("Server error while deleting.");
         }
       });
     });
@@ -371,7 +397,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       .filter((row) => row.style.display !== "none");
 
     if (!visibleRows.length) {
-      alert("No projects to export!");
+      //alert("No projects to export!");
       return;
     }
 
@@ -390,7 +416,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Projects");
-    XLSX.writeFile(wb, "Filtered_Projects.xlsx");
+    XLSX.writeFile(wb, "Project.xlsx");
   });
 
   // =================================================

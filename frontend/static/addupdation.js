@@ -2,12 +2,13 @@
 // Add / Edit Updation 
 // ===========================
 document.addEventListener("DOMContentLoaded", async () => {
+  const BASE_URL = "https://crm.design-bharat.com";
   const form = document.getElementById("updationForm");
   const token = localStorage.getItem("authToken");
 
   // Redirect if not logged in
   if (!token) {
-    alert("Session expired. Please log in again.");
+   // alert("Session expired. Please log in again.");
     window.location.href = "/";
     return;
   }
@@ -59,7 +60,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (editId) {
     try {
       console.log("Editing Updation ID:", editId);
-      const response = await fetch(`https://crm.design-bharat.com/api/updations/${editId}/`, {
+      const response = await fetch(`${BASE_URL}/api/updations/${editId}/`, {
         headers: {
           "Authorization": `Token ${token}`,
           "Content-Type": "application/json",
@@ -67,7 +68,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       if (!response.ok) {
-        alert("Failed to load updation details.");
+        //alert("Failed to load updation details.");
         sessionStorage.removeItem("editUpdationId");
         return;
       }
@@ -99,7 +100,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (err) {
       console.error("Error loading updation:", err);
-      alert("Failed to load data.");
+      //alert("Failed to load data.");
       sessionStorage.removeItem("editUpdationId");
     }
   } else {
@@ -125,8 +126,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
       const url = editId
-        ? `https://crm.design-bharat.com/api/updations/${editId}/`
-        : "https://crm.design-bharat.com/api/updations/";
+        ? `${BASE_URL}/api/updations/${editId}/`
+        : `${BASE_URL}/api/updations/`;
 
       const method = editId ? "PUT" : "POST";
 
@@ -140,16 +141,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       if (response.ok) {
-        alert(editId ? "Updation updated successfully!" : "Updation added successfully!");
+        //alert(editId ? "Updation updated successfully!" : "Updation added successfully!");
         sessionStorage.removeItem("editUpdationId");  // Final cleanup
         window.location.href = "/updation";
       } else {
         const err = await response.text();
-        alert("Error: " + err);
+       // alert("Error: " + err);
       }
     } catch (err) {
       console.error(err);
-      alert("Server error.");
+      //alert("Server error.");
     }
   });
 });

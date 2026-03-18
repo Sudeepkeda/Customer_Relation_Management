@@ -3,6 +3,8 @@
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
 
+  const BASE_URL = "https://crm.design-bharat.com";
+
   document.querySelectorAll(".nav-list .nav-link").forEach(link => {
   const linkHref = link.getAttribute("href").toLowerCase();
   const currentPath = window.location.pathname.toLowerCase();
@@ -31,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let currentFiltered = [];
   let displayedRows = []; //  For pagination-aware export
   let currentIndustry = "all";
-  let dateType = "maintenance"; // Default filter type
+  let dateType = "allamc"; // Default filter type
 
 const profileLogo = document.querySelector(".profile-logo");
 if (profileLogo) {
@@ -61,34 +63,53 @@ if (profileLogo) {
       );
     }
 
-    //  Date Filter
-    const fromDateInput = document.getElementById("fromDate");
-    const toDateInput = document.getElementById("toDate");
-    const fromDate = fromDateInput ? fromDateInput.value : "";
-    const toDate = toDateInput ? toDateInput.value : "";
+ // Date Filter
+const fromDateInput = document.getElementById("fromDate");
+const toDateInput = document.getElementById("toDate");
+const fromDate = fromDateInput ? fromDateInput.value : "";
+const toDate = toDateInput ? toDateInput.value : "";
 
-    const dateFieldMap = {
-      maintenance: { start: "maintenance_start_date", end: "maintenance_end_date" },
-      domain: { start: "domain_start_date", end: "domain_end_date" },
-      server: { start: "server_start_date", end: "server_end_date" },
-    };
-    const fields = dateFieldMap[dateType];
+if (dateType === "allamc") {
+  filtered = filtered.filter((c) => {
+    const dates = [
+      c.maintenance_start_date,
+      c.maintenance_end_date,
+      c.domain_start_date,
+      c.domain_end_date,
+      c.server_start_date,
+      c.server_end_date,
+    ].filter(Boolean);
 
-    if (fromDate) {
-      const fromD = new Date(fromDate);
-      filtered = filtered.filter((c) => {
-        const value = c[fields.start];
-        return value ? new Date(value) >= fromD : false;
-      });
-    }
+    if (!dates.length) return false;
 
-    if (toDate) {
-      const toD = new Date(toDate + "T23:59:59");
-      filtered = filtered.filter((c) => {
-        const value = c[fields.end];
-        return value ? new Date(value) <= toD : false;
-      });
-    }
+    return dates.some((d) => {
+      const date = new Date(d);
+
+      if (fromDate && date < new Date(fromDate)) return false;
+      if (toDate && date > new Date(toDate + "T23:59:59")) return false;
+
+      return true;
+    });
+  });
+} else {
+  const fields = dateFieldMap[dateType];
+
+  if (fromDate) {
+    const fromD = new Date(fromDate);
+    filtered = filtered.filter((c) => {
+      const value = c[fields.start];
+      return value ? new Date(value) >= fromD : false;
+    });
+  }
+
+  if (toDate) {
+    const toD = new Date(toDate + "T23:59:59");
+    filtered = filtered.filter((c) => {
+      const value = c[fields.end];
+      return value ? new Date(value) <= toD : false;
+    });
+  }
+}
 
     //  Industry Filter
     if (currentIndustry !== "all") {
@@ -107,7 +128,7 @@ if (profileLogo) {
   async function loadClients() {
     try {
       const token = localStorage.getItem("authToken");
-      const response = await fetch("https://crm.design-bharat.com/api/clients/",{
+      const response = await fetch(`${BASE_URL}/api/clients/`,{
           headers: {
     "Authorization": "Token " + token,
     "Content-Type": "application/json",
@@ -177,7 +198,7 @@ if (profileLogo) {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
         try {
-          const res = await fetch(`https://crm.design-bharat.com/api/clients/${id}/`,{
+          const res = await fetch(`${BASE_URL}/api/clients/${id}/`,{
                headers: { "Authorization": "Token " + localStorage.getItem("authToken") },
           });
           
@@ -187,30 +208,30 @@ if (profileLogo) {
           let html = `
   <div class="container-fluid">
     <div class="row g-3">
-      <div class="col-md-4">Company: ${client.company_name}</div>
-      <div class="col-md-4">Industry: ${client.industry || "-"}</div>
-      <div class="col-md-4">Person: ${client.person_name || "-"}</div>
-      <div class="col-md-4">Contact: ${client.contact_number || "-"}</div>
-      <div class="col-md-4">Email:${client.email || "-"}</div>
-      <div class="col-md-4">Website: ${client.website || "-"}</div>
-      <div class="col-md-4">Address: ${client.address || "-"}</div>
-      <div class="col-md-4">GST: ${client.gst || "-"}</div>
-      <div class="col-md-4">AMC: ${client.amc || "-"}</div>
-      <div class="col-md-4">AMC Price: ${client.amc_price || "-"}</div>
-      <div class="col-md-4">Domain:${client.domain_name || "-"}</div>
-      <div class="col-md-4">Domain Charges: ${client.domain_charges || "-"}</div>
-      <div class="col-md-4">Domain Start Date: ${client.domain_start_date || "-"}</div>
-      <div class="col-md-4">Domain End Date: ${client.domain_end_date || "-"}</div>
-      <div class="col-md-4">Server Details: ${client.server_details || "-"}</div>
-      <div class="col-md-4">Server Price: ${client.server_price || "-"}</div>
-      <div class="col-md-4">Server Start Date: ${client.server_start_date || "-"}</div>
-      <div class="col-md-4">Server End Date: ${client.server_end_date || "-"}</div>
-      <div class="col-md-4">Maintenance Value: ${client.maintenance_value || "-"}</div>
-      <div class="col-md-4">Maintenance Start Date: ${client.maintenance_start_date || "-"}</div>
-      <div class="col-md-4">Maintenance End Date: ${client.maintenance_end_date || "-"}</div>
-      <div class="col-md-4">Comments: ${client.comments || "-"}</div>
-      <div class="col-md-4">Priority: ${client.priority || "-"}</div>
-      <div class="col-md-4">Status: ${client.status || "-"}</div>
+      <div class="col-md-4"><strong>Company:</strong> ${client.company_name}</div>
+      <div class="col-md-4"><strong>Industry: </strong>${client.industry || "-"}</div>
+      <div class="col-md-4"><strong>Person: </strong>${client.person_name || "-"}</div>
+      <div class="col-md-4"><strong>Contact: </strong>${client.contact_number || "-"}</div>
+      <div class="col-md-4"><strong>Email:</strong>${client.email || "-"}</div>
+      <div class="col-md-4"><strong>Website: </strong>${client.website || "-"}</div>
+      <div class="col-md-4"><strong>Address:</strong> ${client.address || "-"}</div>
+      <div class="col-md-4"><strong>GST:</strong> ${client.gst || "-"}</div>
+      <div class="col-md-4"><strong>AMC: </strong>${client.amc || "-"}</div>
+      <div class="col-md-4"><strong>AMC Price: </strong>${client.amc_price || "-"}</div>
+      <div class="col-md-4"><strong>Domain:</strong>${client.domain_name || "-"}</div>
+      <div class="col-md-4"><strong>Domain Charges:</strong> ${client.domain_charges || "-"}</div>
+      <div class="col-md-4"><strong>Domain Start Date:</strong> ${client.domain_start_date || "-"}</div>
+      <div class="col-md-4"><strong>Domain End Date:</strong> ${client.domain_end_date || "-"}</div>
+      <div class="col-md-4"><strong>Server Details:</strong> ${client.server_details || "-"}</div>
+      <div class="col-md-4"><strong>Server Price:</strong> ${client.server_price || "-"}</div>
+      <div class="col-md-4"><strong>Server Start Date:</strong> ${client.server_start_date || "-"}</div>
+      <div class="col-md-4"><strong>Server End Date:</strong> ${client.server_end_date || "-"}</div>
+      <div class="col-md-4"><strong>Maintenance Value:</strong> ${client.maintenance_value || "-"}</div>
+      <div class="col-md-4"><strong>Maintenance Start Date:</strong> ${client.maintenance_start_date || "-"}</div>
+      <div class="col-md-4"><strong>Maintenance End Date:</strong> ${client.maintenance_end_date || "-"}</div>
+      <div class="col-md-4"><strong>Comments:</strong> ${client.comments || "-"}</div>
+      <div class="col-md-4"><strong>Priority:</strong> ${client.priority || "-"}</div>
+      <div class="col-md-4"><strong>Status:</strong> ${client.status || "-"}</div>
     </div>
   </div>
 `;
@@ -218,7 +239,7 @@ if (profileLogo) {
           new bootstrap.Modal(document.getElementById("viewClientModal")).show();
         } catch (error) {
           console.error(error);
-          alert("Failed to load client details.");
+          //alert("Failed to load client details.");
         }
       });
     });
@@ -234,20 +255,20 @@ if (profileLogo) {
     // Delete
     document.querySelectorAll(".delete-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
-        if (!confirm("Are you sure you want to delete this client?")) return;
+        //if (!confirm("Are you sure you want to delete this client?")) return;
         try {
-          const res = await fetch(`https://crm.design-bharat.com/api/clients/${btn.dataset.id}/`, {
+          const res = await fetch(`${BASE_URL}/api/clients/${btn.dataset.id}/`, {
               method: "DELETE" ,
               headers: { "Authorization": "Token " + localStorage.getItem("authToken") },
               
           });
           if (res.ok) {
-            alert("Client deleted successfully!");
+            //alert("Client deleted successfully!");
             await loadClients();
-          } else alert("Failed to delete client.");
+          } 
         } catch (err) {
           console.error(err);
-          alert("Something went wrong while deleting.");
+          //alert("Something went wrong while deleting.");
         }
       });
     });
@@ -376,9 +397,11 @@ if (profileLogo) {
       menu.className = "dropdown-menu period-menu show";
       menu.style.position = "absolute";
       menu.innerHTML = `
-        <li><a class="dropdown-item" data-type="maintenance">Maintenance Period</a></li>
-        <li><a class="dropdown-item" data-type="domain">Domain Period</a></li>
-        <li><a class="dropdown-item" data-type="server">Server Period</a></li>
+        <li><a class="dropdown-item" data-type="allamc">All AMC </a></li>
+        <li><a class="dropdown-item" data-type="domain">Domain </a></li>
+        <li><a class="dropdown-item" data-type="server">Server </a></li>
+        <li><a class="dropdown-item" data-type="maintenance">Maintenance </a></li>
+
       `;
 
       periodBtn.insertAdjacentElement("afterend", menu);
@@ -402,7 +425,7 @@ if (profileLogo) {
   const exportBtn = document.getElementById("exportBtn");
   exportBtn?.addEventListener("click", () => {
     if (!displayedRows.length) {
-      alert("No clients to export!");
+     // alert("No clients to export!");
       return;
     }
 
@@ -425,7 +448,7 @@ if (profileLogo) {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Clients");
-    XLSX.writeFile(wb, "Clients_Displayed.xlsx");
+    XLSX.writeFile(wb, "Client.xlsx");
   });
 
   // ===================

@@ -2,6 +2,7 @@
 // Add/Edit Enquiry
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
+  const BASE_URL = "https://crm.design-bharat.com";
   const form = document.getElementById("enquiryForm");
   const editId = localStorage.getItem("editEnquiryId");
   const token = localStorage.getItem("authToken");
@@ -62,7 +63,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (editId) {
     try {
       console.log("Trying to load enquiry ID:", editId);
-      const response = await fetch(`https://crm.design-bharat.com/api/enquiries/${editId}/`, {
+      const response = await fetch(`${BASE_URL}/api/enquiries/${editId}/`, {
         headers: {
           "Authorization": `Token ${token}`,
           "Content-Type": "application/json",
@@ -102,7 +103,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const data = getFormData();
 
     try {
-      let url = "https://crm.design-bharat.com/api/enquiries/";
+      let url = `${BASE_URL}/api/enquiries/`;
       let method = "POST";
 
       if (editId) {
@@ -120,7 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       if (response.ok) {
-        alert(editId ? "Enquiry updated successfully!" : "Enquiry saved successfully!");
+       // alert(editId ? "Enquiry updated successfully!" : "Enquiry saved successfully!");
         localStorage.removeItem("editEnquiryId");
         window.location.href = "/enquiry";
       } else {

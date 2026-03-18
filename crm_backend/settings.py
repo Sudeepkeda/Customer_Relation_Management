@@ -1,3 +1,4 @@
+
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -146,11 +147,11 @@ CORS_ALLOWED_ORIGINS = [
 # EMAIL CONFIGURATION
 # ==========================
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "mail.eduroglobal.com"  # ✅ SMTP host should match mail server
+EMAIL_HOST = "mail.eduroglobal.com"  # SMTP host should match mail server
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "sathya@eduroglobal.com"
-EMAIL_HOST_PASSWORD = "Sathya@2025"
+EMAIL_HOST_PASSWORD = "Sathya@2026"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # ==========================

@@ -1,10 +1,11 @@
 // ===================
-// Sidebar + Table + API Integration for Enquiries
+// Sidebar + Table + API Integration for Quotations
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
+const BASE_URL = "https://crm.design-bharat.com";
 const token = localStorage.getItem("authToken");
 if (!token) {
-  alert("Session expired. Please log in again.");
+  //alert("Session expired. Please log in again.");
   window.location.href = "/";
   return;
 }
@@ -106,12 +107,12 @@ if (!token) {
     const token = localStorage.getItem("authToken");
 
     if (!token) {
-      alert("Session expired. Please log in again.");
+     // alert("Session expired. Please log in again.");
       window.location.href = "/";
       return;
     }
-
-    const response = await fetch("https://crm.design-bharat.com/api/quotations/", {
+       
+    const response = await fetch(`${BASE_URL}/api/quotations/`, {
       headers: {
         "Authorization": token.startsWith("Token") ? token : "Token " + token,
         "Content-Type": "application/json",
@@ -183,6 +184,11 @@ if (!token) {
                 </a>
               </li>
               <li>
+                <a href="#" class="dropdown-item btn-download" data-id="${q.id}">
+                  <img src="/static/images/Download.png" alt="Download" class="me-2" style="width:16px;"> Download
+                </a>
+              </li>
+              <li>
               <a href="#" class="dropdown-item delete-btn" data-id="${q.id}">
                 <img src="/static/images/Delete.png" alt="Delete" class="me-2" style="width:16px;">Delete
                 </a>
@@ -205,7 +211,7 @@ if (!token) {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
         try {
-          const res = await fetch(`https://crm.design-bharat.com/api/quotations/${id}/`,{
+          const res = await fetch(`${BASE_URL}/api/quotations/${id}/`,{
               headers: { "Authorization": "Token " + localStorage.getItem("authToken") },
           });
           
@@ -236,17 +242,17 @@ if (!token) {
           document.getElementById("viewModalBody").innerHTML = `
             <div class="container-fluid">
               <div class="row g-3">
-                <div class="col-md-4">Quotation Number: ${q.quotation_number || "-"}</div>
-                <div class="col-md-4">Date: ${q.quotation_date || "-"}</div>
-                <div class="col-md-4">Company: ${q.company_name || "-"}</div>
-                <div class="col-md-4">Industry: ${q.industry || "-"}</div>
-                <div class="col-md-4">Person:${q.person_name || "-"}</div>
-                <div class="col-md-4">Contact: ${q.contact || "-"}</div>
-                <div class="col-md-6">Email: ${q.email || "-"}</div>
-                <div class="col-md-6">Website: ${q.website || "-"}</div>
-                <div class="col-md-6">Address: ${q.address || "-"}</div>
-                <div class="col-md-6">Price: ₹${q.price ? Number(q.price).toFixed(2) : "0.00"}</div>
-                <div class="col-6">Description: ${q.description || "-"}</div>
+                <div class="col-md-4"><strong>Quotation Number:</strong> ${q.quotation_number || "-"}</div>
+                <div class="col-md-4"><strong>Date:</strong> ${q.quotation_date || "-"}</div>
+                <div class="col-md-4"><strong>Company:</strong> ${q.company_name || "-"}</div>
+                <div class="col-md-4"><strong>Industry:</strong> ${q.industry || "-"}</div>
+                <div class="col-md-4"><strong>Person:</strong>${q.person_name || "-"}</div>
+                <div class="col-md-4"><strong>Contact:</strong> ${q.contact || "-"}</div>
+                <div class="col-md-6"><strong>Email: </strong>${q.email || "-"}</div>
+                <div class="col-md-6"><strong>Website:</strong> ${q.website || "-"}</div>
+                <div class="col-md-6"><strong>Address:</strong> ${q.address || "-"}</div>
+                <div class="col-md-6"><strong>Price: ₹</strong>${q.price ? Number(q.price).toFixed(2) : "0.00"}</div>
+                <div class="col-6"><strong>Description:</strong> ${q.description || "-"}</div>
               </div>
               <hr>
               <h6 class="fw-bold mb-2">Services:</h6>
@@ -255,7 +261,7 @@ if (!token) {
           new bootstrap.Modal(document.getElementById("viewModal")).show();
         } catch (err) {
           console.error(err);
-          alert("Failed to fetch quotation details.");
+          //alert("Failed to fetch quotation details.");
         }
       });
     });
@@ -273,7 +279,7 @@ if (!token) {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
         try {
-          const res = await fetch(`https://crm.design-bharat.com/api/send-quotation-mail/${id}/`, {
+          const res = await fetch(`${BASE_URL}/api/send-quotation-mail/${id}/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" }
           });
@@ -282,7 +288,7 @@ if (!token) {
           alert(`Quotation sent to ${data.email}`);
         } catch (err) {
           console.error(err);
-          alert(" Failed to send quotation email.");
+         alert(" Failed to send quotation email.");
         }
       });
     });
@@ -302,10 +308,10 @@ document.querySelectorAll(".btn-duplicate").forEach((btn) => {
  // DELETE
     document.querySelectorAll(".delete-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
-        if (!confirm("Are you sure you want to delete this Quotation?")) return;
+       // if (!confirm("Are you sure you want to delete this Quotation?")) return;
 
         try {
-          const res = await fetch(`https://crm.design-bharat.com/api/quotations/${btn.dataset.id}/`, {
+          const res = await fetch(`${BASE_URL}/api/quotations/${btn.dataset.id}/`, {
             method: "DELETE",
             headers: {
               "Authorization": token.startsWith("Token") ? token : "Token " + token
@@ -313,17 +319,53 @@ document.querySelectorAll(".btn-duplicate").forEach((btn) => {
           });
 
           if (res.ok) {
-            alert("Quotation deleted successfully!");
+          //  alert("Quotation deleted successfully!");
             await loadQuotations(); 
           } else {
-            alert("Failed to delete Quotations.");
+           // alert("Failed to delete Quotations.");
           }
         } catch (err) {
           console.error(err);
-          alert("Server error while deleting.");
+          //alert("Server error while deleting.");
         }
       });
     });
+
+
+    // DOWNLOAD PDF
+document.querySelectorAll(".btn-download").forEach((btn) => {
+  btn.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const id = btn.dataset.id;
+
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const res = await fetch(`${BASE_URL}/api/download-quotation/${id}/`, {
+        headers: {
+          "Authorization": token.startsWith("Token") ? token : "Token " + token
+        }
+      });
+
+      if (!res.ok) throw new Error("Failed to download PDF");
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      // Always download as a clean filename (no ids/numbers)
+      a.download = `Quotation.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to download quotation.");
+    }
+  });
+});
     
   }
 
@@ -430,7 +472,7 @@ document.querySelectorAll(".btn-duplicate").forEach((btn) => {
     const exportBtn = document.getElementById("exportBtn");
     exportBtn?.addEventListener("click", () => {
       if (!currentFiltered.length) {
-        alert("No quotations to export!");
+        //alert("No quotations to export!");
         return;
       }
 
@@ -447,7 +489,7 @@ document.querySelectorAll(".btn-duplicate").forEach((btn) => {
       const ws = XLSX.utils.json_to_sheet(data);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Quotations");
-      XLSX.writeFile(wb, "Filtered_Quotation_List.xlsx");
+      XLSX.writeFile(wb, "Quotation.xlsx");
     });
   }
 
