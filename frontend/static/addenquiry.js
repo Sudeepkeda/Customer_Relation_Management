@@ -2,7 +2,7 @@
 // Add/Edit Enquiry
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
-  const BASE_URL = "https://crm.design-bharat.com";
+  const BASE_URL = window.location.origin;
   const form = document.getElementById("enquiryForm");
   const editId = localStorage.getItem("editEnquiryId");
   const token = localStorage.getItem("authToken");

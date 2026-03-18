@@ -11,8 +11,8 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 # ==========================
 # SECURITY & DEBUG SETTINGS
 # ==========================
-SECRET_KEY = "django-insecure-pre*0kb@h-@6sjn0t)d8u&kldzk#!jz@y@ng5c^kst-n^6m=fw"
-DEBUG = False
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-me")
+DEBUG = os.getenv("DJANGO_DEBUG", "0").strip().lower() in {"1", "true", "yes", "on"}
 
 ALLOWED_HOSTS = [
     'crm.design-bharat.com',
@@ -143,6 +143,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost",
 ]
 
+# If you serve the site over HTTPS on the production domain, Django also needs these for CSRF.
+CSRF_TRUSTED_ORIGINS = [
+    "https://crm.design-bharat.com",
+    "https://www.crm.design-bharat.com",
+]
+
 # ==========================
 # EMAIL CONFIGURATION
 # ==========================
@@ -150,9 +156,9 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "mail.eduroglobal.com"  # SMTP host should match mail server
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "sathya@eduroglobal.com"
-EMAIL_HOST_PASSWORD = "Sathya@2026"
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "no-reply@crm.design-bharat.com")
 
 # ==========================
 # AUTH + LOGIN
@@ -182,7 +188,7 @@ X_FRAME_OPTIONS = "DENY"
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
-SECURE_SSL_REDIRECT = False
+SECURE_SSL_REDIRECT = not DEBUG
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 

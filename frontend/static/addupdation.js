@@ -2,7 +2,7 @@
 // Add / Edit Updation 
 // ===========================
 document.addEventListener("DOMContentLoaded", async () => {
-  const BASE_URL = "https://crm.design-bharat.com";
+  const BASE_URL = window.location.origin;
   const form = document.getElementById("updationForm");
   const token = localStorage.getItem("authToken");
 

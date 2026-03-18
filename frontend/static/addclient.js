@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const form = document.getElementById("clientForm");
   const editId = localStorage.getItem("editClientId");
   const token = localStorage.getItem("authToken");
+  const BASE_URL = window.location.origin;
 
   // Redirect to login if not authenticated
   if (!token) {
@@ -91,8 +92,8 @@ if (maitenancePriceInput) {
   if (editId) {
     // Editing existing client 
     try {
-      console.log("Trying to load Client ID:", editId);//https://crm.design-bharat.com
-      const res = await fetch(`https://crm.design-bharat.com/api/clients/${editId}/`,{
+      console.log("Trying to load Client ID:", editId);
+      const res = await fetch(`${BASE_URL}/api/clients/${editId}/`,{
            headers: {
           "Authorization": `Token ${token}`,
           "Content-Type": "application/json",
@@ -151,7 +152,7 @@ if (maitenancePriceInput) {
 
         try {
             
-             let url = "https://crm.design-bharat.com/api/clients/";
+             let url = `${BASE_URL}/api/clients/`;
       let method = "POST";
 
       if (editId) {

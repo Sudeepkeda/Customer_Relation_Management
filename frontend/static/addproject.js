@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const emailInput = document.getElementById("Email");
   const descriptionTextarea = document.getElementById("description");
 
+  const BASE_URL = window.location.origin;
+
   const token = localStorage.getItem("authToken");
 
   let personsData = [];
@@ -93,7 +95,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ==============================
   async function loadPersons(selectedPerson = null) {
     try {
-      const res = await fetch("https://crm.design-bharat.com/api/quotations/", { //https://crm.design-bharat.com
+      const res = await fetch(`${BASE_URL}/api/quotations/`, {
         headers: {
           "Authorization": token.startsWith("Token") ? token : "Token " + token,
           "Content-Type": "application/json",
@@ -188,8 +190,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
       const url = editProject
-        ? `https://crm.design-bharat.com/api/projects/${editProject.id}/`
-        : "https://crm.design-bharat.com/api/projects/";
+        ? `${BASE_URL}/api/projects/${editProject.id}/`
+        : `${BASE_URL}/api/projects/`;
 
       const method = editProject ? "PUT" : "POST";
 

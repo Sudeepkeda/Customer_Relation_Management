@@ -4,7 +4,7 @@
 (function () {
   "use strict";
 
-  const BASE_URL = "https://crm.design-bharat.com";
+  const BASE_URL = window.location.origin;
 
   // Local module state (isolated)
   let DB_allClients = [];

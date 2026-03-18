@@ -2,7 +2,7 @@
 // Sidebar + Table + API Integration for Updations
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
-  const BASE_URL = "https://crm.design-bharat.com";
+  const BASE_URL = window.location.origin;
   // -------------------
   // Sidebar Active Highlight
   // -------------------

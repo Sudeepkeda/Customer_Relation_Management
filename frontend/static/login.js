@@ -1,4 +1,4 @@
-const BASE_URL = "https://crm.design-bharat.com";
+const BASE_URL = window.location.origin;
 
 document.getElementById("loginBtn").addEventListener("click", async function () {
   const username = document.getElementById("username").value.trim();

@@ -3,7 +3,7 @@
 // ===============================
 (function () {
 
-const BASE_URL = "https://crm.design-bharat.com";
+const BASE_URL = window.location.origin;
 
 document.addEventListener("DOMContentLoaded", async () => {
 

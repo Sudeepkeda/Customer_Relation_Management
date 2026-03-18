@@ -2,7 +2,7 @@
 // Sidebar + Table + API Integration for Quotations
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
-const BASE_URL = "https://crm.design-bharat.com";
+const BASE_URL = window.location.origin;
 const token = localStorage.getItem("authToken");
 if (!token) {
   //alert("Session expired. Please log in again.");

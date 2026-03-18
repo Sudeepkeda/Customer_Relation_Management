@@ -3,7 +3,7 @@
 // ===================
 document.addEventListener("DOMContentLoaded", async () => {
 
-const BASE_URL = "https://crm.design-bharat.com";
+const BASE_URL = window.location.origin;
  document.querySelectorAll(".nav-list .nav-link").forEach(link => {
   const linkHref = link.getAttribute("href").toLowerCase();
   const currentPath = window.location.pathname.toLowerCase();
