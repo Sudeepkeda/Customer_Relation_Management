@@ -197,12 +197,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           const html = `
             <div class="container-fluid">
-              <div class="row g-3">
-                <div class="col-md-4"><strong>Client Name:</strong> ${upd.client_name || "-"}</div>
-                <div class="col-md-4"><strong>Project Name:</strong> ${upd.project_name || "-"}</div>
-                <div class="col-md-4"><strong>Status:</strong> ${upd.status || "-"}</div>
-                <div class="col-md-4"><strong>Date:</strong> ${displayDate}</div>
-                <div class="col-12"><strong>Description:</strong> ${upd.description || "-"}</div>
+              <div class="row g-2 enquiry-details">
+                <div class="col-md-4"><div class="detail-label">Client Name</div><div class="detail-value">${upd.client_name || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Project Name</div><div class="detail-value">${upd.project_name || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Status</div><div class="detail-value">${upd.status || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Date</div><div class="detail-value">${displayDate}</div></div>
+                <div class="col-12"><div class="detail-label">Description</div><div class="detail-value">${upd.description || "-"}</div></div>
               </div>
             </div>`;
           document.getElementById("viewClientBody").innerHTML = html;

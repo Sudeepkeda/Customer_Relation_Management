@@ -182,15 +182,15 @@ function EXP_initActions() {
 
       const client = await res.json();
       const html = `
-        <div class="row g-3">
-          <div class="col-md-4"><strong>Name:</strong> ${client.person_name}</div>
-          <div class="col-md-4"><strong>Email: </strong>${client.email}</div>
-          <div class="col-md-4"><strong>Contact:</strong> ${client.contact_number}</div>
-          <div class="col-md-4"><strong>Domain End:</strong> ${client.domain_end_date}</div>
-          <div class="col-md-4"><strong>Server End:</strong> ${client.server_end_date}</div>
-          <div class="col-md-4"><strong>Maintenance End:</strong> ${client.maintenance_end_date}</div>
-          <div class="col-md-4"><strong>Expiring:</strong> ${EXP_getExpiringServices(client).join(", ")}</div>
-          <div class="col-md-4"><strong>Remaining:</strong> ${EXP_getRemainingDays(client)}</div>
+        <div class="row g-2 enquiry-details">
+          <div class="col-md-4"><div class="detail-label">Name</div><div class="detail-value">${client.person_name || "-"}</div></div>
+          <div class="col-md-4 text-break"><div class="detail-label">Email</div><div class="detail-value">${client.email || "-"}</div></div>
+          <div class="col-md-4"><div class="detail-label">Contact</div><div class="detail-value">${client.contact_number || "-"}</div></div>
+          <div class="col-md-4"><div class="detail-label">Domain End</div><div class="detail-value">${client.domain_end_date || "-"}</div></div>
+          <div class="col-md-4"><div class="detail-label">Server End</div><div class="detail-value">${client.server_end_date || "-"}</div></div>
+          <div class="col-md-4"><div class="detail-label">Maintenance End</div><div class="detail-value">${client.maintenance_end_date || "-"}</div></div>
+          <div class="col-md-4"><div class="detail-label">Expiring</div><div class="detail-value">${EXP_getExpiringServices(client).join(", ") || "-"}</div></div>
+          <div class="col-md-4"><div class="detail-label">Remaining</div><div class="detail-value">${EXP_getRemainingDays(client) || "-"}</div></div>
         </div>
       `;
       document.getElementById("viewClientBody").innerHTML = html;

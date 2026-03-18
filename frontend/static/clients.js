@@ -206,35 +206,35 @@ if (dateType === "allamc") {
           const client = await res.json();
 
           let html = `
-  <div class="container-fluid">
-    <div class="row g-3">
-      <div class="col-md-4"><strong>Company:</strong> ${client.company_name}</div>
-      <div class="col-md-4"><strong>Industry: </strong>${client.industry || "-"}</div>
-      <div class="col-md-4"><strong>Person: </strong>${client.person_name || "-"}</div>
-      <div class="col-md-4"><strong>Contact: </strong>${client.contact_number || "-"}</div>
-      <div class="col-md-4"><strong>Email:</strong>${client.email || "-"}</div>
-      <div class="col-md-4"><strong>Website: </strong>${client.website || "-"}</div>
-      <div class="col-md-4"><strong>Address:</strong> ${client.address || "-"}</div>
-      <div class="col-md-4"><strong>GST:</strong> ${client.gst || "-"}</div>
-      <div class="col-md-4"><strong>AMC: </strong>${client.amc || "-"}</div>
-      <div class="col-md-4"><strong>AMC Price: </strong>${client.amc_price || "-"}</div>
-      <div class="col-md-4"><strong>Domain:</strong>${client.domain_name || "-"}</div>
-      <div class="col-md-4"><strong>Domain Charges:</strong> ${client.domain_charges || "-"}</div>
-      <div class="col-md-4"><strong>Domain Start Date:</strong> ${client.domain_start_date || "-"}</div>
-      <div class="col-md-4"><strong>Domain End Date:</strong> ${client.domain_end_date || "-"}</div>
-      <div class="col-md-4"><strong>Server Details:</strong> ${client.server_details || "-"}</div>
-      <div class="col-md-4"><strong>Server Price:</strong> ${client.server_price || "-"}</div>
-      <div class="col-md-4"><strong>Server Start Date:</strong> ${client.server_start_date || "-"}</div>
-      <div class="col-md-4"><strong>Server End Date:</strong> ${client.server_end_date || "-"}</div>
-      <div class="col-md-4"><strong>Maintenance Value:</strong> ${client.maintenance_value || "-"}</div>
-      <div class="col-md-4"><strong>Maintenance Start Date:</strong> ${client.maintenance_start_date || "-"}</div>
-      <div class="col-md-4"><strong>Maintenance End Date:</strong> ${client.maintenance_end_date || "-"}</div>
-      <div class="col-md-4"><strong>Comments:</strong> ${client.comments || "-"}</div>
-      <div class="col-md-4"><strong>Priority:</strong> ${client.priority || "-"}</div>
-      <div class="col-md-4"><strong>Status:</strong> ${client.status || "-"}</div>
-    </div>
-  </div>
-`;
+            <div class="container-fluid">
+              <div class="row g-2 enquiry-details">
+                <div class="col-md-4"><div class="detail-label">Company</div><div class="detail-value">${client.company_name || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Industry</div><div class="detail-value">${client.industry || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Person</div><div class="detail-value">${client.person_name || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Contact</div><div class="detail-value">${client.contact_number || "-"}</div></div>
+                <div class="col-md-4 text-break"><div class="detail-label">Email</div><div class="detail-value">${client.email || "-"}</div></div>
+                <div class="col-md-4 text-break"><div class="detail-label">Website</div><div class="detail-value">${client.website || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Address</div><div class="detail-value">${client.address || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">GST</div><div class="detail-value">${client.gst || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">AMC</div><div class="detail-value">${client.amc || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">AMC Price</div><div class="detail-value">${client.amc_price || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Domain</div><div class="detail-value">${client.domain_name || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Domain Charges</div><div class="detail-value">${client.domain_charges || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Domain Start Date</div><div class="detail-value">${client.domain_start_date || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Domain End Date</div><div class="detail-value">${client.domain_end_date || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Server Details</div><div class="detail-value">${client.server_details || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Server Price</div><div class="detail-value">${client.server_price || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Server Start Date</div><div class="detail-value">${client.server_start_date || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Server End Date</div><div class="detail-value">${client.server_end_date || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Maintenance Value</div><div class="detail-value">${client.maintenance_value || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Maintenance Start Date</div><div class="detail-value">${client.maintenance_start_date || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Maintenance End Date</div><div class="detail-value">${client.maintenance_end_date || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Priority</div><div class="detail-value">${client.priority || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Status</div><div class="detail-value">${client.status || "-"}</div></div>
+                <div class="col-12"><div class="detail-label">Comments</div><div class="detail-value">${client.comments || "-"}</div></div>
+              </div>
+            </div>
+          `;
           document.getElementById("viewClientBody").innerHTML = html;
           new bootstrap.Modal(document.getElementById("viewClientModal")).show();
         } catch (error) {

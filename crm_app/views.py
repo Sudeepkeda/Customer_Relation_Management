@@ -140,6 +140,11 @@ def _build_quotation_pdf(quotation):
         while "<br/><br/><br/>" in html:
             html = html.replace("<br/><br/><br/>", "<br/><br/>")
 
+        # Fix invalid CSS values produced by editors (xhtml2pdf is strict)
+        # Example error: Invalid color value 'medium'
+        html = re.sub(r"color\s*:\s*medium\s*;", "color:#000;", html, flags=re.IGNORECASE)
+        html = re.sub(r"color\s*:\s*medium\b", "color:#000", html, flags=re.IGNORECASE)
+
         return html
 
     services_html = ""

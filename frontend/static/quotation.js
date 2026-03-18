@@ -241,21 +241,21 @@ if (!token) {
 
           document.getElementById("viewModalBody").innerHTML = `
             <div class="container-fluid">
-              <div class="row g-3">
-                <div class="col-md-4"><strong>Quotation Number:</strong> ${q.quotation_number || "-"}</div>
-                <div class="col-md-4"><strong>Date:</strong> ${q.quotation_date || "-"}</div>
-                <div class="col-md-4"><strong>Company:</strong> ${q.company_name || "-"}</div>
-                <div class="col-md-4"><strong>Industry:</strong> ${q.industry || "-"}</div>
-                <div class="col-md-4"><strong>Person:</strong>${q.person_name || "-"}</div>
-                <div class="col-md-4"><strong>Contact:</strong> ${q.contact || "-"}</div>
-                <div class="col-md-6"><strong>Email: </strong>${q.email || "-"}</div>
-                <div class="col-md-6"><strong>Website:</strong> ${q.website || "-"}</div>
-                <div class="col-md-6"><strong>Address:</strong> ${q.address || "-"}</div>
-                <div class="col-md-6"><strong>Price: ₹</strong>${q.price ? Number(q.price).toFixed(2) : "0.00"}</div>
-                <div class="col-6"><strong>Description:</strong> ${q.description || "-"}</div>
+              <div class="row g-2 enquiry-details">
+                <div class="col-md-4"><div class="detail-label">Quotation Number</div><div class="detail-value">${q.quotation_number || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Date</div><div class="detail-value">${q.quotation_date || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Company</div><div class="detail-value">${q.company_name || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Industry</div><div class="detail-value">${q.industry || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Person</div><div class="detail-value">${q.person_name || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Contact</div><div class="detail-value">${q.contact || "-"}</div></div>
+                <div class="col-md-6 text-break"><div class="detail-label">Email</div><div class="detail-value">${q.email || "-"}</div></div>
+                <div class="col-md-6 text-break"><div class="detail-label">Website</div><div class="detail-value">${q.website || "-"}</div></div>
+                <div class="col-md-6"><div class="detail-label">Address</div><div class="detail-value">${q.address || "-"}</div></div>
+                <div class="col-md-6"><div class="detail-label">Price</div><div class="detail-value">₹${q.price ? Number(q.price).toFixed(2) : "0.00"}</div></div>
+                <div class="col-12"><div class="detail-label">Description</div><div class="detail-value">${q.description || "-"}</div></div>
               </div>
               <hr>
-              <h6 class="fw-bold mb-2">Services:</h6>
+              <h6 class="fw-bold mb-2">Services</h6>
               <div>${servicesHtml}</div>
             </div>`;
           new bootstrap.Modal(document.getElementById("viewModal")).show();

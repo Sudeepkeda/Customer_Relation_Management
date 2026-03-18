@@ -127,9 +127,9 @@ if (urlFilter) {
           <td>${index + 1}</td>
           <td>${p.project_name || "-"}</td>
           <td>${p.person_name || "-"}</td>
-          <td>${p.status || "-"}</td>
           <td>${p.contact_number || "-"}</td>
           <td>${p.email || "-"}</td>
+          <td>${p.status || "-"}</td>
           <td>
             <div class="d-flex flex-nowrap">
               <button class="btn btn-sm me-1 view-btn" data-id="${p.id}">
@@ -219,14 +219,14 @@ if (urlFilter) {
 
           document.getElementById("viewProjectBody").innerHTML = `
             <div class="container-fluid">
-              <div class="row g-3">
-                <div class="col-md-4"><strong>Project Name:</strong> ${p.project_name || "-"}</div>
-                <div class="col-md-4"><strong>Person Name:</strong> ${p.person_name || "-"}</div>
-                <div class="col-md-4"><strong>Server Name:</strong> ${p.server_name || "-"}</div>
-                <div class="col-md-4"><strong>Contact:</strong> ${p.contact_number || "-"}</div>
-                <div class="col-md-4 text-break"><strong>Email:</strong> ${p.email || "-"}</div>
-                <div class="col-md-4"><strong>Status: </strong>${p.status || "-"}</div>
-                <div class="col-12"><strong>Description:</strong> ${p.description || "-"}</div>
+              <div class="row g-2 enquiry-details">
+                <div class="col-md-4"><div class="detail-label">Project Name</div><div class="detail-value">${p.project_name || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Person Name</div><div class="detail-value">${p.person_name || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Server Name</div><div class="detail-value">${p.server_name || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Contact</div><div class="detail-value">${p.contact_number || "-"}</div></div>
+                <div class="col-md-4 text-break"><div class="detail-label">Email</div><div class="detail-value">${p.email || "-"}</div></div>
+                <div class="col-md-4"><div class="detail-label">Status</div><div class="detail-value">${p.status || "-"}</div></div>
+                <div class="col-12"><div class="detail-label">Description</div><div class="detail-value">${p.description || "-"}</div></div>
               </div>
             </div>
           `;
@@ -407,9 +407,9 @@ if (urlFilter) {
         "S.No": t[0]?.textContent || "",
         "Project Name": t[1]?.textContent || "",
         "Person Name": t[2]?.textContent || "",
-        "Status": t[3]?.textContent || "",
-        "Contact No": t[4]?.textContent || "",
-        "Email": t[5]?.textContent || "",
+        "Contact No": t[3]?.textContent || "",
+        "Email": t[4]?.textContent || "",
+        "Status": t[5]?.textContent || "",
       };
     });
 
