@@ -621,7 +621,9 @@ def send_quotation_mail(request, pk):
         return JsonResponse({"error": "Quotation not found"}, status=404)
 
     try:
-        recipient_email = quotation.email
+        recipient_email = (quotation.email or "").strip()
+        if not recipient_email:
+            return JsonResponse({"error": "Quotation email is missing"}, status=400)
         client_name = quotation.person_name or quotation.company_name or "Client"
 
         pdf_bytes, filename = _build_quotation_pdf(quotation)
@@ -651,7 +653,7 @@ Dhenu Technologies
         email = EmailMessage(
             subject=subject,
             body=body,
-            from_email="info@dhenutechnologies.com",
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None) or getattr(settings, "EMAIL_HOST_USER", None) or "no-reply@example.com",
             to=[recipient_email],
         )
         email.attach(filename or "Quotation.pdf", pdf_bytes, "application/pdf")

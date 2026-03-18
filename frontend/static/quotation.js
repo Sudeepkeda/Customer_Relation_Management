@@ -279,16 +279,24 @@ if (!token) {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
         try {
+          const authToken = localStorage.getItem("authToken");
           const res = await fetch(`${BASE_URL}/api/send-quotation-mail/${id}/`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" }
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": authToken
+                ? (authToken.startsWith("Token") ? authToken : "Token " + authToken)
+                : ""
+            }
           });
-          if (!res.ok) throw new Error("Failed to send email");
-          const data = await res.json();
-          alert(`Quotation sent to ${data.email}`);
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            throw new Error(data?.error || "Failed to send email");
+          }
+          alert(`Quotation sent to ${data.email || "recipient"}`);
         } catch (err) {
           console.error(err);
-         alert(" Failed to send quotation email.");
+         alert(err?.message || "Failed to send quotation email.");
         }
       });
     });
@@ -347,7 +355,16 @@ document.querySelectorAll(".btn-download").forEach((btn) => {
         }
       });
 
-      if (!res.ok) throw new Error("Failed to download PDF");
+      if (!res.ok) {
+        // Try to surface backend JSON error message
+        const ct = res.headers.get("content-type") || "";
+        if (ct.includes("application/json")) {
+          const errJson = await res.json().catch(() => ({}));
+          throw new Error(errJson?.error || "Failed to download PDF");
+        }
+        const errText = await res.text().catch(() => "");
+        throw new Error(errText || "Failed to download PDF");
+      }
 
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -362,7 +379,7 @@ document.querySelectorAll(".btn-download").forEach((btn) => {
 
     } catch (err) {
       console.error(err);
-      alert("Failed to download quotation.");
+      alert(err?.message || "Failed to download quotation.");
     }
   });
 });

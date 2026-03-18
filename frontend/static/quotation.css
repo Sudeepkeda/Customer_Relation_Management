@@ -193,6 +193,15 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Ensure action dropdown is not clipped by table wrapper */
+.table-responsive {
+  overflow: visible !important;
+}
+
+.dropdown-menu {
+  z-index: 2000;
+}
+
 
 
 

@@ -286,6 +286,30 @@ body {
   padding: 2px 4px; /* smaller clickable area */
 }
 
+.enquiry-details .detail-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: #141414;
+}
+
+.enquiry-details .detail-value {
+  font-weight: 400;
+  font-size: 14px;
+  color: #232323;
+  margin-top: 2px;
+}
+
+.enquiry-details .col-md-4,
+.enquiry-details .col-12 {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.modal-body {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
 
 .btn-success{
   background-color: #78787a !important;

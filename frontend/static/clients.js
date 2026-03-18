@@ -147,7 +147,7 @@ if (dateType === "allamc") {
       applyFilters();
     } catch (err) {
       console.error("Error loading clients:", err);
-      tableBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Failed to load clients.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Failed to load clients.</td></tr>`;
     }
   }
 
@@ -158,7 +158,7 @@ if (dateType === "allamc") {
     tableBody.innerHTML = "";
 
     if (clients.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="9" class="text-center">No clients found</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="8" class="text-center">No clients found</td></tr>`;
       return;
     }
 
@@ -167,11 +167,11 @@ if (dateType === "allamc") {
         <tr>
           <td>${index + 1}</td>
           <td>${client.company_name || "-"}</td>
-          <td>${client.industry || "-"}</td>
           <td>${client.person_name || "-"}</td>
           <td>${client.contact_number || "-"}</td>
           <td>${client.email || "-"}</td>
           <td>${client.status || "-"}</td>
+          <td>${client.priority || "-"}</td>
           <td>
             <div class="d-flex flex-nowrap">
               <button class="btn btn-sm me-1 view-btn" data-id="${client.id}">
@@ -431,11 +431,11 @@ if (dateType === "allamc") {
 
     const data = displayedRows.map((c) => ({
       "Company Name": c.company_name || "-",
-      "Industry": c.industry || "-",
       "Person Name": c.person_name || "-",
       "Contact Number": c.contact_number || "-",
       "Email": c.email || "-",
       "Status": c.status || "-",
+      "Priority": c.priority || "-",
       "Maintenance Start": c.maintenance_start_date || "-",
       "Maintenance End": c.maintenance_end_date || "-",
       "Domain Start": c.domain_start_date || "-",

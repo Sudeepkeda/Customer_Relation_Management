@@ -30,6 +30,8 @@ const BASE_URL = window.location.origin;
   let allEnquiries = []; // full list for filtering
   let currentFiltered = []; // current filtered data for export
   let currentStatus = 'all'; // current status filter
+  const STATUS_ORDER = ["Notstarted", "Inprogress", "Completed"];
+  const normalizeStatus = (s) => (s || "").toString().trim().toLowerCase().replace(/\s+/g, "");
 
   // Dashboard can send /enquiry/?filter=notstarted (or other statuses)
   const urlFilter = new URLSearchParams(window.location.search).get("filter");
@@ -98,17 +100,12 @@ const BASE_URL = window.location.origin;
     // Status filter
     const statusToApply = lockedStatus || currentStatus;
     if (statusToApply !== 'all') {
-  const normalize = (s) => (s || "").toLowerCase().replace(/\s+/g, "");
-
-  filtered = filtered.filter(c => 
-    normalize(c.status) === normalize(statusToApply)
-  );
-}
+      filtered = filtered.filter(c => normalizeStatus(c.status) === normalizeStatus(statusToApply));
+    }
 
     currentFiltered = filtered;
     renderTable(filtered);
     initActions();
-    paginate(1);
   }
 
   // ===================
@@ -126,6 +123,15 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
       if (!response.ok) throw new Error("Failed to fetch enquiries");
 
       allEnquiries = await response.json();
+      // Newest first (date desc, fallback to id desc)
+      allEnquiries.sort((a, b) => {
+        const ad = a?.date ? Date.parse(a.date) : NaN;
+        const bd = b?.date ? Date.parse(b.date) : NaN;
+        if (!Number.isNaN(ad) && !Number.isNaN(bd) && ad !== bd) return bd - ad;
+        const ai = Number(a?.id ?? 0);
+        const bi = Number(b?.id ?? 0);
+        return bi - ai;
+      });
       currentFiltered = [...allEnquiries];
       initSearchAndPagination();
       initStatusFilter();
@@ -197,15 +203,39 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
 
           const html = `
             <div class="container-fluid">
-              <div class="row g-3 ">
-                <div class="col-md-4"><strong>Date:</strong> ${enquiry.date || "-"}</div>
-                <div class="col-md-4"><strong>Company Name:</strong> ${enquiry.company_name || "-"}</div>
-                <div class="col-md-4"><strong>Person Name:</strong> ${enquiry.person_name || "-"}</div>
-                <div class="col-md-4"><strong>Contact Number:</strong> ${enquiry.contact_number || "-"}</div>
-                <div class="col-md-4 text-break"><strong>Email:</strong> ${enquiry.email || "-"}</div>
-                <div class="col-md-4 text-break"><strong>Website:</strong> ${enquiry.website || "-"}</div>
-                <div class="col-md-4"><strong>Status:</strong> ${enquiry.status || "-"}</div>
-                <div class="col-12"><strong>Comments:</strong> ${enquiry.comments || "-"}</div>
+              <div class="row g-2 enquiry-details">
+                <div class="col-md-4">
+                  <div class="detail-label">Date</div>
+                  <div class="detail-value">${enquiry.date || "-"}</div>
+                </div>
+                <div class="col-md-4">
+                  <div class="detail-label">Company Name</div>
+                  <div class="detail-value">${enquiry.company_name || "-"}</div>
+                </div>
+                <div class="col-md-4">
+                  <div class="detail-label">Person Name</div>
+                  <div class="detail-value">${enquiry.person_name || "-"}</div>
+                </div>
+                <div class="col-md-4">
+                  <div class="detail-label">Contact Number</div>
+                  <div class="detail-value">${enquiry.contact_number || "-"}</div>
+                </div>
+                <div class="col-md-4 text-break">
+                  <div class="detail-label">Email</div>
+                  <div class="detail-value">${enquiry.email || "-"}</div>
+                </div>
+                <div class="col-md-4 text-break">
+                  <div class="detail-label">Website</div>
+                  <div class="detail-value">${enquiry.website || "-"}</div>
+                </div>
+                <div class="col-md-4">
+                  <div class="detail-label">Status</div>
+                  <div class="detail-value">${enquiry.status || "-"}</div>
+                </div>
+                <div class="col-12">
+                  <div class="detail-label">Comments</div>
+                  <div class="detail-value">${enquiry.comments || "-"}</div>
+                </div>
               </div>
             </div>
           `;
@@ -270,45 +300,9 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
       applyFilters();
     });
 
-    // Pagination
-    let rowsPerPage = 10;
-    let currentPage = 1;
-
-    function paginate(page) {
-      const rows = document.querySelectorAll(".table-data tr");
-      const totalPages = Math.ceil(rows.length / rowsPerPage);
-      if (page < 1) page = 1;
-      if (page > totalPages) page = totalPages;
-      currentPage = page;
-
-      rows.forEach((row, i) => {
-        const start = (page - 1) * rowsPerPage;
-        const end = page * rowsPerPage;
-        row.style.display = i >= start && i < end ? "" : "none";
-      });
-    }
-
-    const pageInput = document.getElementById("pageInput");
-    pageInput?.addEventListener("input", () => {
-      const val = parseInt(pageInput.value, 10);
-      if (!isNaN(val) && val > 0) {
-        rowsPerPage = val;
-        paginate(1);
-      }
-    });
-
-    document.querySelectorAll(".pagination .page-link").forEach(link => {
-      link.addEventListener("click", e => {
-        e.preventDefault();
-        const txt = link.innerText.toLowerCase();
-        if (txt === "previous") paginate(currentPage - 1);
-        else if (txt === "next") paginate(currentPage + 1);
-        else if (!isNaN(parseInt(txt))) paginate(parseInt(txt));
-      });
-    });
-
-    // Expose paginate for other functions
-    window.paginate = paginate;
+    // Pagination removed: list all enquiries
+    const pager = document.querySelector(".pagination")?.closest(".d-flex");
+    if (pager) pager.style.display = "none";
   }
 
   // ===================
@@ -329,7 +323,14 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
       return;
     }
 
-    const statuses = [...new Set(allEnquiries.map(c => c.status).filter(Boolean))];
+    const statuses = [...new Set(allEnquiries.map(c => c.status).filter(Boolean))].sort((a, b) => {
+      const ai = STATUS_ORDER.findIndex(s => normalizeStatus(s) === normalizeStatus(a));
+      const bi = STATUS_ORDER.findIndex(s => normalizeStatus(s) === normalizeStatus(b));
+      const ax = ai === -1 ? 999 : ai;
+      const bx = bi === -1 ? 999 : bi;
+      if (ax !== bx) return ax - bx;
+      return (a || "").localeCompare(b || "");
+    });
     const dropdownHtml = `
       <ul class="dropdown-menu show" style="position:absolute; z-index:1000;">
         <li><a class="dropdown-item status-option" data-status="all">All Status</a></li>
@@ -382,24 +383,8 @@ exportBtn.addEventListener("click", () => {
     return;
   }
 
-  // Pagination filter — include only currently visible rows
-  const rowsPerPage = parseInt(document.getElementById("pageInput")?.value || "10", 10);
-  const tableRows = Array.from(document.querySelectorAll(".table-data tr"));
-  const visibleRows = tableRows.filter(row => row.style.display !== "none");
-
-  // Get visible enquiry indexes (based on the first <td> column index)
-  const visibleIndexes = visibleRows.map(row => {
-    const idxCell = row.querySelector("td:first-child");
-    return idxCell ? parseInt(idxCell.textContent, 10) - 1 : -1;
-  }).filter(i => i >= 0);
-
-  // Filter only the visible (paginated) enquiries
-  const exportData = visibleIndexes.map(i => currentFiltered[i]);
-
-  if (!exportData.length) {
-    //alert("No visible enquiries to export!");
-    return;
-  }
+  // Export all currently filtered enquiries (pagination removed)
+  const exportData = [...currentFiltered];
 
   // Map data for Excel
   const data = exportData.map(c => ({

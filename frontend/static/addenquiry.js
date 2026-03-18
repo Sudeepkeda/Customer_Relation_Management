@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const form = document.getElementById("enquiryForm");
   const editId = localStorage.getItem("editEnquiryId");
   const token = localStorage.getItem("authToken");
+  const pageTitle = document.getElementById("pageTitle");
 
   // Redirect to login if not authenticated
   if (!token) {
@@ -61,6 +62,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // If editing, fetch existing data
   // -------------------
   if (editId) {
+    if (pageTitle) pageTitle.textContent = "Edit Enquiry";
     try {
       console.log("Trying to load enquiry ID:", editId);
       const response = await fetch(`${BASE_URL}/api/enquiries/${editId}/`, {
@@ -93,6 +95,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("Error loading enquiry:", err);
       alert("Failed to load enquiry details.");
     }
+  } else {
+    if (pageTitle) pageTitle.textContent = "Add New Enquiry";
   }
 
   // -------------------
