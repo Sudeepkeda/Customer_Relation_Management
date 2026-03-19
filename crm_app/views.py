@@ -142,8 +142,9 @@ def _build_quotation_pdf(quotation):
 
         # Fix invalid CSS values produced by editors (xhtml2pdf is strict)
         # Example error: Invalid color value 'medium'
-        html = re.sub(r"color\s*:\s*medium\s*;", "color:#000;", html, flags=re.IGNORECASE)
-        html = re.sub(r"color\s*:\s*medium\b", "color:#000", html, flags=re.IGNORECASE)
+        html = re.sub(r'\bcolor\s*=\s*["\']\s*medium\s*["\']', 'color="#000"', html, flags=re.IGNORECASE)
+        html = re.sub(r"(?:^|;)\s*(color|background-color|border-color)\s*:\s*medium\s*;", r";\1:#000;", html, flags=re.IGNORECASE)
+        html = re.sub(r"(color|background-color|border-color)\s*:\s*medium\b", r"\1:#000", html, flags=re.IGNORECASE)
 
         return html
 

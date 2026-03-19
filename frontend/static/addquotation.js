@@ -17,6 +17,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   let editId = urlParams.get("id");
   let duplicateId = urlParams.get("duplicate");
+  const pageTitle = document.getElementById("pageTitle");
+
+  if (editId) {
+    if (pageTitle) pageTitle.textContent = "Edit Quotation";
+    document.title = "Edit Quotation";
+  } else if (duplicateId) {
+    if (pageTitle) pageTitle.textContent = "Duplicate Quotation";
+    document.title = "Duplicate Quotation";
+  } else {
+    if (pageTitle) pageTitle.textContent = "Add New Quotation";
+    document.title = "Add New Quotation";
+  }
 
   let servicesArray = [];
 

@@ -28,7 +28,7 @@ document.getElementById("loginBtn").addEventListener("click", async function () 
       // Optional: store username for display in dashboard/profile
       localStorage.setItem("username", username);
 
-      alert("Login successful!");
+      //alert("Login successful!");
 
       // Redirect to dashboard (always without .html)
       window.location.href = "/dashboard/";
