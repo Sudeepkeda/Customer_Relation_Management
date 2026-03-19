@@ -144,16 +144,23 @@ def _build_quotation_pdf(quotation):
         # Example error: Invalid color value 'medium'
         #
         # Handle HTML attributes like: <font color="medium">, <table bgcolor="medium">, <td bordercolor="medium">
-        html = re.sub(r'\b(color|bgcolor|bordercolor)\s*=\s*["\']\s*medium\s*["\']', r'\1="#000"', html, flags=re.IGNORECASE)
-        # Handle style properties (including !important and missing semicolon edge cases)
         html = re.sub(
-            r"(color|background-color|border-color)\s*:\s*medium\s*!important",
+            r'\b(color|bgcolor|bordercolor)\s*=\s*(?:"\s*medium\s*"|\'\s*medium\s*\'|\s*medium\b)',
+            r'\1="#000"',
+            html,
+            flags=re.IGNORECASE,
+        )
+        # Handle style properties (including !important and missing semicolon edge cases)
+        # Expand list to catch more strict color parsers.
+        color_props = r"(color|background|background-color|border|border-color|outline-color|text-decoration-color)"
+        html = re.sub(
+            rf"{color_props}\s*:\s*medium\s*!important",
             r"\1:#000",
             html,
             flags=re.IGNORECASE,
         )
         html = re.sub(
-            r"(color|background-color|border-color)\s*:\s*medium\b",
+            rf"{color_props}\s*:\s*medium\b",
             r"\1:#000",
             html,
             flags=re.IGNORECASE,
