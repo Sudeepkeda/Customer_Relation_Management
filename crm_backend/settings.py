@@ -17,6 +17,8 @@ DEBUG = os.getenv("DJANGO_DEBUG", "0").strip().lower() in {"1", "true", "yes", "
 ALLOWED_HOSTS = [
     'crm.design-bharat.com',
     'www.crm.design-bharat.com',
+    'design-bharat.com',
+    'www.design-bharat.com',
     '127.0.0.1',
     'localhost',
 ]
