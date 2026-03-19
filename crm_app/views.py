@@ -140,11 +140,24 @@ def _build_quotation_pdf(quotation):
         while "<br/><br/><br/>" in html:
             html = html.replace("<br/><br/><br/>", "<br/><br/>")
 
-        # Fix invalid CSS values produced by editors (xhtml2pdf is strict)
+        # Fix invalid CSS/HTML color values produced by editors (xhtml2pdf/reportlab is strict)
         # Example error: Invalid color value 'medium'
-        html = re.sub(r'\bcolor\s*=\s*["\']\s*medium\s*["\']', 'color="#000"', html, flags=re.IGNORECASE)
-        html = re.sub(r"(?:^|;)\s*(color|background-color|border-color)\s*:\s*medium\s*;", r";\1:#000;", html, flags=re.IGNORECASE)
-        html = re.sub(r"(color|background-color|border-color)\s*:\s*medium\b", r"\1:#000", html, flags=re.IGNORECASE)
+        #
+        # Handle HTML attributes like: <font color="medium">, <table bgcolor="medium">, <td bordercolor="medium">
+        html = re.sub(r'\b(color|bgcolor|bordercolor)\s*=\s*["\']\s*medium\s*["\']', r'\1="#000"', html, flags=re.IGNORECASE)
+        # Handle style properties (including !important and missing semicolon edge cases)
+        html = re.sub(
+            r"(color|background-color|border-color)\s*:\s*medium\s*!important",
+            r"\1:#000",
+            html,
+            flags=re.IGNORECASE,
+        )
+        html = re.sub(
+            r"(color|background-color|border-color)\s*:\s*medium\b",
+            r"\1:#000",
+            html,
+            flags=re.IGNORECASE,
+        )
 
         return html
 
