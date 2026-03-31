@@ -176,7 +176,7 @@ if (maitenancePriceInput) {
       } else {
         const errorText = await response.text();
         console.error("API Error:", errorText);
-       // alert("Error saving clients.");
+        alert(`Error saving client: ${errorText}`);
       }
     } catch (err) {
       console.error(err);

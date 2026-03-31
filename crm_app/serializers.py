@@ -3,6 +3,25 @@ from .models import Client, Quotation, Enquiry, Project, Updation, Todo
 from datetime import date
 
 class ClientSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make create/update tolerant of partial/empty submissions.
+        for field in self.fields.values():
+            if getattr(field, "read_only", False):
+                continue
+            field.required = False
+            if hasattr(field, "allow_null"):
+                field.allow_null = True
+            if isinstance(field, (serializers.CharField, serializers.EmailField, serializers.URLField)):
+                field.allow_blank = True
+
+    def validate(self, attrs):
+        # Convert empty strings coming from the UI into null.
+        for k, v in list(attrs.items()):
+            if v == "":
+                attrs[k] = None
+        return attrs
+
     class Meta:
         model = Client
         fields = '__all__'
@@ -136,6 +155,23 @@ class QuotationSerializer(serializers.ModelSerializer):
 
 
 class EnquirySerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if getattr(field, "read_only", False):
+                continue
+            field.required = False
+            if hasattr(field, "allow_null"):
+                field.allow_null = True
+            if isinstance(field, (serializers.CharField, serializers.EmailField, serializers.URLField)):
+                field.allow_blank = True
+
+    def validate(self, attrs):
+        for k, v in list(attrs.items()):
+            if v == "":
+                attrs[k] = None
+        return attrs
+
     class Meta:
         model = Enquiry
         fields = "__all__"

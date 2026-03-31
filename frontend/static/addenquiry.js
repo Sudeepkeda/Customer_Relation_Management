@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       } else {
         const errorText = await response.text();
         console.error("API Error:", errorText);
-        alert("Error saving enquiry. Please check console for details.");
+        alert(`Error saving enquiry: ${errorText}`);
       }
     } catch (err) {
       console.error(err);
@@ -161,7 +161,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const statusVal = (document.getElementById("Status")?.value ?? "").toString().trim();
     if (statusVal) payload.status = statusVal;
 
-    // Do not send `date` — backend uses auto date field
+    // Provide date so DRF doesn't treat it as required (auto_now_add in model)
+    const today = new Date().toISOString().split("T")[0];
+    payload.date = today;
+
     return payload;
   }
 }); // Properly closes the event listener
