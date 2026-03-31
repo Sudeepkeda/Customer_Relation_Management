@@ -63,53 +63,57 @@ if (profileLogo) {
       );
     }
 
- // Date Filter
-const fromDateInput = document.getElementById("fromDate");
-const toDateInput = document.getElementById("toDate");
-const fromDate = fromDateInput ? fromDateInput.value : "";
-const toDate = toDateInput ? toDateInput.value : "";
+    // Date Filter
+    const fromDateInput = document.getElementById("fromDate");
+    const toDateInput = document.getElementById("toDate");
+    const fromDate = fromDateInput ? fromDateInput.value : "";
+    const toDate = toDateInput ? toDateInput.value : "";
 
-if (dateType === "allamc") {
-  filtered = filtered.filter((c) => {
-    const dates = [
-      c.maintenance_start_date,
-      c.maintenance_end_date,
-      c.domain_start_date,
-      c.domain_end_date,
-      c.server_start_date,
-      c.server_end_date,
-    ].filter(Boolean);
+    // If no From/To dates are selected, do NOT filter by dates at all.
+    // This ensures clients without AMC/Domain/Server dates are still shown.
+    if (fromDate || toDate) {
+      if (dateType === "allamc") {
+        filtered = filtered.filter((c) => {
+          const dates = [
+            c.maintenance_start_date,
+            c.maintenance_end_date,
+            c.domain_start_date,
+            c.domain_end_date,
+            c.server_start_date,
+            c.server_end_date,
+          ].filter(Boolean);
 
-    if (!dates.length) return false;
+          if (!dates.length) return false;
 
-    return dates.some((d) => {
-      const date = new Date(d);
+          return dates.some((d) => {
+            const date = new Date(d);
 
-      if (fromDate && date < new Date(fromDate)) return false;
-      if (toDate && date > new Date(toDate + "T23:59:59")) return false;
+            if (fromDate && date < new Date(fromDate)) return false;
+            if (toDate && date > new Date(toDate + "T23:59:59")) return false;
 
-      return true;
-    });
-  });
-} else {
-  const fields = dateFieldMap[dateType];
+            return true;
+          });
+        });
+      } else {
+        const fields = dateFieldMap[dateType];
 
-  if (fromDate) {
-    const fromD = new Date(fromDate);
-    filtered = filtered.filter((c) => {
-      const value = c[fields.start];
-      return value ? new Date(value) >= fromD : false;
-    });
-  }
+        if (fromDate) {
+          const fromD = new Date(fromDate);
+          filtered = filtered.filter((c) => {
+            const value = c[fields.start];
+            return value ? new Date(value) >= fromD : false;
+          });
+        }
 
-  if (toDate) {
-    const toD = new Date(toDate + "T23:59:59");
-    filtered = filtered.filter((c) => {
-      const value = c[fields.end];
-      return value ? new Date(value) <= toD : false;
-    });
-  }
-}
+        if (toDate) {
+          const toD = new Date(toDate + "T23:59:59");
+          filtered = filtered.filter((c) => {
+            const value = c[fields.end];
+            return value ? new Date(value) <= toD : false;
+          });
+        }
+      }
+    }
 
     //  Industry Filter
     if (currentIndustry !== "all") {
