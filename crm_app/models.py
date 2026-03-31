@@ -4,7 +4,7 @@ from django.db import transaction, IntegrityError
 
 
 class Client(models.Model):
-    company_name = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255, blank=True, null=True)
     industry = models.CharField(max_length=255, blank=True, null=True)
     person_name = models.CharField(max_length=255, blank=True, null=True)
     contact_number = models.CharField(max_length=20, blank=True, null=True)
@@ -50,10 +50,10 @@ class Quotation(models.Model):
     quotation_date = models.DateField(auto_now_add=True)
 
     # Enforce that every quotation must belong to a client
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=False, blank=False, related_name="quotations")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, blank=True, related_name="quotations")
 
     # snapshot fields (copied from Client at creation time)
-    company_name = models.CharField(max_length=200)
+    company_name = models.CharField(max_length=200, blank=True, null=True)
     industry = models.CharField(max_length=200, blank=True, null=True)
     person_name = models.CharField(max_length=200, blank=True, null=True)
     contact = models.CharField(max_length=50, blank=True, null=True)
@@ -109,7 +109,7 @@ class Quotation(models.Model):
 
     
 class Enquiry(models.Model):
-    company_name = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255, blank=True, null=True)
     person_name = models.CharField(max_length=255, blank=True, null=True)
     contact_number = models.CharField(max_length=20, blank=True, null=True)
     email = models.CharField(max_length=255, blank=True, null=True)
@@ -138,19 +138,19 @@ STATUS_CHOICES = [
 
 
 class Project(models.Model):
-    project_name = models.CharField(max_length=255)
+    project_name = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     server_name = models.CharField(max_length=255, blank=True, null=True)
     contact_number = models.CharField(max_length=20, blank=True, null=True)
     email = models.CharField(max_length=255, blank=True, null=True)
 
-    person_name = models.CharField(max_length=255)  # store free-text or existing
+    person_name = models.CharField(max_length=255, blank=True, null=True)  # store free-text or existing
     status = models.CharField(max_length=50, choices=[("Active", "Active"),("InActive", "InActive")], default="InActive")
 
 class Updation(models.Model):
-    client_name = models.CharField(max_length=200)
-    project_name = models.CharField(max_length=200)
-    status = models.CharField(max_length=100)
+    client_name = models.CharField(max_length=200, blank=True, null=True)
+    project_name = models.CharField(max_length=200, blank=True, null=True)
+    status = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -169,9 +169,9 @@ class Todo(models.Model):
         (STATUS_NOT_YET, "Not yet"),
     ]
 
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    task_date = models.DateField()
+    task_date = models.DateField(blank=True, null=True)
     start_time = models.TimeField(blank=True, null=True)
     end_time = models.TimeField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_NOT_YET)

@@ -27,7 +27,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   function togglePostpone() {
     const isPostponed = statusEl.value === "Postponed";
     postponeWrap.classList.toggle("d-none", !isPostponed);
-    postponeToEl.required = isPostponed;
     if (!isPostponed) postponeToEl.value = "";
   }
 

@@ -8,7 +8,7 @@ class ClientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class QuotationSerializer(serializers.ModelSerializer):
-    client_id = serializers.IntegerField(write_only=True, required=True)
+    client_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     duplicate_of = serializers.IntegerField(write_only=True, required=False, allow_null=True)
 
     class Meta:
@@ -62,19 +62,19 @@ class QuotationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         duplicate_of_id = validated_data.pop("duplicate_of", None)
-        client_id = validated_data.pop("client_id")
-        client = Client.objects.get(id=client_id)
+        client_id = validated_data.pop("client_id", None)
+        client = Client.objects.filter(id=client_id).first() if client_id else None
 
         # Snapshot from client
         validated_data.update({
             "client": client,
-            "company_name": client.company_name,
-            "industry": client.industry,
-            "person_name": client.person_name,
-            "contact": client.contact_number,
-            "email": client.email,
-            "website": client.website,
-            "address": client.address,
+            "company_name": client.company_name if client else (validated_data.get("company_name") or ""),
+            "industry": client.industry if client else (validated_data.get("industry") or ""),
+            "person_name": client.person_name if client else (validated_data.get("person_name") or ""),
+            "contact": client.contact_number if client else (validated_data.get("contact") or ""),
+            "email": client.email if client else (validated_data.get("email") or ""),
+            "website": client.website if client else (validated_data.get("website") or ""),
+            "address": client.address if client else (validated_data.get("address") or ""),
         })
 
         # -------------------------
@@ -164,9 +164,6 @@ class TodoSerializer(serializers.ModelSerializer):
         postpone_to = attrs.get("postpone_to", getattr(self.instance, "postpone_to", None))
         start_time = attrs.get("start_time", getattr(self.instance, "start_time", None))
         end_time = attrs.get("end_time", getattr(self.instance, "end_time", None))
-
-        if status == Todo.STATUS_POSTPONED and not postpone_to:
-            raise serializers.ValidationError({"postpone_to": "Postpone date is required when status is Postponed."})
 
         if status != Todo.STATUS_POSTPONED and postpone_to:
             # keep data clean (UI can still set it accidentally)
