@@ -185,31 +185,59 @@ if (maitenancePriceInput) {
   });
 
   function getFormData() {
-    return {
-      company_name: document.getElementById("companyName").value,
-      industry: document.getElementById("industry").value,
-      person_name: document.getElementById("personName").value,
-      contact_number: document.getElementById("Contact").value,
-      email: document.getElementById("Email").value,
-      website: document.getElementById("Website").value,
-      address: document.getElementById("Address").value,
-      gst: document.getElementById("GST").value,
-      amc: document.getElementById("AMC").value,
-      amc_price: document.getElementById("AMCPrice").value,
-      domain_name: document.getElementById("Domain").value,
-      domain_charges: document.getElementById("DomainCharges").value,
-      domain_start_date: document.getElementById("Domainstdate").value,
-      domain_end_date: document.getElementById("Domainendate").value,
-      server_details: document.getElementById("ServerDetails").value,
-      server_price: document.getElementById("ServerPrice").value,
-      server_start_date: document.getElementById("Serverstdate").value,
-      server_end_date: document.getElementById("Serverendate").value,
-      maintenance_value: document.getElementById("MaintenanceValue").value,
-      maintenance_start_date: document.getElementById("Maintenancestartdate").value,
-      maintenance_end_date: document.getElementById("MaintenanceEnddate").value,
-      comments: document.getElementById("Comments").value,
-      priority: document.getElementById("Priority").value,
-      status: document.getElementById("Status").value,
+    const strOrNull = (v) => {
+      const s = (v ?? "").toString().trim();
+      return s === "" ? null : s;
     };
+    const numOrNull = (v) => {
+      const s = (v ?? "").toString().trim();
+      if (!s) return null;
+      const n = Number(s);
+      return Number.isFinite(n) ? n : null;
+    };
+    const dateOrNull = (v) => {
+      const s = (v ?? "").toString().trim();
+      return s === "" ? null : s; // keep as YYYY-MM-DD
+    };
+
+    const payload = {
+      company_name: strOrNull(document.getElementById("companyName")?.value),
+      industry: strOrNull(document.getElementById("industry")?.value),
+      person_name: strOrNull(document.getElementById("personName")?.value),
+      contact_number: strOrNull(document.getElementById("Contact")?.value),
+      email: strOrNull(document.getElementById("Email")?.value),
+      website: strOrNull(document.getElementById("Website")?.value),
+      address: strOrNull(document.getElementById("Address")?.value),
+      gst: strOrNull(document.getElementById("GST")?.value),
+      amc: strOrNull(document.getElementById("AMC")?.value),
+
+      // Numbers / decimals: send null when blank ("" breaks API)
+      amc_price: numOrNull(document.getElementById("AMCPrice")?.value),
+      domain_charges: numOrNull(document.getElementById("DomainCharges")?.value),
+      server_price: numOrNull(document.getElementById("ServerPrice")?.value),
+      maintenance_value: numOrNull(document.getElementById("MaintenanceValue")?.value),
+
+      domain_name: strOrNull(document.getElementById("Domain")?.value),
+      domain_start_date: dateOrNull(document.getElementById("Domainstdate")?.value),
+      domain_end_date: dateOrNull(document.getElementById("Domainendate")?.value),
+
+      server_details: strOrNull(document.getElementById("ServerDetails")?.value),
+      server_start_date: dateOrNull(document.getElementById("Serverstdate")?.value),
+      server_end_date: dateOrNull(document.getElementById("Serverendate")?.value),
+
+      maintenance_start_date: dateOrNull(document.getElementById("Maintenancestartdate")?.value),
+      maintenance_end_date: dateOrNull(document.getElementById("MaintenanceEnddate")?.value),
+
+      comments: strOrNull(document.getElementById("Comments")?.value),
+    };
+
+    // If Priority/Status not selected, omit so backend default/NULL applies
+    const priorityVal = (document.getElementById("Priority")?.value ?? "").toString().trim();
+    if (priorityVal) payload.priority = priorityVal;
+
+    const statusVal = (document.getElementById("Status")?.value ?? "").toString().trim();
+    if (statusVal) payload.status = statusVal;
+
+    return payload;
   }
 });

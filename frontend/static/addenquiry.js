@@ -143,16 +143,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Collect form data
   // -------------------
   function getFormData() {
-    const today = new Date().toISOString().split("T")[0];
-    return {
-      company_name: document.getElementById("companyName").value,
-      person_name: document.getElementById("personName").value,
-      contact_number: document.getElementById("Contact").value,
-      email: document.getElementById("Email").value,
-      website: document.getElementById("Website").value,
-      status: document.getElementById("Status").value,
-      comments: document.getElementById("Comments").value,
-      date: today
+    const strOrNull = (v) => {
+      const s = (v ?? "").toString().trim();
+      return s === "" ? null : s;
     };
+
+    const payload = {
+      company_name: strOrNull(document.getElementById("companyName")?.value),
+      person_name: strOrNull(document.getElementById("personName")?.value),
+      contact_number: strOrNull(document.getElementById("Contact")?.value),
+      email: strOrNull(document.getElementById("Email")?.value),
+      website: strOrNull(document.getElementById("Website")?.value),
+      comments: strOrNull(document.getElementById("Comments")?.value),
+    };
+
+    // If status is not selected, omit it so backend default applies
+    const statusVal = (document.getElementById("Status")?.value ?? "").toString().trim();
+    if (statusVal) payload.status = statusVal;
+
+    // Do not send `date` — backend uses auto date field
+    return payload;
   }
 }); // Properly closes the event listener
