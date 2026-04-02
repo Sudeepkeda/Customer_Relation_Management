@@ -55,11 +55,11 @@
   }
 
   function DB_expiryRangeTitle(limit) {
-    if (limit === 5) return "Clients expiring in 5 days or less";
-    if (limit === 15) return "Clients expiring in 6 to 15 days";
-    if (limit === 30) return "Clients expiring in 16 to 30 days";
-    if (limit === 60) return "Clients expiring in 31 to 60 days";
-    return `Clients expiring (≤ ${limit} days)`;
+    if (limit === 5) return "Expiry (5 Days)";
+    if (limit === 15) return "Expiry (15 Days)";
+    if (limit === 30) return "Expiry (30 Days)";
+    if (limit === 60) return "Expiry (60 Days)";
+    return `Expiry (${limit} Days)`;
   }
 
   function DB_rowMatchesExpiryBand(daysLeft, limit) {
@@ -142,35 +142,23 @@
       DB_allEnquiries = enquiriesRes.ok ? (await enquiriesRes.json() || []) : [];
       DB_allUpdations = updationsRes.ok ? (await updationsRes.json() || []) : [];
 
-      // Calculate expiry counts
-      let expiry5=0;
-      let expiry15=0;
+      // Count SERVICES (each Domain / Server / Maintenance end separately).
+      // Bands: Expiry (5 Days)=expired + ≤5d; (15)=6–15; (30)=16–30; (60)=31–60. >60 not counted.
+      let expiry5 = 0;
+      let expiry15 = 0;
       let expiry30 = 0;
       let expiry60 = 0;
 
-      // Count CLIENTS (not services):
-      // a client is counted once if ANY of their services expires within N days.
-      DB_allClients.forEach(c => {
-        const daysList = [
-          DB_daysUntilEnd(c.domain_end_date),
-          DB_daysUntilEnd(c.server_end_date),
-          DB_daysUntilEnd(c.maintenance_end_date)
-        ]
-          .filter(v => v !== null)
-          .map(v => Number(v))
-          .filter(v => Number.isFinite(v));
-
-        if (!daysList.length) return;
-
-        const has5 = daysList.some(d => d <= 5);
-        const has15 = daysList.some(d => d >= 6 && d <= 15);
-        const has30 = daysList.some(d => d >= 16 && d <= 30);
-        const has60 = daysList.some(d => d >= 31 && d <= 60);
-
-        if (has5) expiry5++;
-        if (has15) expiry15++;
-        if (has30) expiry30++;
-        if (has60) expiry60++;
+      DB_allClients.forEach((c) => {
+        const ends = [c.domain_end_date, c.server_end_date, c.maintenance_end_date];
+        ends.forEach((endStr) => {
+          const d = DB_daysUntilEnd(endStr);
+          if (d === null || !Number.isFinite(d)) return;
+          if (d <= 5) expiry5++;
+          else if (d >= 6 && d <= 15) expiry15++;
+          else if (d >= 16 && d <= 30) expiry30++;
+          else if (d >= 31 && d <= 60) expiry60++;
+        });
       });
 
       // Enquiry & Updation stats

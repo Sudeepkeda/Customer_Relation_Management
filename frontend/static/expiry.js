@@ -81,7 +81,10 @@ function EXP_getRemainingDays(client) {
       return { short: s.short, left };
     })
     .filter((s) => s.left !== null && Number.isFinite(s.left))
-    .filter((s) => s.left <= 60)
+    .filter((s) => {
+      if (EXP_band) return EXP_leftMatchesBand(s.left, EXP_band);
+      return s.left <= 60;
+    })
     .map((s) => {
       if (s.left < 0) return `${s.short}-Expire`;
       if (s.left === 0) return `${s.short}-Expire`;
