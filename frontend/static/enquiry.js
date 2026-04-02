@@ -30,8 +30,21 @@ const BASE_URL = window.location.origin;
   let allEnquiries = []; // full list for filtering
   let currentFiltered = []; // current filtered data for export
   let currentStatus = 'all'; // current status filter
-  const STATUS_ORDER = ["Notstarted", "Inprogress", "Completed"];
-  const normalizeStatus = (s) => (s || "").toString().trim().toLowerCase().replace(/\s+/g, "");
+  const STATUS_ORDER = ["NotYet", "Connected", "Completed"];
+  const normalizeStatus = (s) => {
+    const x = (s || "").toString().trim().toLowerCase().replace(/\s+/g, "");
+    if (x === "notstarted" || x === "notyet") return "notyet";
+    if (x === "inprogress" || x === "connected") return "connected";
+    if (x === "completed") return "completed";
+    return x;
+  };
+  const enquiryStatusLabel = (s) => {
+    const v = (s || "").toString();
+    if (v === "NotYet" || v === "Notstarted") return "Not-Yet";
+    if (v === "Connected" || v === "Inprogress") return "Connected";
+    if (v === "Completed") return "Completed";
+    return v || "-";
+  };
 
   // Dashboard can send /enquiry/?filter=notstarted (or other statuses)
   const urlFilter = new URLSearchParams(window.location.search).get("filter");
@@ -40,8 +53,8 @@ const BASE_URL = window.location.origin;
   if (urlFilter) {
     const f = urlFilter.toLowerCase();
     if (f === "all") currentStatus = "all";
-    else if (f === "notstarted" || f === "not started" || f === "onhold" || f === "on-hold") currentStatus = "Notstarted";
-    else if (f === "inprogress" || f === "in progress" || f === "in-progress") currentStatus = "Inprogress";
+    else if (f === "notstarted" || f === "not started" || f === "notyet" || f === "not-yet" || f === "onhold" || f === "on-hold") currentStatus = "NotYet";
+    else if (f === "inprogress" || f === "in progress" || f === "in-progress" || f === "connected") currentStatus = "Connected";
     else if (f === "completed" || f === "complete") currentStatus = "Completed";
     else currentStatus = urlFilter; // fallback to exact value
 
@@ -99,8 +112,8 @@ const BASE_URL = window.location.origin;
 
     // Status filter
     const statusToApply = lockedStatus || currentStatus;
-    if (statusToApply !== 'all') {
-      filtered = filtered.filter(c => normalizeStatus(c.status) === normalizeStatus(statusToApply));
+    if (statusToApply !== "all") {
+      filtered = filtered.filter((c) => normalizeStatus(c.status) === normalizeStatus(statusToApply));
     }
 
     currentFiltered = filtered;
@@ -139,7 +152,7 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
 
     } catch (err) {
       console.error("Error loading enquiries:", err);
-      tableBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Failed to load enquiries.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Failed to load enquiries.</td></tr>`;
     }
   }
 
@@ -150,7 +163,7 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
     tableBody.innerHTML = "";
 
     if (enquiries.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="9" class="text-center">No enquiries found</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="10" class="text-center">No enquiries found</td></tr>`;
       return;
     }
 
@@ -164,7 +177,8 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
           <td>${enquiry.contact_number || "-"}</td>
           <td>${enquiry.email || "-"}</td>
           <td>${enquiry.website || "-"}</td>
-          <td>${enquiry.status || "-"}</td>
+          <td>${enquiry.remark ? String(enquiry.remark).replaceAll("<", "&lt;") : "-"}</td>
+          <td>${enquiryStatusLabel(enquiry.status)}</td>
           <td>
             <div class="d-flex flex-nowrap">
               <button class="btn btn-sm me-1 view-btn" data-id="${enquiry.id}">
@@ -230,7 +244,11 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
                 </div>
                 <div class="col-md-4">
                   <div class="detail-label">Status</div>
-                  <div class="detail-value">${enquiry.status || "-"}</div>
+                  <div class="detail-value">${enquiryStatusLabel(enquiry.status)}</div>
+                </div>
+                <div class="col-12">
+                  <div class="detail-label">Remark</div>
+                  <div class="detail-value">${enquiry.remark || "-"}</div>
                 </div>
                 <div class="col-12">
                   <div class="detail-label">Comments</div>
@@ -313,8 +331,9 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
     if (!statusBtn) return;
 
     // Reflect currentStatus in button when page opened with ?filter=
-    if ((lockedStatus || currentStatus) && (lockedStatus || currentStatus) !== "all") statusBtn.innerText = (lockedStatus || currentStatus);
-    else statusBtn.innerText = "All Status";
+    if ((lockedStatus || currentStatus) && (lockedStatus || currentStatus) !== "all") {
+      statusBtn.innerText = enquiryStatusLabel(lockedStatus || currentStatus);
+    } else statusBtn.innerText = "All Status";
 
     // If locked, do not allow changing from dropdown
     if (lockedStatus) {
@@ -334,7 +353,7 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
     const dropdownHtml = `
       <ul class="dropdown-menu show" style="position:absolute; z-index:1000;">
         <li><a class="dropdown-item status-option" data-status="all">All Status</a></li>
-        ${statuses.map(st => `<li><a class="dropdown-item status-option" data-status="${st}">${st}</a></li>`).join("")}
+        ${statuses.map(st => `<li><a class="dropdown-item status-option" data-status="${st}">${enquiryStatusLabel(st)}</a></li>`).join("")}
       </ul>
     `;
 
@@ -394,7 +413,8 @@ exportBtn.addEventListener("click", () => {
     "Contact Number": c.contact_number || "-",
     "Email": c.email || "-",
     "Website": c.website || "-",
-    "Status": c.status || "-",
+    "Remark": c.remark || "-",
+    "Status": enquiryStatusLabel(c.status),
     "Comments": c.comments || "-",
   }));
 

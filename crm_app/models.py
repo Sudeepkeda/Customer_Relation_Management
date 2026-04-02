@@ -117,12 +117,13 @@ class Enquiry(models.Model):
     status = models.CharField(
         max_length=20,
         choices=[
-            ("Inprogress", "In Progress"),
-            ("Notstarted", "Not Yet Started"),
+            ("NotYet", "Not-Yet"),
+            ("Connected", "Connected"),
             ("Completed", "Completed"),
         ],
-        default="Notstarted",
+        default="NotYet",
     )
+    remark = models.TextField(blank=True, null=True)
     comments = models.TextField(blank=True, null=True)
 
     # Auto add date

@@ -102,7 +102,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     currentFiltered = filtered;
     renderTable(filtered);
     initActions();
-    paginate(1);
   }
   
   // ===================
@@ -120,7 +119,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       
       if (!response.ok) throw new Error("Failed to fetch updations");
       
-        allUpdations =await response.json();
+        allUpdations = await response.json();
+        allUpdations.sort((a, b) => {
+          const ta = a.created_at ? Date.parse(a.created_at) : 0;
+          const tb = b.created_at ? Date.parse(b.created_at) : 0;
+          return tb - ta;
+        });
         currentFiltered = [...allUpdations];
         initSearchAndPagination();
         initStatusFilter();
@@ -266,44 +270,10 @@ document.querySelectorAll(".edit-btn").forEach(btn => {
       applyFilters();
     });
 
-    // Pagination
-    let rowsPerPage = 10;
-    let currentPage = 1;
-
-    function paginate(page) {
-      const rows = document.querySelectorAll(".table-data tr");
-      const totalPages = Math.ceil(rows.length / rowsPerPage);
-      if (page < 1) page = 1;
-      if (page > totalPages) page = totalPages;
-      currentPage = page;
-
-      rows.forEach((row, i) => {
-        const start = (page - 1) * rowsPerPage;
-        const end = page * rowsPerPage;
-        row.style.display = i >= start && i < end ? "" : "none";
-      });
-    }
-
-    const pageInput = document.getElementById("pageInput");
-    pageInput?.addEventListener("input", () => {
-      const val = parseInt(pageInput.value, 10);
-      if (!isNaN(val) && val > 0) {
-        rowsPerPage = val;
-        paginate(1);
-      }
-    });
-
-    document.querySelectorAll(".pagination .page-link").forEach(link => {
-      link.addEventListener("click", e => {
-        e.preventDefault();
-        const txt = link.innerText.toLowerCase();
-        if (txt === "previous") paginate(currentPage - 1);
-        else if (txt === "next") paginate(currentPage + 1);
-        else if (!isNaN(parseInt(txt))) paginate(parseInt(txt));
-      });
-    });
-
-    window.paginate = paginate;
+    // Pagination disabled — list all rows
+    // let rowsPerPage = 10;
+    // let currentPage = 1;
+    // function paginate(page) { ... }
   }
 
   // ===================

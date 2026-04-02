@@ -1,0 +1,9 @@
+/* Profile / logout affordances */
+.dashboard-head img[alt="Profile"],
+.profile-logo {
+  cursor: pointer;
+}
+
+.logout .nav-link {
+  cursor: pointer;
+}

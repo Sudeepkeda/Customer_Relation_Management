@@ -96,7 +96,6 @@ if (!token) {
     currentFiltered = filtered;
     renderTable(filtered);
     initActions();
-    paginate(1);
   }
 
   // ===================
@@ -278,6 +277,7 @@ if (!token) {
     document.querySelectorAll(".btn-send").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
+        if (!confirm("Send quotation by email to the client?")) return;
         try {
           const authToken = localStorage.getItem("authToken");
           const res = await fetch(`${BASE_URL}/api/send-quotation-mail/${id}/`, {
@@ -405,43 +405,7 @@ document.querySelectorAll(".btn-download").forEach((btn) => {
       applyFilters();
     });
 
-    // Pagination
-    let rowsPerPage = 10;
-    let currentPage = 1;
-
-    function paginate(page) {
-      const rows = document.querySelectorAll(".table-data tr");
-      const totalPages = Math.ceil(rows.length / rowsPerPage);
-      if (page < 1) page = 1;
-      if (page > totalPages) page = totalPages;
-      currentPage = page;
-      rows.forEach((row, i) => {
-        const start = (page - 1) * rowsPerPage;
-        const end = page * rowsPerPage;
-        row.style.display = i >= start && i < end ? "" : "none";
-      });
-    }
-
-    const pageInput = document.getElementById("pageInput");
-    pageInput?.addEventListener("input", () => {
-      const val = parseInt(pageInput.value, 10);
-      if (!isNaN(val) && val > 0) {
-        rowsPerPage = val;
-        paginate(1);
-      }
-    });
-
-    document.querySelectorAll(".pagination .page-link").forEach(link => {
-      link.addEventListener("click", e => {
-        e.preventDefault();
-        const txt = link.innerText.toLowerCase();
-        if (txt === "previous") paginate(currentPage - 1);
-        else if (txt === "next") paginate(currentPage + 1);
-        else if (!isNaN(parseInt(txt))) paginate(parseInt(txt));
-      });
-    });
-
-    window.paginate = paginate;
+    // Pagination disabled — list all rows
   }
 
   // ===================

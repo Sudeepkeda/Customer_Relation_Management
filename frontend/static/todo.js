@@ -38,6 +38,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `${y}-${m}-${day}`;
   }
 
+  /** Selected calendar day (YYYY-MM-DD); list shows only todos for this day. */
+  let selectedDateKey = fmtDate(new Date());
+
   function monthStartEnd(d) {
     const start = new Date(d.getFullYear(), d.getMonth(), 1);
     const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
@@ -108,9 +111,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         today.getFullYear() === d.getFullYear() &&
         today.getMonth() === d.getMonth() &&
         today.getDate() === d.getDate();
+      const isSelected = key === selectedDateKey;
 
       cells += `
-        <div class="cal-cell ${isToday ? "today" : ""}" data-date="${key}">
+        <div class="cal-cell ${isToday ? "today" : ""} ${isSelected ? "selected" : ""}" data-date="${key}">
           <div class="cal-day">${day}</div>
           <div class="cal-dots">${dots}${more}</div>
         </div>
@@ -120,8 +124,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     calendarGrid.innerHTML = headers + cells;
     calendarGrid.querySelectorAll(".cal-cell[data-date]").forEach((cell) => {
       cell.addEventListener("click", () => {
-        const date = cell.dataset.date;
-        renderTable(tasks.filter((t) => t.task_date === date));
+        selectedDateKey = cell.dataset.date;
+        renderCalendar(tasks, viewDate);
+        renderTable(tasks.filter((t) => t.task_date === selectedDateKey));
       });
     });
   }
@@ -217,14 +222,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function loadMonth() {
     const { start, end } = monthStartEnd(current);
-    // DRF doesn't have date filtering here; we pull and filter client-side for now.
     const all = await apiFetch("/api/todos/");
     const startKey = fmtDate(start);
     const endKey = fmtDate(end);
     const monthTasks = all.filter((t) => t.task_date >= startKey && t.task_date <= endKey);
 
+    const today = new Date();
+    if (
+      today.getFullYear() === current.getFullYear() &&
+      today.getMonth() === current.getMonth()
+    ) {
+      selectedDateKey = fmtDate(today);
+    } else {
+      selectedDateKey = fmtDate(new Date(current.getFullYear(), current.getMonth(), 1));
+    }
+
     renderCalendar(monthTasks, current);
-    renderTable(monthTasks);
+    renderTable(monthTasks.filter((t) => t.task_date === selectedDateKey));
   }
 
   prevMonthBtn?.addEventListener("click", async () => {

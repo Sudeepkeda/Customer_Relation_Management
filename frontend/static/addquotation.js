@@ -195,38 +195,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           });
         }
 
-        if (service.type === "pricing") {
-          updateTotalPriceFromEditor(editor);
-        }
-
       });
 
     });
-
-  }
-
-  // =============================
-  // Auto Calculate Price
-  // =============================
-  function updateTotalPriceFromEditor(editor) {
-
-    const content = editor.getData();
-
-    const text = content.replace(/<[^>]*>/g, " ");
-
-    const matches = text.match(/\d+(?:\.\d+)?/g);
-
-    if (matches) {
-
-      const sum = matches.reduce(
-        (acc, val) => acc + parseFloat(val),
-        0
-      );
-
-      document.getElementById("Price").value =
-        sum.toFixed(2);
-
-    }
 
   }
 
@@ -267,7 +238,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         q.description || "";
 
       document.getElementById("Price").value =
-        q.price || "";
+        q.price !== null && q.price !== undefined && q.price !== ""
+          ? String(q.price)
+          : "";
 
       servicesArray = q.services || [];
 
@@ -328,7 +301,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         q.description || "";
 
       document.getElementById("Price").value =
-        q.price || "";
+        q.price !== null && q.price !== undefined && q.price !== ""
+          ? String(q.price)
+          : "";
 
       servicesArray = q.services || [];
 
@@ -378,7 +353,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       description: document.getElementById("Description").value,
 
-      price: Number(document.getElementById("Price").value) || 0,
+      price: (() => {
+        const raw = document.getElementById("Price").value.trim();
+        if (raw === "") return null;
+        const n = Number(raw);
+        return Number.isFinite(n) ? n : null;
+      })(),
 
       services: servicesArray
 

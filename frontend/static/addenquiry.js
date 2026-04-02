@@ -89,7 +89,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("Contact").value = enquiry.contact_number || "";
       document.getElementById("Email").value = enquiry.email || "";
       document.getElementById("Website").value = enquiry.website || "";
-      document.getElementById("Status").value = enquiry.status || "";
+      let st = enquiry.status || "";
+      if (st === "Notstarted") st = "NotYet";
+      if (st === "Inprogress") st = "Connected";
+      document.getElementById("Status").value = st;
+      document.getElementById("Remark").value = enquiry.remark || "";
       document.getElementById("Comments").value = enquiry.comments || "";
     } catch (err) {
       console.error("Error loading enquiry:", err);
@@ -154,6 +158,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       contact_number: strOrNull(document.getElementById("Contact")?.value),
       email: strOrNull(document.getElementById("Email")?.value),
       website: strOrNull(document.getElementById("Website")?.value),
+      remark: strOrNull(document.getElementById("Remark")?.value),
       comments: strOrNull(document.getElementById("Comments")?.value),
     };
 

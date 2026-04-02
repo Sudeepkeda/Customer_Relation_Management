@@ -13,41 +13,51 @@ let EXP_maxDays = 60; // default (existing behavior)
 // -------------------------------------
 // HELPERS
 // -------------------------------------
-function EXP_daysBetween(startDateStr, endDateStr) {
-  if (!startDateStr || !endDateStr) return 9999;
-  const d1 = new Date(startDateStr);
-  const d2 = new Date(endDateStr);
-  // Can be negative if already expired
-  return Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+/** Whole calendar days from today until end date (negative = already expired). */
+function EXP_daysUntilEnd(endDateStr) {
+  if (!endDateStr) return null;
+  const end = new Date(endDateStr);
+  const today = new Date();
+  end.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
 }
 
 function EXP_getExpiringServices(client) {
   const services = [
-    { name: "Domain", start: client.domain_start_date, end: client.domain_end_date },
-    { name: "Server", start: client.server_start_date, end: client.server_end_date },
-    { name: "Maintenance", start: client.maintenance_start_date, end: client.maintenance_end_date }
+    { name: "Domain", end: client.domain_end_date },
+    { name: "Server", end: client.server_end_date },
+    { name: "Maintenance", end: client.maintenance_end_date }
   ];
 
   return services
-    .filter(s => s.start && s.end && EXP_daysBetween(s.start, s.end) <= EXP_maxDays)
-    .map(s => s.name);
+    .filter((s) => {
+      if (!s.end) return false;
+      const left = EXP_daysUntilEnd(s.end);
+      if (left === null || !Number.isFinite(left)) return false;
+      return left <= EXP_maxDays;
+    })
+    .map((s) => s.name);
 }
 
 function EXP_getRemainingDays(client) {
   const list = [
-    { short: "D", start: client.domain_start_date, end: client.domain_end_date },
-    { short: "S", start: client.server_start_date, end: client.server_end_date },
-    { short: "M", start: client.maintenance_start_date, end: client.maintenance_end_date }
+    { short: "D", end: client.domain_end_date },
+    { short: "S", end: client.server_end_date },
+    { short: "M", end: client.maintenance_end_date }
   ];
 
   return list
-    .filter(s => s.start && s.end)
-    .map(s => ({ short: s.short, days: EXP_daysBetween(s.start, s.end) }))
-    .filter(s => s.days <= EXP_maxDays)
-    .map(s => {
-      // If <= 0 days, show as Expired (avoid negative like D--20)
-      if (s.days <= 0) return `${s.short}-Expired`;
-      return `${s.short}-${s.days}`;
+    .filter((s) => s.end)
+    .map((s) => {
+      const left = EXP_daysUntilEnd(s.end);
+      return { short: s.short, left };
+    })
+    .filter((s) => s.left !== null && Number.isFinite(s.left))
+    .map((s) => {
+      if (s.left < 0) return `${s.short}-Expire`;
+      if (s.left === 0) return `${s.short}-Expire`;
+      return `${s.short}-${s.left}`;
     })
     .join(", ") || "-";
 }
@@ -102,14 +112,14 @@ function EXP_applyFilters() {
 
   // Days filter (from dashboard: /expiry/?days=5|15|30|60)
   // Keep a client if ANY service has remaining days <= EXP_maxDays
-  filtered = filtered.filter(c => {
+  filtered = filtered.filter((c) => {
     const daysList = [
-      EXP_daysBetween(c.domain_start_date, c.domain_end_date),
-      EXP_daysBetween(c.server_start_date, c.server_end_date),
-      EXP_daysBetween(c.maintenance_start_date, c.maintenance_end_date),
-    ].filter(d => Number.isFinite(d));
+      EXP_daysUntilEnd(c.domain_end_date),
+      EXP_daysUntilEnd(c.server_end_date),
+      EXP_daysUntilEnd(c.maintenance_end_date),
+    ].filter((d) => d !== null && Number.isFinite(d));
 
-    return daysList.some(d => d <= EXP_maxDays);
+    return daysList.some((d) => d <= EXP_maxDays);
   });
 
   // Search
@@ -150,7 +160,6 @@ function EXP_applyFilters() {
 
   EXP_currentFiltered = filtered;
   EXP_renderTable(filtered);
-  EXP_paginate(1);
 }
 
 // -------------------------------------
@@ -213,6 +222,8 @@ function EXP_initActions() {
       const expiring = EXP_getExpiringServices(client);
       if (!expiring.length) return alert("No expiring service found");
 
+      if (!confirm(`Send renewal email to ${client.email || "this client"}?`)) return;
+
       const sendRes = await fetch(
         `${BASE_URL}/api/send-renewal-mail/${id}/`,
         {
@@ -225,29 +236,17 @@ function EXP_initActions() {
         }
       );
 
-      if (sendRes.ok) alert(`Mail sent to ${client.email}`);
+      if (sendRes.ok) alert(`Mail sent successfully to ${client.email || "recipient"}.`);
       else alert("Failed to send email.");
     });
   });
 }
 
 // -------------------------------------
-// PAGINATION
+// PAGINATION (disabled — list all rows)
 // -------------------------------------
-let EXP_rowsPerPage = 10;
-
-function EXP_paginate(page) {
-  const rows = document.querySelectorAll(".table-data tr");
-  const total = Math.ceil(rows.length / EXP_rowsPerPage);
-
-  page = Math.max(1, Math.min(page, total));
-
-  rows.forEach((row, i) => {
-    const start = (page - 1) * EXP_rowsPerPage;
-    const end = page * EXP_rowsPerPage;
-    row.style.display = i >= start && i < end ? "" : "none";
-  });
-}
+// let EXP_rowsPerPage = 10;
+// function EXP_paginate(page) { ... }
 
 // -------------------------------------
 // CATEGORY (SERVICE) FILTER

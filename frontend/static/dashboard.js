@@ -84,11 +84,20 @@
 
       // Count CLIENTS (not services):
       // a client is counted once if ANY of their services expires within N days.
+      function DB_daysUntilEnd(endDateStr) {
+        if (!endDateStr) return null;
+        const end = new Date(endDateStr);
+        const today = new Date();
+        end.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+      }
+
       DB_allClients.forEach(c => {
         const daysList = [
-          DB_daysBetween(c.domain_start_date, c.domain_end_date),
-          DB_daysBetween(c.server_start_date, c.server_end_date),
-          DB_daysBetween(c.maintenance_start_date, c.maintenance_end_date)
+          DB_daysUntilEnd(c.domain_end_date),
+          DB_daysUntilEnd(c.server_end_date),
+          DB_daysUntilEnd(c.maintenance_end_date)
         ]
           .filter(v => v !== null)
           .map(v => Number(v))
@@ -108,7 +117,10 @@
       });
 
       // Enquiry & Updation stats
-      const notStartedEnquiries = (DB_allEnquiries || []).filter(e => (e.status || "").toLowerCase() === "notstarted").length;
+      const notStartedEnquiries = (DB_allEnquiries || []).filter(e => {
+        const s = (e.status || "").toLowerCase();
+        return s === "notyet" || s === "notstarted";
+      }).length;
       const updationsCompleted = (DB_allUpdations || []).filter(u => (u.status || "").toLowerCase() === "completed").length;
       const updationsNew = (DB_allUpdations || []).filter(u => (u.status || "").toLowerCase() === "new").length;
       const updationsInprogress = (DB_allUpdations || []).filter(u => {
@@ -241,7 +253,7 @@
     el("currentProjects")?.parentElement?.addEventListener("click", () => window.location.href = "/projects/?filter=active");
     el("totalProjects")?.parentElement?.addEventListener("click", () => window.location.href = "/projects/?filter=all");
     // Enquiry card: click anywhere on the card (not just the number)
-    el("Enquiry")?.parentElement?.addEventListener("click", () => window.location.href = "/enquiry/?filter=notstarted");
+    el("Enquiry")?.parentElement?.addEventListener("click", () => window.location.href = "/enquiry/?filter=notyet");
     // Updation cards (click anywhere on the card via parentElement)
     el("Updatation")?.parentElement?.addEventListener("click", () => window.location.href = "/updation/?filter=Completed");
     el("newupdation")?.parentElement?.addEventListener("click", () => window.location.href = "/updation/?filter=New");
