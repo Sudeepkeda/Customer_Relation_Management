@@ -277,26 +277,34 @@ if (!token) {
     document.querySelectorAll(".btn-send").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
-        if (!confirm("Send quotation by email to the client?")) return;
         try {
           const authToken = localStorage.getItem("authToken");
+          const authHdr = authToken
+            ? (authToken.startsWith("Token") ? authToken : "Token " + authToken)
+            : "";
+          const qRes = await fetch(`${BASE_URL}/api/quotations/${id}/`, {
+            headers: { Authorization: authHdr },
+          });
+          const q = await qRes.json().catch(() => ({}));
+          const email = (q.email || "").trim() || "recipient";
+          if (!confirm(`Send quotation email to ${email}?`)) return;
+
           const res = await fetch(`${BASE_URL}/api/send-quotation-mail/${id}/`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": authToken
-                ? (authToken.startsWith("Token") ? authToken : "Token " + authToken)
-                : ""
-            }
+              Authorization: authHdr,
+            },
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) {
             throw new Error(data?.error || "Failed to send email");
           }
-          alert(`Quotation sent to ${data.email || "recipient"}`);
+          const sentTo = (data.email || email || "").trim();
+          alert(`Quotation sent to ${sentTo}`);
         } catch (err) {
           console.error(err);
-         alert(err?.message || "Failed to send quotation email.");
+          alert(err?.message || "Failed to send quotation email.");
         }
       });
     });

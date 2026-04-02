@@ -8,6 +8,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const token = localStorage.getItem("authToken");
   const pageTitle = document.getElementById("pageTitle");
 
+  function authHeader() {
+    if (!token) return "";
+    return token.startsWith("Token ") ? token : "Token " + token;
+  }
+
   // Redirect to login if not authenticated
   if (!token) {
     alert("Session expired. Please log in again.");
@@ -67,7 +72,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log("Trying to load enquiry ID:", editId);
       const response = await fetch(`${BASE_URL}/api/enquiries/${editId}/`, {
         headers: {
-          "Authorization": `Token ${token}`,
+          Authorization: authHeader(),
           "Content-Type": "application/json",
         },
       });
@@ -123,7 +128,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         method: method,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Token ${token}`,
+          Authorization: authHeader(),
         },
         body: JSON.stringify(data),
       });
@@ -134,8 +139,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.location.href = "/enquiry";
       } else {
         const errorText = await response.text();
+        let msg = errorText;
+        try {
+          const j = JSON.parse(errorText);
+          msg = j.detail || j.error || (typeof j === "object" ? JSON.stringify(j) : errorText);
+        } catch {
+          /* keep raw */
+        }
         console.error("API Error:", errorText);
-        alert(`Error saving enquiry: ${errorText}`);
+        alert(`Error saving enquiry: ${msg}`);
       }
     } catch (err) {
       console.error(err);
@@ -166,9 +178,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const statusVal = (document.getElementById("Status")?.value ?? "").toString().trim();
     if (statusVal) payload.status = statusVal;
 
-    // Provide date so DRF doesn't treat it as required (auto_now_add in model)
-    const today = new Date().toISOString().split("T")[0];
-    payload.date = today;
+    // Do not send `date` — model uses auto_now_add; sending it can break create/update in DRF.
 
     return payload;
   }

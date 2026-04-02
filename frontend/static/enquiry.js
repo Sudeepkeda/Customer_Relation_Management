@@ -124,16 +124,33 @@ const BASE_URL = window.location.origin;
   // ===================
   // Fetch Enquiries
   // ===================
+  function enquiryAuthHeader() {
+    const token = localStorage.getItem("authToken");
+    if (!token) return "";
+    return token.startsWith("Token ") ? token : "Token " + token;
+  }
+
   async function loadEnquiries() {
     try {
-const token = localStorage.getItem("authToken");
-const response = await fetch(`${BASE_URL}/api/enquiries/`, {
-  headers: {
-    "Authorization": "Token " + token,
-    "Content-Type": "application/json",
-  },
-});
-      if (!response.ok) throw new Error("Failed to fetch enquiries");
+      const response = await fetch(`${BASE_URL}/api/enquiries/`, {
+        headers: {
+          Authorization: enquiryAuthHeader(),
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        let detail = `${response.status} ${response.statusText}`;
+        const text = await response.text();
+        try {
+          const errBody = JSON.parse(text);
+          if (errBody && typeof errBody === "object") {
+            detail = errBody.detail || errBody.error || (typeof errBody === "string" ? errBody : JSON.stringify(errBody));
+          }
+        } catch {
+          if (text) detail = text.slice(0, 300);
+        }
+        throw new Error(detail);
+      }
 
       allEnquiries = await response.json();
       // Newest first (date desc, fallback to id desc)
@@ -152,7 +169,8 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
 
     } catch (err) {
       console.error("Error loading enquiries:", err);
-      tableBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Failed to load enquiries.</td></tr>`;
+      const msg = (err && err.message) ? String(err.message) : "Failed to load enquiries.";
+      tableBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Failed to load enquiries. ${msg.replace(/</g, "&lt;")}</td></tr>`;
     }
   }
 
@@ -209,7 +227,7 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
         const enquiryId = btn.dataset.id;
         try {
           const res = await fetch(`${BASE_URL}/api/enquiries/${enquiryId}/`, {
-  headers: { "Authorization": "Token " + localStorage.getItem("authToken") },
+  headers: { Authorization: enquiryAuthHeader() },
 });
 
           if (!res.ok) throw new Error("Failed to fetch enquiry details");
@@ -281,7 +299,7 @@ const response = await fetch(`${BASE_URL}/api/enquiries/`, {
         try {
           const res = await fetch(`${BASE_URL}/api/enquiries/${btn.dataset.id}/`, {
   method: "DELETE",
-  headers: { "Authorization": "Token " + localStorage.getItem("authToken") },
+  headers: { Authorization: enquiryAuthHeader() },
 });
 
           if (res.ok) {

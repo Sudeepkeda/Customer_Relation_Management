@@ -175,6 +175,10 @@ class EnquirySerializer(serializers.ModelSerializer):
     class Meta:
         model = Enquiry
         fields = "__all__"
+        extra_kwargs = {
+            # Server sets this; never accept client-provided date (avoids validation errors)
+            "date": {"read_only": True},
+        }
 
 
 class ProjectSerializer(serializers.ModelSerializer):

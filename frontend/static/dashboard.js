@@ -44,6 +44,72 @@
     return document.getElementById(id);
   }
 
+  /** Whole calendar days from today until end date (negative = already expired). */
+  function DB_daysUntilEnd(endDateStr) {
+    if (!endDateStr) return null;
+    const end = new Date(endDateStr);
+    const today = new Date();
+    end.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+  }
+
+  function DB_expiryRangeTitle(limit) {
+    if (limit === 5) return "Clients expiring in 5 days or less";
+    if (limit === 15) return "Clients expiring in 6 to 15 days";
+    if (limit === 30) return "Clients expiring in 16 to 30 days";
+    if (limit === 60) return "Clients expiring in 31 to 60 days";
+    return `Clients expiring (≤ ${limit} days)`;
+  }
+
+  function DB_rowMatchesExpiryBand(daysLeft, limit) {
+    if (daysLeft === null || !Number.isFinite(daysLeft)) return false;
+    if (limit === 5) return daysLeft <= 5;
+    if (limit === 15) return daysLeft >= 6 && daysLeft <= 15;
+    if (limit === 30) return daysLeft >= 16 && daysLeft <= 30;
+    if (limit === 60) return daysLeft >= 31 && daysLeft <= 60;
+    return false;
+  }
+
+  // Show expiry clients modal (days remaining until end date; same bands as Expiry page)
+  function showExpiryClients(limit) {
+    const title = DB_expiryRangeTitle(limit);
+    if (!Array.isArray(DB_allClients) || DB_allClients.length === 0) {
+      const tbody = el("expiryList");
+      if (tbody) tbody.innerHTML = `<tr><td colspan="3" class="text-center">No data available</td></tr>`;
+      if (el("expiryModalTitle")) el("expiryModalTitle").textContent = title;
+      new bootstrap.Modal(el("expiryModal")).show();
+      return;
+    }
+
+    const rows = DB_allClients.flatMap((c) => {
+      const list = [
+        { client: c.person_name || c.company_name || "-", service: "Domain", days: DB_daysUntilEnd(c.domain_end_date) },
+        { client: c.person_name || c.company_name || "-", service: "Server", days: DB_daysUntilEnd(c.server_end_date) },
+        { client: c.person_name || c.company_name || "-", service: "Maintenance", days: DB_daysUntilEnd(c.maintenance_end_date) },
+      ];
+      return list
+        .filter((s) => s.days !== null && Number.isFinite(s.days))
+        .filter((s) => DB_rowMatchesExpiryBand(s.days, limit));
+    });
+
+    const tbody = el("expiryList");
+    if (tbody) {
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="3" class="text-center">No clients found for the selected range.</td></tr>`;
+      } else {
+        tbody.innerHTML = rows.map((r) => {
+          const displayDays = r.days <= 0 ? "Expired" : `${r.days} days`;
+          return `<tr><td>${r.client}</td><td>${r.service}</td><td>${displayDays}</td></tr>`;
+        }).join("");
+      }
+    }
+
+    if (el("expiryModalTitle")) el("expiryModalTitle").textContent = title;
+    const modalEl = el("expiryModal");
+    if (modalEl) new bootstrap.Modal(modalEl).show();
+  }
+
   // Load dashboard data (clients, projects, enquiries, updations)
   async function loadDashboardData() {
     const authHeader = getAuthHeader();
@@ -84,15 +150,6 @@
 
       // Count CLIENTS (not services):
       // a client is counted once if ANY of their services expires within N days.
-      function DB_daysUntilEnd(endDateStr) {
-        if (!endDateStr) return null;
-        const end = new Date(endDateStr);
-        const today = new Date();
-        end.setHours(0, 0, 0, 0);
-        today.setHours(0, 0, 0, 0);
-        return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-      }
-
       DB_allClients.forEach(c => {
         const daysList = [
           DB_daysUntilEnd(c.domain_end_date),
@@ -106,9 +163,9 @@
         if (!daysList.length) return;
 
         const has5 = daysList.some(d => d <= 5);
-        const has15 = daysList.some(d => d <= 15);
-        const has30 = daysList.some(d => d <= 30);
-        const has60 = daysList.some(d => d <= 60);
+        const has15 = daysList.some(d => d >= 6 && d <= 15);
+        const has30 = daysList.some(d => d >= 16 && d <= 30);
+        const has60 = daysList.some(d => d >= 31 && d <= 60);
 
         if (has5) expiry5++;
         if (has15) expiry15++;
@@ -155,6 +212,8 @@
     } catch (err) {
       console.error("Error loading dashboard data:", err);
       // Do not crash UI — show zeros if elements present
+      if (el("expiry5")) el("expiry5").textContent = "0";
+      if (el("expiry15")) el("expiry15").textContent = "0";
       if (el("expiry30")) el("expiry30").textContent = "0";
       if (el("expiry60")) el("expiry60").textContent = "0";
       if (el("Updatation")) el("Updatation").textContent = "0";
@@ -162,48 +221,6 @@
       if (el("inprogress")) el("inprogress").textContent = "0";
       if (el("onhold")) el("onhold").textContent = "0";
     }
-  }
-
-  // Show expiry clients modal for limit days (30 or 60)
-  function showExpiryClients(limit) {
-    if (!Array.isArray(DB_allClients) || DB_allClients.length === 0) {
-      // Nothing to show
-      const tbody = el("expiryList");
-      if (tbody) tbody.innerHTML = `<tr><td colspan="3" class="text-center">No data available</td></tr>`;
-      if (el("expiryModalTitle")) el("expiryModalTitle").textContent = `Clients Expiring in ≤ ${limit} Days`;
-      new bootstrap.Modal(el("expiryModal")).show();
-      return;
-    }
-
-    const rows = DB_allClients.flatMap(c => {
-      const list = [
-        { client: c.person_name || c.company_name || "-", service: "Domain", days: DB_daysBetween(c.domain_start_date, c.domain_end_date) },
-        { client: c.person_name || c.company_name || "-", service: "Server", days: DB_daysBetween(c.server_start_date, c.server_end_date) },
-        { client: c.person_name || c.company_name || "-", service: "Maintenance", days: DB_daysBetween(c.maintenance_start_date, c.maintenance_end_date) }
-      ];
-        return list.filter(s => s.days !== null).filter(s => {
-        if (limit === 5) return s.days <= 5;
-        if (limit === 15) return s.days > 5 && s.days <= 15;
-        if (limit === 30) return s.days > 15 && s.days <= 30;
-        if (limit === 60) return s.days > 30 && s.days <= 60;
-        return false;
-      });
-    });
-
-    const tbody = el("expiryList");
-    if (tbody) {
-      if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="3" class="text-center">No clients found for the selected range.</td></tr>`;
-      } else {
-        tbody.innerHTML = rows.map(r => {
-          const displayDays = (r.days <= 0) ? "Expired" : `${r.days} days`;
-          return `<tr><td>${r.client}</td><td>${r.service}</td><td>${displayDays}</td></tr>`;
-        }).join("");
-      }
-    }
-
-    if (el("expiryModalTitle")) el("expiryModalTitle").textContent = `Clients Expiring in ≤ ${limit} Days`;    const modalEl = el("expiryModal");
-    if (modalEl) new bootstrap.Modal(modalEl).show();
   }
 
   // DOMContentLoaded -> initialize event listeners and load data

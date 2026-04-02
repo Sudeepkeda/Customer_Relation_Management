@@ -8,7 +8,8 @@ const BASE_URL = window.location.origin;
 let EXP_allClients = [];
 let EXP_currentFiltered = [];
 let EXP_currentService = "all";
-let EXP_maxDays = 60; // default (existing behavior)
+/** From ?days=5|15|30|60 — null means “any expiry within 60 days” (not a bucket). */
+let EXP_band = null;
 
 // -------------------------------------
 // HELPERS
@@ -23,6 +24,31 @@ function EXP_daysUntilEnd(endDateStr) {
   return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
 }
 
+function EXP_leftMatchesBand(left, band) {
+  if (left === null || !Number.isFinite(left)) return false;
+  if (band.lte !== undefined) return left <= band.lte;
+  return left >= band.min && left <= band.max;
+}
+
+/** Client has at least one end date with remaining days in this band (or default ≤60). */
+function EXP_clientHasMatchingEnd(c, band) {
+  const ends = [c.domain_end_date, c.server_end_date, c.maintenance_end_date];
+  return ends.some((end) => {
+    const left = EXP_daysUntilEnd(end);
+    if (left === null || !Number.isFinite(left)) return false;
+    return EXP_leftMatchesBand(left, band);
+  });
+}
+
+/** Any service ending within 60 days (or already expired). */
+function EXP_clientHasExpiryWithin60(c) {
+  const ends = [c.domain_end_date, c.server_end_date, c.maintenance_end_date];
+  return ends.some((end) => {
+    const left = EXP_daysUntilEnd(end);
+    return left !== null && Number.isFinite(left) && left <= 60;
+  });
+}
+
 function EXP_getExpiringServices(client) {
   const services = [
     { name: "Domain", end: client.domain_end_date },
@@ -35,7 +61,8 @@ function EXP_getExpiringServices(client) {
       if (!s.end) return false;
       const left = EXP_daysUntilEnd(s.end);
       if (left === null || !Number.isFinite(left)) return false;
-      return left <= EXP_maxDays;
+      if (EXP_band) return EXP_leftMatchesBand(left, EXP_band);
+      return left <= 60;
     })
     .map((s) => s.name);
 }
@@ -47,19 +74,20 @@ function EXP_getRemainingDays(client) {
     { short: "M", end: client.maintenance_end_date }
   ];
 
-  return list
+  const parts = list
     .filter((s) => s.end)
     .map((s) => {
       const left = EXP_daysUntilEnd(s.end);
       return { short: s.short, left };
     })
     .filter((s) => s.left !== null && Number.isFinite(s.left))
+    .filter((s) => s.left <= 60)
     .map((s) => {
       if (s.left < 0) return `${s.short}-Expire`;
       if (s.left === 0) return `${s.short}-Expire`;
       return `${s.short}-${s.left}`;
-    })
-    .join(", ") || "-";
+    });
+  return parts.length ? parts.join(", ") : "-";
 }
 
 // -------------------------------------
@@ -110,17 +138,9 @@ function EXP_applyFilters() {
 
   let filtered = [...EXP_allClients];
 
-  // Days filter (from dashboard: /expiry/?days=5|15|30|60)
-  // Keep a client if ANY service has remaining days <= EXP_maxDays
-  filtered = filtered.filter((c) => {
-    const daysList = [
-      EXP_daysUntilEnd(c.domain_end_date),
-      EXP_daysUntilEnd(c.server_end_date),
-      EXP_daysUntilEnd(c.maintenance_end_date),
-    ].filter((d) => d !== null && Number.isFinite(d));
-
-    return daysList.some((d) => d <= EXP_maxDays);
-  });
+  if (EXP_band) {
+    filtered = filtered.filter((c) => EXP_clientHasMatchingEnd(c, EXP_band));
+  }
 
   // Search
   if (search) {
@@ -168,11 +188,20 @@ function EXP_applyFilters() {
 function EXP_initFromQuery() {
   const params = new URLSearchParams(window.location.search);
   const daysParam = params.get("days");
-  if (!daysParam) return;
-  const n = parseInt(daysParam, 10);
-  if (!isNaN(n) && n > 0) {
-    EXP_maxDays = n;
+  if (!daysParam) {
+    EXP_band = null;
+    return;
   }
+  const n = parseInt(daysParam, 10);
+  if (isNaN(n) || n <= 0) {
+    EXP_band = null;
+    return;
+  }
+  if (n === 5) EXP_band = { lte: 5 };
+  else if (n === 15) EXP_band = { min: 6, max: 15 };
+  else if (n === 30) EXP_band = { min: 16, max: 30 };
+  else if (n === 60) EXP_band = { min: 31, max: 60 };
+  else EXP_band = null;
 }
 
 // -------------------------------------
@@ -338,7 +367,9 @@ async function EXP_loadClients() {
 
     const all = await res.json();
 
-    EXP_allClients = all.filter(c => EXP_getExpiringServices(c).length > 0);
+    EXP_initFromQuery();
+
+    EXP_allClients = all.filter((c) => EXP_clientHasExpiryWithin60(c));
 
     EXP_currentFiltered = [...EXP_allClients];
 
@@ -404,12 +435,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // -------------------------------------
-  // Read dashboard filter (?days=5/15/30/60)
-  // -------------------------------------
-  EXP_initFromQuery();
-
-  // -------------------------------------
-  // LOAD EXPIRY DATA
+  // LOAD EXPIRY DATA (reads ?days= band inside load)
   // -------------------------------------
   EXP_loadClients();
 });
