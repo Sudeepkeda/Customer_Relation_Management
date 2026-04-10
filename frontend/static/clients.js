@@ -123,7 +123,7 @@ if (profileLogo) {
     currentFiltered = filtered;
     renderTable(filtered);
     initActions();
-    paginate(1);
+    //paginate(1);
   }
 
   // ===================
@@ -281,7 +281,7 @@ if (profileLogo) {
   // ===================
   // Search + Pagination
   // ===================
-  function initSearchAndPagination() {
+  /*function initSearchAndPagination() {
     const searchInput = document.querySelector(".search-div input");
     const searchBtn = document.querySelector(".custom-search");
     const resetBtn = document.querySelector(".custom-reset");
@@ -340,7 +340,7 @@ if (profileLogo) {
 
     window.paginate = paginate;
   }
-
+*/
   // ===================
   // Industry Filter Dropdown
   // ===================
@@ -428,12 +428,12 @@ if (profileLogo) {
   // ===================
   const exportBtn = document.getElementById("exportBtn");
   exportBtn?.addEventListener("click", () => {
-    if (!displayedRows.length) {
+    if (!currentFiltered.length) {
      // alert("No clients to export!");
       return;
     }
 
-    const data = displayedRows.map((c) => ({
+    const data = currentFiltered.map((c) => ({
       "Company Name": c.company_name || "-",
       "Person Name": c.person_name || "-",
       "Contact Number": c.contact_number || "-",

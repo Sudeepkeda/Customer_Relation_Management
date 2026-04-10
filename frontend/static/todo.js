@@ -199,7 +199,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
           await apiFetch(`/api/todos/${btn.dataset.id}/`, {
             method: "PATCH",
-            body: JSON.stringify({ status: "Postponed", postpone_to: to }),
+            body: JSON.stringify({ status: "Postponed", postpone_to: to, task_date:to }),
           });
           await loadMonth();
         } catch (e) {

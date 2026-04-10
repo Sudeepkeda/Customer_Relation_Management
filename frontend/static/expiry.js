@@ -86,8 +86,8 @@ function EXP_getRemainingDays(client) {
       return s.left <= 60;
     })
     .map((s) => {
-      if (s.left < 0) return `${s.short}-Expire`;
-      if (s.left === 0) return `${s.short}-Expire`;
+      if (s.left < 0) return `${s.short}-Expired`;
+      if (s.left === 0) return `${s.short}-Expired`;
       return `${s.short}-${s.left}`;
     });
   return parts.length ? parts.join(", ") : "-";
@@ -277,8 +277,7 @@ function EXP_initActions() {
 // -------------------------------------
 // PAGINATION (disabled — list all rows)
 // -------------------------------------
-// let EXP_rowsPerPage = 10;
-// function EXP_paginate(page) { ... }
+
 
 // -------------------------------------
 // CATEGORY (SERVICE) FILTER
